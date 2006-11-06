@@ -1,0 +1,13 @@
+Source: grml2usb
+Section: grml
+Priority: optional
+Maintainer: Michael Prokop <mika@grml.org>
+Build-Depends: debhelper (>= 4.0.0)
+Standards-Version: 3.6.2
+
+Package: grml2usb
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, syslinux, mtools
+Description: install grml-system to usb device
+ This script installs a grml-system (more precive: a grml-iso) to
+ an usb device.
