@@ -1,7 +1,8 @@
-grml2usb (0.6-2) unstable; urgency=low
+grml2usb (0.7-1) unstable; urgency=low
 
   * Use different exit codes for different code parts, and quote
     $ISO, thanks - Richard Hartmann!
+  * Remove unused configure lines in debian/rules.
 
  -- Michael Prokop <mika@grml.org>  Mon,  6 Nov 2006 23:48:46 +0100
 
