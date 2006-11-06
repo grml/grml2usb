@@ -4,7 +4,7 @@
 # Authors:       grml-team (grml.org), (c) Michael Prokop <mika@grml.org>
 # Bug-Reports:   see http://grml.org/bugs/
 # License:       This file is licensed under the GPL v2.
-# Latest change: Mit Okt 04 22:52:03 CEST 2006 [mika]
+# Latest change: Mon Nov 06 23:48:26 CET 2006 [mika]
 ################################################################################
 
 # colors {{{
@@ -49,7 +49,7 @@
   LANGUAGE='C'
   LC_ALL='C'
   PROGRAMNAME=${0##*/}
-  VERSION='0.6'
+  VERSION='0.7'
   ISO="$1"
   DEVICE="$2"
   [ -n "$TMPMNT" ] || TMPMNT='/mnt/test'
@@ -62,7 +62,7 @@ bailout(){
   echo "Exiting - umounting /mnt/test and $DEVICE"
   umount /mnt/test 2>/dev/null
   umount $DEVICE 2>/dev/null
-  exit 1
+  exit 2
 }
 
 usage()
@@ -135,12 +135,12 @@ mount_device(){
 mount_iso(){
   echo -n "Mounting ${ISO} to ${TMPMNT}: "
   debugit "debug: mount -o loop ${ISO} ${TMPMNT}"
-  if mount -o loop ${ISO} ${TMPMNT} ; then
+  if mount -o loop "${ISO}" ${TMPMNT} ; then
     echo "${WHITE}done${NORMAL}"
   else
     echo 1>&2 "${RED}Problem? You got an error saying 'mount: could not find any free loop device'?
 Possible solution: losetup -d /dev/loop/0${NORMAL}"
-    exit 1
+    exit 3
   fi
 }
 
@@ -184,7 +184,7 @@ Try to call it manually via 'syslinux /dev/sda1' if you installed grml to /dev/s
 trap bailout 1 2 3 15
 
 if [[ $# != 2 ]]; then
-  usage ; exit 1
+  usage ; exit 4
 fi
 
 if [ -n "$UNINSTALL" ] ; then
