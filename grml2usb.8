@@ -1,59 +1,49 @@
-.\"                                      Hey, EMACS: -*- nroff -*-
-.\" First parameter, NAME, should be all caps
-.\" Second parameter, SECTION, should be 1-8, maybe w/ subsection
-.\" other parameters are allowed: see man(7), man(1)
-.TH GRML2USB 8 "August 14, 2005"
-.\" Please adjust this date whenever revising the manpage.
-.\"
-.\" Some roff macros, for reference:
-.\" .nh        disable hyphenation
-.\" .hy        enable hyphenation
-.\" .ad l      left justify
-.\" .ad b      justify to both left and right margins
-.\" .nf        disable filling
-.\" .fi        enable filling
-.\" .br        insert line break
-.\" .sp <n>    insert n+1 empty lines
-.\" for manpage-specific macros, see man(7)
+.TH GRML2USB 8
 .SH NAME
-grml2usb \- program to do something
+grml2usb \- install grml on external usb device
 .SH SYNOPSIS
 .B grml2usb
-.RI [ options ] " files" ...
-.br
-.B bar
-.RI [ options ] " files" ...
+.RI "<path-to-the-iso-file> <path-to-the-mountpoint>"
 .SH DESCRIPTION
 This manual page documents briefly the
 .B grml2usb
-and
-.B bar
-commands.
+command.
 .PP
-.\" TeX users may be more comfortable with the \fB<whatever>\fP and
-.\" \fI<whatever>\fP escape sequences to invode bold face and italics, 
-.\" respectively.
-\fBgrml2usb\fP is a program that...
+\fBgrml2usb\fP is a program that lets you boot grml from an external usb device
+(typically an usb pen) like from CD. Whereas grml2hd installs the main system to
+a given partition, grml2usb just copies the files from the grml-iso to the usb
+device. You do not need as much space as the grml2hd installation would take
+but just the size of the iso itself (about 700MB for grml, using a 1GB usb
+pen works fine therefore).
 .SH OPTIONS
-These programs follow the usual GNU command line syntax, with long
-options starting with two dashes (`-').
-A summary of options is included below.
-For a complete description, see the Info files.
+grml2usb requires and supports exactly two options:
 .TP
-.B \-h, \-\-help
-Show summary of options.
+.B <path-to-the-iso-file>
+The path where the iso you want to use for installation is available.
+That's something like for example /home/mika/grml_0.9.iso.
 .TP
-.B \-v, \-\-version
-Show version of program.
+.B <path-to-the-mountpoint>
+This option specifies the mountpoint for your usb device, using the setup in
+/etc/fstab. grml2usb copies the iso to this mountpoint and runs syslinux (the
+bootloader for the usb device so it can boot at all) on the device later on.
+.SH NOTES
+Booting via USB might be tricky as you have to take care of several pitfals.
+First of all make sure the BIOS of your system is capable of booting from USB
+devices at all. You need a primary partition on your usb device with the
+bootflag enabled (see 'cfdisk /dev/ice') and with filesystem type vfat
+(run 'mkfs.vfat -F 16 -v /dev/ice1' to create it).
+.SH USAGE EXAMPLES
+.TP
+.B grml2usb /home/mika/grml_0.9.iso /mnt/usb-sda1
+This will install the iso grml_0.9.iso to the device behind mountpoint
+/mnt/usb-sda1 set up via  /etc/fstab.
 .SH SEE ALSO
-.BR bar (1),
-.BR baz (1).
-.br
-The programs are documented fully by
-.IR "The Rise and Fall of a Fooish Bar" ,
-available via the Info system.
+.BR "http://wiki.grml.org/doku.php?id=usb " and
+.BR grml2hd (8)
+.SH BUGREPORTS
+Please report any bugs you notice to the author.
 .SH AUTHOR
-grml2usb was written by <upstream author>.
+grml2usb was written by Michael Prokop <mika@grml.org>.
 .PP
-This manual page was written by Michael Prokop <mika@grml.org>,
-for the Debian project (but may be used by others).
+This manual page was written by Michael Prokop <mika@grml.org>
+for the grml project (but may be used by others).

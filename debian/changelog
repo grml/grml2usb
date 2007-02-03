@@ -1,3 +1,10 @@
+grml2usb (0.7-3) unstable; urgency=low
+
+  * The manpage was just a template, added the missing documentation
+    now. Thanks for reporting, Jens Heidrich!
+
+ -- Michael Prokop <mika@grml.org>  Sat,  3 Feb 2007 11:08:30 +0100
+
 grml2usb (0.7-2) unstable; urgency=low
 
   * Use 'Architecture: all' in debian/control so we can use the
