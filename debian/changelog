@@ -1,6 +1,7 @@
-grml2usb (0.7-4) unstable; urgency=low
+grml2usb (0.7.4) unstable; urgency=low
 
   * Get rid of bashism, thanks for reporting - Paul Weaver!
+  * Change version schema from x.y-z to x.y.z.
 
  -- Michael Prokop <mika@grml.org>  Fri, 16 Mar 2007 14:43:49 +0100
 
