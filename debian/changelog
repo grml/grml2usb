@@ -1,3 +1,9 @@
+grml2usb (0.7-4) unstable; urgency=low
+
+  * Get rid of bashism, thanks for reporting - Paul Weaver!
+
+ -- Michael Prokop <mika@grml.org>  Fri, 16 Mar 2007 14:43:49 +0100
+
 grml2usb (0.7-3) unstable; urgency=low
 
   * The manpage was just a template, added the missing documentation

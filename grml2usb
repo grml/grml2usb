@@ -4,7 +4,7 @@
 # Authors:       grml-team (grml.org), (c) Michael Prokop <mika@grml.org>
 # Bug-Reports:   see http://grml.org/bugs/
 # License:       This file is licensed under the GPL v2.
-# Latest change: Mon Nov 06 23:48:26 CET 2006 [mika]
+# Latest change: Fre Mär 16 14:43:44 CET 2007 [mika]
 ################################################################################
 
 # colors {{{
@@ -24,13 +24,13 @@
     echo 1>&2 "${RED}Error: syslinux is not available. Please install it before running this script.${NORMAL}" ; exit 2
   fi
 
-  if [ "$UID" != 0 ];  then
+  if [ "$(id -u)" != 0 ];  then
     echo 1>&2 "${RED}Error: please run this script with uid 0 (root).${NORMAL}" ; exit 1
   fi
 # }}}
 
 # set variables  {{{
-  if [[ $DEBUG -gt 0 ]]; then
+  if [ -n "$DEBUG" ]; then
 #    set -x
     debugit(){
       echo $*
@@ -41,7 +41,7 @@
     }
   fi
 
-  if [ "$1" == "uninstall" ] ; then
+  if [ "$1" = "uninstall" ] ; then
      UNINSTALL=1
   fi
 
@@ -183,7 +183,7 @@ Try to call it manually via 'syslinux /dev/sda1' if you installed grml to /dev/s
 # main program {{{
 trap bailout 1 2 3 15
 
-if [[ $# != 2 ]]; then
+if [ "$#" != 2 ]; then
   usage ; exit 4
 fi
 
