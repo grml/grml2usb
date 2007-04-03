@@ -82,7 +82,7 @@ Usage:
 Usage example - install grml-small to usb-device on /mnt/external1:
   $PROGRAMNAME grml_small_0.2.iso /mnt/external1
 
-Usage example - using grml2usb on a live grml system:
+Usage example - install currently running grml to usb-device on /mnt/external1:
   $PROGRAMNAME /cdrom /mnt/external1
 
 Usage example - delete grml-installation from /mnt/external1:
