@@ -82,6 +82,9 @@ Usage:
 Usage example - install grml-small to usb-device on /mnt/external1:
   $PROGRAMNAME grml_small_0.2.iso /mnt/external1
 
+Usage example - using grml2usb on a live grml system:
+  $PROGRAMNAME /cdrom /mnt/external1
+
 Usage example - delete grml-installation from /mnt/external1:
   $PROGRAMNAME uninstall /mnt/external1
 
@@ -134,8 +137,14 @@ mount_device(){
 
 mount_iso(){
   echo -n "Mounting ${ISO} to ${TMPMNT}: "
-  debugit "debug: mount -o loop ${ISO} ${TMPMNT}"
-  if mount -o loop "${ISO}" ${TMPMNT} ; then
+  local mount_opts_="-o loop"
+  if [ -d $ISO ]; then
+      mount_opts_="--bind"
+  elif [ -b $ISO ]; then
+      mount_opts_=""
+  fi
+  debugit "debug: mount $mount_opts_ ${ISO} ${TMPMNT}"
+  if mount $mount_opts_ "${ISO}" ${TMPMNT} ; then
     echo "${WHITE}done${NORMAL}"
   else
     echo 1>&2 "${RED}Problem? You got an error saying 'mount: could not find any free loop device'?
