@@ -4,7 +4,7 @@
 # Authors:       grml-team (grml.org), (c) Michael Prokop <mika@grml.org>
 # Bug-Reports:   see http://grml.org/bugs/
 # License:       This file is licensed under the GPL v2.
-# Latest change: Mit Apr 04 00:02:50 CEST 2007 [mika]
+# Latest change: Fre Jun 08 18:06:54 CEST 2007 [mika]
 ################################################################################
 
 # colors {{{
@@ -31,13 +31,13 @@
 
 # set variables  {{{
   if [ -n "$DEBUG" ]; then
-#    set -x
+    # set -x
     debugit(){
       echo $*
     }
   else
     debugit(){
-      echo $* >/dev/null
+      echo >/dev/null
     }
   fi
 
@@ -49,10 +49,11 @@
   LANGUAGE='C'
   LC_ALL='C'
   PROGRAMNAME=${0##*/}
-  VERSION='0.7.5'
+  VERSION='0.7.6'
   ISO="$1"
   DEVICE="$2"
-  [ -n "$TMPMNT" ] || TMPMNT='/mnt/test'
+
+  [ -n "$TMPMNT" ] || TMPMNT='/mnt/test/'
   [ -d "$TMPMNT" ] || mkdir -p $TMPMNT
 # }}}
 
@@ -60,7 +61,7 @@
 bailout(){
   echo
   echo "Exiting - umounting /mnt/test and $DEVICE"
-  umount /mnt/test 2>/dev/null
+  umount $TMPMNT 2>/dev/null
   umount $DEVICE 2>/dev/null
   exit 2
 }
@@ -120,13 +121,24 @@ info(){
 }
 
 vfat_warning(){
-  echo "Warning: make sure that your usb-device is preformated with vfat.
-If not please run it e.g. via:  mkfs.vfat -F 16 -v /dev/sda1"
-  echo
+  DEV=$(echo ${DEVICE%/})
+  TMPDEV=$(grep ${DEV} /etc/fstab | awk '{print $1}')
+  SYSDEV=$(echo ${TMPDEV%/})
+  if [ -x /lib/udev/vol_id ] ; then
+     /lib/udev/vol_id $SYSDEV | grep -q 'FS_TYPE=vfat' || VFAT=1
+     /lib/udev/vol_id $SYSDEV | grep -q 'ID_FS_VERSION=FAT16' || VFAT=1
+  else
+     VFAT=1
+  fi
+  if [ -n "$VFAT" ] ; then
+     echo 'Warning: make sure that your usb-device is preformated with vfat.'
+     echo "If not please run it e.g. via:  mkfs.vfat -F 16 -v $SYSDEV"
+     echo
+  fi
 }
 
 mount_device(){
-  if grep ${DEVICE} /proc/mounts ; then
+  if grep -q ${DEVICE} /proc/mounts ; then
     echo echo 1>&2 "${WHITE}${DEVICE} already mounted${NORMAL}"
   else
     echo -n "Mounting ${DEVICE}: "
@@ -145,18 +157,18 @@ mount_iso(){
   fi
   debugit "debug: mount $mount_opts_ ${ISO} ${TMPMNT}"
   if mount $mount_opts_ "${ISO}" ${TMPMNT} ; then
-    echo "${WHITE}done${NORMAL}"
+     echo "${WHITE}done${NORMAL}"
   else
-    echo 1>&2 "${RED}Problem? You got an error saying 'mount: could not find any free loop device'?
+     echo 1>&2 "${RED}Problem? You got an error saying 'mount: could not find any free loop device'?
 Possible solution: losetup -d /dev/loop/0${NORMAL}"
     exit 3
   fi
 }
 
 unmount(){
-  echo -n "Unmounting ${DEVICE} and ${TMPMNT}."
+  echo -n "Unmounting ${DEVICE} and ${TMPMNT}: "
   umount ${TMPMNT}
-  umount ${DEVICE}
+  umount ${DEVICE} && echo "done" || echo "failed"
 }
 
 copyit(){
@@ -164,9 +176,14 @@ copyit(){
   debugit "debug: cp -dR --preserve=mode,timestamps ${TMPMNT}/* ${DEVICE}"
   debugit "debug: mv ${DEVICE}/boot/isolinux/* ${DEVICE}/"
   if cp -dR --preserve=mode,timestamps ${TMPMNT}/* ${DEVICE} ; then
-    echo "# filelist of $PROGRAMNAME on $(date) using $ISO on ${DEVICE}:" > $DEVICE/grml2hd.filelist
-    find  ${TMPMNT} -type f | grep -v isolinux | sed 's#^/mnt/test/##' | tr A-Z a-z >> $DEVICE/grml2hd.filelist && \
-    find  ${DEVICE}/boot/isolinux -type f | sed 's#.*isolinux/##'      | tr A-Z a-z >> $DEVICE/grml2hd.filelist && \
+    echo "# filelist of $PROGRAMNAME on $(date) using $ISO on ${DEVICE}:" > $DEVICE/grml2usb.filelist
+    find  ${TMPMNT} -type f | grep -v isolinux | sed 's#^${TMPMNT}##' | tr A-Z a-z >> $DEVICE/grml2usb.filelist && \
+    find  ${DEVICE}/boot/isolinux -type f | sed 's#.*isolinux/##'      | tr A-Z a-z >> $DEVICE/grml2usb.filelist && \
+    # make sure we have a valid syslinux.cfg, if not use isolinux.cfg as base
+    if ! [ -f "${DEVICE}"/boot/isolinux/syslinux.cfg ] ; then
+       cp ${DEVICE}/boot/isolinux/isolinux.cfg ${DEVICE}/boot/isolinux/syslinux.cfg && \
+       echo 'syslinux.cfg' >> $DEVICE/grml2usb.filelist
+    fi
     mv    ${DEVICE}/boot/isolinux/* ${DEVICE}/    && \
     rmdir ${DEVICE}/boot/isolinux                 && \
     rmdir ${DEVICE}/boot/
@@ -184,7 +201,7 @@ run_syslinux(){
   echo -n "Running syslinux on ${SYSDEV}: "
   debugit "debug: syslinux ${SYSDEV}"
   syslinux ${SYSDEV} && echo "${WHITE}done${NORMAL}" || echo 1>&2 "${RED}Problem when running syslinux?
-Try to call it manually via 'syslinux /dev/sda1' if you installed grml to /dev/sda1'${NORMAL}"
+Try to call it manually via "syslinux $SYSDEV" if you installed grml to $SYSDEV'${NORMAL}"
 }
 
 # }}}
@@ -197,25 +214,26 @@ if [ "$#" != 2 ]; then
 fi
 
 if [ -n "$UNINSTALL" ] ; then
-  echo "${BLUE}$PROGRAMNAME - ${VERSION}"
-  echo "${BLUE}Uninstalling grml from ${DEVICE} based on ${DEVICE}/grml2hd.filelist.${NORMAL}"
+  echo "${BLUE}$PROGRAMNAME - ${VERSION}${NORMAL}"
+  echo
+  echo "Uninstalling grml from ${DEVICE} based on ${DEVICE}/grml2usb.filelist.${NORMAL}"
   if mount_device ; then
-   if [ -f ${DEVICE}/grml2hd.filelist ] ; then
-    for file in `cat $DEVICE/grml2hd.filelist | grep -v '^#'` ; do
-      echo -n "removing ${file} on ${DEVICE}: "
-      rm ${DEVICE}/${file} && echo "${WHITE}done${NORMAL}" || echo "${RED}error${NORMAL}"
-    done
-    echo -n "removing directory grml/images/ on ${DEVICE}: "
-    rmdir ${DEVICE}/grml/images/ && echo "${WHITE}done${NORMAL}" || echo "${RED}error${NORMAL}"
-    echo -n "removing directory grml/ on ${DEVICE}: "
-    rmdir ${DEVICE}/grml && echo "${WHITE}done${NORMAL}" || echo "${RED}error${NORMAL}"
-    echo -n "removing filelist grml2hd.filelist on ${DEVICE}: "
-    rm ${DEVICE}/grml2hd.filelist && echo "${WHITE}done${NORMAL}" || echo "${RED}error${NORMAL}"
-    echo -n "Unmounting ${DEVICE}:"
-    umount $DEVICE && echo "${WHITE}done${NORMAL}" || echo "${RED}error${NORMAL}"
-   else
-    echo 1>&2 "${RED}File ${DEVICE}/grml2hd.filelist not found. I have nothing to delete therefor. Exiting.${NORMAL}"
-   fi
+     if [ -f ${DEVICE}/grml2usb.filelist ] ; then
+        for file in `cat $DEVICE/grml2usb.filelist | grep -v '^#'` ; do
+          echo -n "removing ${file} on ${DEVICE}: "
+          rm ${DEVICE}/${file} && echo "${WHITE}done${NORMAL}" || echo "${RED}error${NORMAL}"
+        done
+        echo -n "removing directory grml/images/ on ${DEVICE}: "
+        rmdir ${DEVICE}/grml/images/ && echo "${WHITE}done${NORMAL}" || echo "${RED}error${NORMAL}"
+        echo -n "removing directory grml/ on ${DEVICE}: "
+        rmdir ${DEVICE}/grml && echo "${WHITE}done${NORMAL}" || echo "${RED}error${NORMAL}"
+        echo -n "removing filelist grml2usb.filelist on ${DEVICE}: "
+        rm ${DEVICE}/grml2usb.filelist && echo "${WHITE}done${NORMAL}" || echo "${RED}error${NORMAL}"
+        echo -n "Unmounting ${DEVICE}:"
+        umount $DEVICE && echo "${WHITE}done${NORMAL}" || echo "${RED}error${NORMAL}"
+     else
+        echo 1>&2 "${RED}File ${DEVICE}/grml2usb.filelist not found. I have nothing to delete therefor. Exiting.${NORMAL}"
+     fi
   fi
 else
   info

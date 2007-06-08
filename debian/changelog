@@ -1,3 +1,12 @@
+grml2usb (0.7.6) unstable; urgency=low
+
+  * The "reworked grml2usb for JUXLALA"-release.
+  * Added fs check via vol_id.
+  * Improved error handling.
+  * Fixed some code parts regarding use of $TMPMNT.
+
+ -- Michael Prokop <mika@grml.org>  Fri, 08 Jun 2007 18:07:09 +0200
+
 grml2usb (0.7.5) unstable; urgency=low
 
   * supporting directories and direct blockdevices as source for the iso. 
