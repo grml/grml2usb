@@ -4,7 +4,7 @@
 # Authors:       grml-team (grml.org), (c) Michael Prokop <mika@grml.org>
 # Bug-Reports:   see http://grml.org/bugs/
 # License:       This file is licensed under the GPL v2.
-# Latest change: Fre Jun 08 18:06:54 CEST 2007 [mika]
+# Latest change: Don Sep 13 01:38:26 CEST 2007 [mika]
 ################################################################################
 
 # colors {{{
@@ -81,7 +81,7 @@ Usage:
           /mount/point should not be mounted at the time running $PROGRAMNAME
 
 Usage example - install grml-small to usb-device on /mnt/external1:
-  $PROGRAMNAME grml_small_0.2.iso /mnt/external1
+  $PROGRAMNAME grml_small_0.4.iso /mnt/external1
 
 Usage example - install currently running grml to usb-device on /mnt/external1:
   $PROGRAMNAME /cdrom /mnt/external1
@@ -200,8 +200,13 @@ run_syslinux(){
   SYSDEV=$(echo ${TMPDEV%/})
   echo -n "Running syslinux on ${SYSDEV}: "
   debugit "debug: syslinux ${SYSDEV}"
-  syslinux ${SYSDEV} && echo "${WHITE}done${NORMAL}" || echo 1>&2 "${RED}Problem when running syslinux?
+  if syslinux ${SYSDEV} ; then
+     echo "${WHITE}done${NORMAL}"
+  else
+     echo 1>&2 "${RED}Problem when running syslinux?
 Try to call it manually via "syslinux $SYSDEV" if you installed grml to $SYSDEV'${NORMAL}"
+     return 1
+  fi
 }
 
 # }}}

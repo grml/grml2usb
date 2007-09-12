@@ -1,3 +1,9 @@
+grml2usb (0.7.7) unstable; urgency=low
+
+  * Improve error handling for execution of syslinux.
+
+ -- Michael Prokop <mika@grml.org>  Thu, 13 Sep 2007 01:38:31 +0200
+
 grml2usb (0.7.6) unstable; urgency=low
 
   * The "reworked grml2usb for JUXLALA"-release.
