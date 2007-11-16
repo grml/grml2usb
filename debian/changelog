@@ -1,3 +1,9 @@
+grml2usb (0.7.8) unstable; urgency=low
+
+  * Adjust grml2usb for a present grub directory.
+
+ -- Michael Prokop <mika@grml.org>  Fri, 16 Nov 2007 08:29:20 +0100
+
 grml2usb (0.7.7) unstable; urgency=low
 
   * Improve error handling for execution of syslinux.
