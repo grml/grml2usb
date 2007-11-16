@@ -190,7 +190,7 @@ copyit(){
     fi
 
     if [ -d ${DEIVCE}/boot/grub ] ; then
-       mv ${DEVICE}/boot/grub ${DEVICE} ; then
+       mv ${DEVICE}/boot/grub ${DEVICE}
     fi
 
     rmdir ${DEVICE}/boot 2>/dev/null
