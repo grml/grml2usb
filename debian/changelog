@@ -1,3 +1,10 @@
+grml2usb (0.8.0) unstable; urgency=low
+
+  * Fix the "mv: cannot move `/mnt/usb-sdb1/boot/grub' to a subdirectory of
+    itself, `/mnt/usb-sdb1/grub'" issue.
+
+ -- Michael Prokop <mika@grml.org>  Sat, 19 Jan 2008 16:57:08 +0100
+
 grml2usb (0.7.8) unstable; urgency=low
 
   * Adjust grml2usb for a present grub directory.

@@ -4,7 +4,7 @@
 # Authors:       grml-team (grml.org), (c) Michael Prokop <mika@grml.org>
 # Bug-Reports:   see http://grml.org/bugs/
 # License:       This file is licensed under the GPL v2.
-# Latest change: Fre Nov 16 08:29:17 CET 2007 [mika]
+# Latest change: Sam Jän 19 16:57:39 CET 2008 [mika]
 ################################################################################
 
 # colors {{{
@@ -49,7 +49,7 @@
   LANGUAGE='C'
   LC_ALL='C'
   PROGRAMNAME=${0##*/}
-  VERSION='0.7.8'
+  VERSION='0.8.0'
   ISO="$1"
   DEVICE="$2"
 
@@ -189,8 +189,9 @@ copyit(){
        rmdir ${DEVICE}/boot/isolinux
     fi
 
-    if [ -d ${DEIVCE}/boot/grub ] ; then
-       mv ${DEVICE}/boot/grub ${DEVICE}
+    if [ -d "${DEVICE}"/boot/grub ] ; then
+       [ -d "${DEVICE}/grub" ] || mkdir ${DEVICE}/grub
+       mv ${DEVICE}/boot/grub/* ${DEVICE}/grub/
     fi
 
     rmdir ${DEVICE}/boot 2>/dev/null
