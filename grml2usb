@@ -4,7 +4,7 @@
 # Authors:       grml-team (grml.org), (c) Michael Prokop <mika@grml.org>
 # Bug-Reports:   see http://grml.org/bugs/
 # License:       This file is licensed under the GPL v2.
-# Latest change: Sam Jän 19 16:57:39 CET 2008 [mika]
+# Latest change: Sat Feb 23 23:43:52 CET 2008 [mika]
 ################################################################################
 
 # colors {{{
@@ -21,11 +21,11 @@
 
 # usercheck {{{
   if ! [ -x "$(which syslinux)" ] ; then
-    echo 1>&2 "${RED}Error: syslinux is not available. Please install it before running this script.${NORMAL}" ; exit 2
+    echo "${RED}Error: syslinux is not available. Please install it before running this script.${NORMAL}" >&2; exit 2
   fi
 
   if [ "$(id -u)" != 0 ];  then
-    echo 1>&2 "${RED}Error: please run this script with uid 0 (root).${NORMAL}" ; exit 1
+    echo "${RED}Error: please run this script with uid 0 (root).${NORMAL}" >&2 ; exit 1
   fi
 # }}}
 
@@ -49,7 +49,7 @@
   LANGUAGE='C'
   LC_ALL='C'
   PROGRAMNAME=${0##*/}
-  VERSION='0.8.0'
+  VERSION='0.9.0'
   ISO="$1"
   DEVICE="$2"
 
@@ -68,11 +68,11 @@ bailout(){
 
 usage()
 {
-  echo 1>&2 "${BLUE}$PROGRAMNAME $VERSION${NORMAL} - install grml-system to usb-device
+  echo 1>&2 "$PROGRAMNAME $VERSION - install grml-system to usb-device
 
 This program installs a grml-iso to an usb-device to be able to boot
 from usb. Make sure you have a grml-iso, syslinux (just run
-'apt-get install syslinux' on debian-systems) and root access.
+'apt-get install syslinux' on Debian-based systems) and root access.
 
 Usage:
   $PROGRAMNAME grml.iso /mount/point
@@ -80,14 +80,14 @@ Usage:
   Notice: /mount/point is the mountpoint set up for your USB device in /etc/fstab
           /mount/point should not be mounted at the time running $PROGRAMNAME
 
-Usage example - install grml-small to usb-device on /mnt/external1:
-  $PROGRAMNAME grml_small_0.4.iso /mnt/external1
+Usage example - install grml-small to usb-device on /mnt/usb-sdb1:
+  $PROGRAMNAME grml_1.1.iso /mnt/usb-sdb1
 
-Usage example - install currently running grml to usb-device on /mnt/external1:
-  $PROGRAMNAME /cdrom /mnt/external1
+Usage example - install currently running grml to usb-device on /mnt/usb-sdb1:
+  $PROGRAMNAME /live/image /mnt/usb-sdb1
 
-Usage example - delete grml-installation from /mnt/external1:
-  $PROGRAMNAME uninstall /mnt/external1
+Usage example - delete grml-installation from /mnt/usb-sdb1:
+  $PROGRAMNAME uninstall /mnt/usb-sdb1
 
 For more information take a look at http://wiki.grml.org/doku.php?id=usb
 Report bugs, send wishes and feedback to the grml team:
@@ -99,24 +99,12 @@ notice(){
   echo "
 Installing grml to $DEVICE should have been successful!
 
-Tips:
-
-  Use the usb cheatcode on bootprompt if you experience any problems with
-  booting grml via usb/firewire, so boot with 'grml scandelay' on bootprompt.
-  This adds a 'sleep' while trying to access the usb-stick and the module
-  should have enough time to access it. Using scandeleay=seconds is possible
-  as well, use 'grml scandelay=20' to wait 20 seconds before trying to access
-  the external device with grml on it.
-
-  Also make sure you have tested all available modes of USB-boot in
-  the BIOS of your computer. Often found as USB-HDD, USB-FDD and
-  USB-ZIP in the bootmenu.
-
-  Take a look at http://wiki.grml.org/doku.php?id=usb for more information."
+Please take a look at http://wiki.grml.org/doku.php?id=usb
+for more information or if you have problems with booting from usb."
 }
 
 info(){
-  echo "${BLUE}$PROGRAMNAME ${VERSION}${NORMAL} - install grml-system to usb-device"
+  echo "$PROGRAMNAME ${VERSION} - install grml-system to usb-device"
   echo
 }
 
@@ -131,15 +119,15 @@ vfat_warning(){
      VFAT=1
   fi
   if [ -n "$VFAT" ] ; then
-     echo 'Warning: make sure that your usb-device is preformated with vfat.'
-     echo "If not please run it e.g. via:  mkfs.vfat -F 16 -v $SYSDEV"
+     echo 'WARNING: make sure that your usb-device is preformated with vfat.'
+     echo "Format your device (erases all data) via:  mkfs.vfat -F 16 -v $SYSDEV"
      echo
   fi
 }
 
 mount_device(){
   if grep -q ${DEVICE} /proc/mounts ; then
-    echo echo 1>&2 "${WHITE}${DEVICE} already mounted${NORMAL}"
+    echo "Notice: ${WHITE}${DEVICE} already mounted - continuing anyway${NORMAL}" >&2
   else
     echo -n "Mounting ${DEVICE}: "
     debugit "debug: mount $DEVICE"
@@ -159,8 +147,8 @@ mount_iso(){
   if mount $mount_opts_ "${ISO}" ${TMPMNT} ; then
      echo "${WHITE}done${NORMAL}"
   else
-     echo 1>&2 "${RED}Problem? You got an error saying 'mount: could not find any free loop device'?
-Possible solution: losetup -d /dev/loop/0${NORMAL}"
+     echo "${RED}Problem? You got an error saying 'mount: could not find any free loop device'?
+Possible solution: losetup -d /dev/loop/0${NORMAL}" >&2
     exit 3
   fi
 }
@@ -175,10 +163,14 @@ copyit(){
   echo -n "Installing data from ${ISO} to ${DEVICE} (will take some time): "
   debugit "debug: cp -dR --preserve=mode,timestamps ${TMPMNT}/* ${DEVICE}"
   debugit "debug: mv ${DEVICE}/boot/isolinux/* ${DEVICE}/"
+
   if cp -dR --preserve=mode,timestamps ${TMPMNT}/* ${DEVICE} ; then
     echo "# filelist of $PROGRAMNAME on $(date) using $ISO on ${DEVICE}:" > $DEVICE/grml2usb.filelist
-    find  ${TMPMNT} -type f | grep -v isolinux | sed 's#^${TMPMNT}##' | tr A-Z a-z >> $DEVICE/grml2usb.filelist && \
-    find  ${DEVICE}/boot/isolinux -type f | sed 's#.*isolinux/##'      | tr A-Z a-z >> $DEVICE/grml2usb.filelist && \
+
+    find  ${TMPMNT} -type f | sed "s#${TMPMNT}##" | \
+          sed "s#boot/## ; s#isolinux/## ; s#.*initrd.gz#initrd.gz# ; s#.*linux26#linux26#" | \
+          tr A-Z a-z >> $DEVICE/grml2usb.filelist
+
     # make sure we have a valid syslinux.cfg, if not use isolinux.cfg as base
     if ! [ -f "${DEVICE}"/boot/isolinux/syslinux.cfg ] ; then
        cp ${DEVICE}/boot/isolinux/isolinux.cfg ${DEVICE}/boot/isolinux/syslinux.cfg && \
@@ -187,6 +179,33 @@ copyit(){
 
     if mv ${DEVICE}/boot/isolinux/* ${DEVICE}/ ; then
        rmdir ${DEVICE}/boot/isolinux
+    fi
+    echo boot >> $DEVICE/grml2usb.filelist
+
+    if ! [ -r ${DEVICE}/live/filesystem.module ] ; then
+       GRML_NAME=grml
+    else
+       GRML_NAME=$(cat ${DEVICE}/live/filesystem.module)
+       GRML_NAME=${GRML_NAME%%.squashfs}
+       GRML_NAME="$(echo $GRML_NAME | tr -d ',./;\- ')"
+    fi
+
+    KERNEL=$(find ${TMPMNT}/boot/ -maxdepth 2 -name linux26)
+    INITRD=$(find ${TMPMNT}/boot/ -maxdepth 2 -name initrd.gz)
+
+    case $KERNEL in
+      */boot/${GRML_NAME}/linux26*)   mv ${DEVICE}/boot/${GRML_NAME}/linux26 ${DEVICE}/
+      ;;
+    esac
+
+    case $INITRD in
+      */boot/${GRML_NAME}/initrd.gz*) mv ${DEVICE}/boot/${GRML_NAME}/initrd.gz ${DEVICE}/
+      ;;
+    esac
+
+    if [ -d "${DEVICE}"/boot/addons ] ; then
+       [ -d "${DEVICE}/addons" ] || mkdir ${DEVICE}/addons
+       mv ${DEVICE}/boot/addons/* ${DEVICE}/addons/
     fi
 
     if [ -d "${DEVICE}"/boot/grub ] ; then
@@ -209,11 +228,12 @@ run_syslinux(){
   SYSDEV=$(echo ${TMPDEV%/})
   echo -n "Running syslinux on ${SYSDEV}: "
   debugit "debug: syslinux ${SYSDEV}"
+
   if syslinux ${SYSDEV} ; then
      echo "${WHITE}done${NORMAL}"
   else
-     echo 1>&2 "${RED}Problem when running syslinux?
-Try to call it manually via "syslinux $SYSDEV" if you installed grml to $SYSDEV'${NORMAL}"
+     echo "${RED}Problem when running syslinux?" >&2
+     echo "Try to call it manually via 'syslinux $SYSDEV' if you installed grml to ${SYSDEV}${NORMAL}" >&2
      return 1
   fi
 }
@@ -228,38 +248,59 @@ if [ "$#" != 2 ]; then
 fi
 
 if [ -n "$UNINSTALL" ] ; then
-  echo "${BLUE}$PROGRAMNAME - ${VERSION}${NORMAL}"
-  echo
-  echo "Uninstalling grml from ${DEVICE} based on ${DEVICE}/grml2usb.filelist.${NORMAL}"
-  if mount_device ; then
-     if [ -f ${DEVICE}/grml2usb.filelist ] ; then
-        for file in `cat $DEVICE/grml2usb.filelist | grep -v '^#'` ; do
-          echo -n "removing ${file} on ${DEVICE}: "
-          rm ${DEVICE}/${file} && echo "${WHITE}done${NORMAL}" || echo "${RED}error${NORMAL}"
-        done
-        echo -n "removing directory grml/images/ on ${DEVICE}: "
-        rmdir ${DEVICE}/grml/images/ && echo "${WHITE}done${NORMAL}" || echo "${RED}error${NORMAL}"
-        echo -n "removing directory grml/ on ${DEVICE}: "
-        rmdir ${DEVICE}/grml && echo "${WHITE}done${NORMAL}" || echo "${RED}error${NORMAL}"
-        echo -n "removing filelist grml2usb.filelist on ${DEVICE}: "
-        rm ${DEVICE}/grml2usb.filelist && echo "${WHITE}done${NORMAL}" || echo "${RED}error${NORMAL}"
-        echo -n "Unmounting ${DEVICE}:"
-        umount $DEVICE && echo "${WHITE}done${NORMAL}" || echo "${RED}error${NORMAL}"
-     else
-        echo 1>&2 "${RED}File ${DEVICE}/grml2usb.filelist not found. I have nothing to delete therefor. Exiting.${NORMAL}"
-     fi
-  fi
+   echo "$PROGRAMNAME - ${VERSION}"
+   echo
+
+   echo -n "Are you sure you want to erase all grml related data on ${DEVICE}? [y/N] "
+   read a
+   if ! [ "$a" = 'y' -o "$a" = 'Y' ] ; then
+      echo "Exiting as requested."
+      exit 1
+   fi
+
+   echo "Uninstalling grml from ${DEVICE} based on ${DEVICE}/grml2usb.filelist${NORMAL}"
+   if mount_device ; then
+      if ! [ -f "${DEVICE}"/grml2usb.filelist ] ; then
+         echo "${RED}File ${DEVICE}/grml2usb.filelist not found."
+         echo "I have nothing to delete therefor. Exiting.${NORMAL}"
+         bailout
+      else
+         echo
+         for file in $(grep -v '^#' "${DEVICE}/grml2usb.filelist") ; do
+             if [ -f "${DEVICE}/${file}" ] ; then
+                echo -n "removing file ${file} on ${DEVICE}: "
+                rm ${DEVICE}/${file} && echo "${WHITE}done${NORMAL}" || echo "${RED}error${NORMAL}"
+             fi
+         done
+
+         for dir in $(grep -v '^#' "${DEVICE}/grml2usb.filelist" | sed 's#/.*##' | sort -u) ; do
+             if [ -d "${DEVICE}/$dir" ] ; then
+                echo -n "removing directory ${dir} on ${DEVICE}: "
+                rmdir "${DEVICE}/${dir}"/* 2>/dev/null
+                rmdir "${DEVICE}/${dir}" && echo "${WHITE}done${NORMAL}" || echo "${RED}error${NORMAL}"
+             fi
+         done
+
+         echo -n "removing filelist grml2usb.filelist on ${DEVICE}: "
+         rm ${DEVICE}/grml2usb.filelist && echo "${WHITE}done${NORMAL}" || echo "${RED}error${NORMAL}"
+
+         echo
+
+         echo -n "Unmounting ${DEVICE}: "
+         umount $DEVICE && echo "${WHITE}done${NORMAL}" || echo "${RED}error${NORMAL}"
+      fi
+   fi
 else
-  info
-  vfat_warning && \
-  mount_iso    && \
-  mount_device && \
-  copyit       && \
-  unmount      && \
-  run_syslinux && \
-  notice
+   info
+   vfat_warning && \
+   mount_iso    && \
+   mount_device && \
+   copyit       && \
+   unmount      && \
+   run_syslinux && \
+   notice
 fi
 # }}}
 
 ## END OF FILE #################################################################
-# vim:foldmethod=marker
+# vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=3

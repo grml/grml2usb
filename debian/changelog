@@ -1,3 +1,10 @@
+grml2usb (0.9.0) unstable; urgency=low
+
+  * Support new directory layout of different grml-flavours
+  * Fix uninstall option (really clean up usb device)
+
+ -- Michael Prokop <mika@grml.org>  Sat, 23 Feb 2008 23:43:57 +0100
+
 grml2usb (0.8.0) unstable; urgency=low
 
   * Fix the "mv: cannot move `/mnt/usb-sdb1/boot/grub' to a subdirectory of
