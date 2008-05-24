@@ -2,6 +2,7 @@ grml2usb (0.9.1) unstable; urgency=low
 
   * Fix problem with comment chars in /etc/fstab.
     Thanks for debugging and the patch to Robert Euhus!
+  * Some minor cleanups in Debian packaging.
 
  -- Michael Prokop <mika@grml.org>  Sun, 25 May 2008 01:29:30 +0200
 
