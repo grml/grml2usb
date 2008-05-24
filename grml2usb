@@ -4,7 +4,7 @@
 # Authors:       grml-team (grml.org), (c) Michael Prokop <mika@grml.org>
 # Bug-Reports:   see http://grml.org/bugs/
 # License:       This file is licensed under the GPL v2.
-# Latest change: Sun May 25 01:29:21 CEST 2008 [mika]
+# Latest change: Sun May 25 01:37:43 CEST 2008 [mika]
 ################################################################################
 
 # colors {{{
@@ -49,7 +49,7 @@
   LANGUAGE='C'
   LC_ALL='C'
   PROGRAMNAME=${0##*/}
-  VERSION='0.9.0'
+  VERSION='0.9.1'
   ISO="$1"
   DEVICE="$2"
 
