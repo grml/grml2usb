@@ -4,7 +4,7 @@
 # Authors:       grml-team (grml.org), (c) Michael Prokop <mika@grml.org>
 # Bug-Reports:   see http://grml.org/bugs/
 # License:       This file is licensed under the GPL v2.
-# Latest change: Sun Feb 24 13:49:13 CET 2008 [mika]
+# Latest change: Sun May 25 01:29:21 CEST 2008 [mika]
 ################################################################################
 
 # colors {{{
@@ -110,7 +110,7 @@ info(){
 
 vfat_warning(){
   DEV=$(echo ${DEVICE%/})
-  TMPDEV=$(grep ${DEV} /etc/fstab | awk '{print $1}')
+  TMPDEV=$(grep "[[:space:]]${DEV}[[:space:]]" /etc/fstab | grep -vh '^[[:space:]]*#' | awk '{print $1}')
   SYSDEV=$(echo ${TMPDEV%/})
   if [ -x /lib/udev/vol_id ] ; then
      /lib/udev/vol_id $SYSDEV | grep -q 'FS_TYPE=vfat' || VFAT=1
@@ -227,7 +227,7 @@ copyit(){
 
 run_syslinux(){
   DEV=$(echo ${DEVICE%/})
-  TMPDEV=$(grep ${DEV} /etc/fstab | awk '{print $1}')
+  TMPDEV=$(grep "[[:space:]]${DEV}[[:space:]]" /etc/fstab | grep -vh '^[[:space:]]*#' | awk '{print $1}')
   SYSDEV=$(echo ${TMPDEV%/})
   echo -n "Running syslinux on ${SYSDEV}: "
   debugit "debug: syslinux ${SYSDEV}"
