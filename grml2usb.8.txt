@@ -1,0 +1,142 @@
+grml2usb(8)
+==========
+
+Name
+----
+grml2usb - install grml on usb device
+
+Synopsis
+--------
+grml2usb [ options ] <ISO[s]> <device>
+
+*******************************************************************************
+Important! The grml team does not take responsibility for loss of any data!
+*******************************************************************************
+
+Options
+-------
+
+  *--fat16*::
+
+Format specified partition with FAT16.
+
+  *--grub*::
+
+Install grub bootloader instead of syslinux.
+
+  *--mbr*::
+
+Install master boot record (MBR) on the device.
+
+  *--syslinux*::
+
+Install syslinux bootloader (default, requires FAT16 filesystem on the specified partition).
+
+  *-v*::
+
+Return version and exit.
+
+  *-V*::
+
+Enable verbose mode.
+
+Introduction
+------------
+
+grml2usb installs grml on a given partition on your usb device and makes it
+bootable.
+
+Directory layout on usb device
+------------------------------
+
+  boot/ ->
+    |-- addons/
+    |   |-- allinone.img
+    |   |-- balder10.imz
+    |   |-- chain.c32
+    |   |-- memdisk
+    |   `-- menu.c32
+    |-- release/
+    |   |-- grml/
+    |       |-- linux26
+    |       |-- initrd.gz
+    |   |-- grml64
+    |       |-- linux26
+    |       |-- initrd.gz
+    |   |-- grml-medium
+    |       |-- linux26
+    |       |-- initrd.gz
+    |   |-- grml64-medium
+    |       |-- linux26
+    |       |-- initrd.gz
+    |   |-- grml-small
+    |       |-- linux26
+    |       |-- initrd.gz
+    |   |-- grml64-small
+    |       |-- linux26
+    |       |-- initrd.gz
+    |-- grub/
+    |   |-- menu.lst
+    |   |-- splash.xpm.gz
+    |   |-- stage2_eltorito
+    |-- isolinux/
+    |   |-- boot.msg
+    |   |-- boot-beep.msg
+    |   |-- logo.16
+    |   |-- isolinux-main.cfg
+    |   |-- isolinux.cfg
+    |   |-- syslinux.cfg
+    `-- bootsplashes/
+        |-- f1
+        |-- f2
+        |-- f3
+        |-- f4
+        |-- f5
+        |-- f6
+        |-- f7
+        |-- f8
+        |-- f9
+        `-- f10
+
+  grml/
+    |-- grml2usb.txt
+    |-- grml-cheatcodes.txt
+    |-- grml-version.txt
+    |-- LICENSE.txt
+    |-- md5sums
+    |-- README.txt
+    |-- web/
+        |-- index.html
+        |-- style.css
+        `-- images/
+            |-- button.png
+            |-- favicon.png
+            |-- linux.jpg
+            `-- logo.png
+
+  live/
+    |-- filesystem.module
+    |-- grml.squashfs
+    |-- grml-medium.module
+    |-- grml-medium.squashfs
+    |-- grml-small.module
+    |-- grml-small.squashfs
+    |-- grml64.module
+    |-- grml64.squashfs
+    |-- grml64-medium.module
+    |-- grml64-medium.squashfs
+    |-- grml64-small.module
+    `-- grml64-small.squashfs
+
+Usage examples
+--------------
+
+TODO
+
+Bugs
+----
+Please report feedback, link:http://grml.org/bugs/[bugreports] and wishes link:http://grml.org/contact/[to us]!
+
+Author
+------
+Michael Prokop <mika@grml.org>
