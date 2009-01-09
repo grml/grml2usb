@@ -64,6 +64,10 @@ Install specified squashfs file as the default.
 
 Install syslinux bootloader (default, requires FAT16 filesystem on the specified partition).
 
+  *--uninstall*::
+
+Uninstall grml ISO files.
+
   *-v*, *--version*::
 
 Return version and exit.
