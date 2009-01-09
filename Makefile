@@ -5,14 +5,12 @@ doc: doc_man doc_html
 doc_html: html-stamp
 
 html-stamp: grml2usb.8.txt
-	sed -i 's/^include::releasetable-man.txt\[\]/include::releasetable.txt\[\]/' grml2usb.8.txt
 	asciidoc -b xhtml11 -a icons grml2usb.8.txt
 	touch html-stamp
 
 doc_man: man-stamp
 
 man-stamp: grml2usb.8.txt
-	sed -i 's/^include::releasetable.txt\[\]/include::releasetable-man.txt\[\]/' grml2usb.8.txt
 	asciidoc -d manpage -b docbook grml2usb.8.txt
 	sed -i 's/<emphasis role="strong">/<emphasis role="bold">/' grml2usb.8.xml
 	xsltproc /usr/share/xml/docbook/stylesheet/nwalsh/manpages/docbook.xsl grml2usb.8.xml

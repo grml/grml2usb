@@ -3,7 +3,7 @@ grml2usb(8)
 
 Name
 ----
-grml2usb - install grml on usb device
+grml2usb - install grml ISO(s) on usb device for booting
 
 Synopsis
 --------
@@ -16,27 +16,59 @@ Important! The grml team does not take responsibility for loss of any data!
 Options
 -------
 
+  *--bootoptions=...*::
+
+Use specified bootoptions as default.
+
+  *--dry-run*::
+
+Do not actually execute any commands, instead just show what would be executed.
+
   *--fat16*::
 
-Format specified partition with FAT16.
+Format specified partition with FAT16. **Important:** this will defstroy any existing
+data on the specified partition!
+
+  *--force*::
+
+Force any actions requiring manual interaction (like --fat16, --mbr).
 
   *--grub*::
 
 Install grub bootloader instead of syslinux.
 
+  *--help*::
+
+Display usage information and exit.
+
+  *--initrd=...*::
+
+Install specified initrd instead of the default. You might want to specify
+option *--kernel* as well.
+
+  *--kernel=...*::
+
+Install specified kernel instead of the default. You might want to specify
+option *--initrd* as well. (Be aware when using multiboot setup.)
+
   *--mbr*::
 
-Install master boot record (MBR) on the device.
+Install master boot record (MBR) on the device. **Important:** this will destroy any
+existing data on the device!
+
+  *--squashfs=*::
+
+Install specified squashfs file as the default.
 
   *--syslinux*::
 
 Install syslinux bootloader (default, requires FAT16 filesystem on the specified partition).
 
-  *-v*::
+  *-v*, *--version*::
 
 Return version and exit.
 
-  *-V*::
+  *--verbose*::
 
 Enable verbose mode.
 
@@ -58,34 +90,34 @@ Directory layout on usb device
     |   `-- menu.c32
     |-- release/
     |   |-- grml/
-    |       |-- linux26
-    |       |-- initrd.gz
+    |   |   |-- linux26
+    |   |   |-- initrd.gz
     |   |-- grml64
-    |       |-- linux26
-    |       |-- initrd.gz
+    |   |   |-- linux26
+    |   |   |-- initrd.gz
     |   |-- grml-medium
-    |       |-- linux26
-    |       |-- initrd.gz
+    |   |   |-- linux26
+    |   |   |-- initrd.gz
     |   |-- grml64-medium
-    |       |-- linux26
-    |       |-- initrd.gz
+    |   |   |-- linux26
+    |   |   |-- initrd.gz
     |   |-- grml-small
-    |       |-- linux26
-    |       |-- initrd.gz
-    |   |-- grml64-small
+    |   |   |-- linux26
+    |   |   |-- initrd.gz
+    |   `-- grml64-small
     |       |-- linux26
     |       |-- initrd.gz
     |-- grub/
     |   |-- menu.lst
     |   |-- splash.xpm.gz
-    |   |-- stage2_eltorito
+    |   `-- stage2_eltorito
     |-- isolinux/
     |   |-- boot.msg
     |   |-- boot-beep.msg
     |   |-- logo.16
     |   |-- isolinux-main.cfg
     |   |-- isolinux.cfg
-    |   |-- syslinux.cfg
+    |   `-- syslinux.cfg
     `-- bootsplashes/
         |-- f1
         |-- f2
@@ -105,7 +137,7 @@ Directory layout on usb device
     |-- LICENSE.txt
     |-- md5sums
     |-- README.txt
-    |-- web/
+    `-- web/
         |-- index.html
         |-- style.css
         `-- images/
@@ -131,12 +163,56 @@ Directory layout on usb device
 Usage examples
 --------------
 
-TODO
+  # grml2usb /home/grml/grml_2008.11.iso /dev/usb-sdb1
+
+Install specified ISOs on device /dev/usb-sdb1.
+
+  # grml2usb /home/grml/grml_2008.11.iso /home/grml/grml_small_2008.11.iso /dev/usb-sdb1
+
+Install specified ISOs on device /dev/usb-sdb1 for multibooting ISOs.
+Note: boot "grml" as usual, for booting grml-small use "grml-small on the
+bootprompt, for grml64 use "grml64" and so on...
+
+  # grml2usb --fat16 --mbr /home/grml/grml_2008.11.iso /dev/usb-sdb1
+
+Install specified ISO on device /dev/usb-sdb1, install MBR on /dev/usb-sdb and
+format partition /dev/usb-sdb1 with FAT16 filesystem.
+
+  # grml2usb --grub /home/grml/grml_2008.11.iso /dev/usb-sdb1
+
+Install specified ISO on device /dev/usb-sdb1 and use Grub as bootloader
+(instead of syslinux being the default).
+
+  # grml2usb --kernel=/boot/vmlinuz-2.6.28-grml --initrd=/boot/initrd.img-2.6.28-grml \
+             /home/grml/grml_2008.11.iso /dev/usb-sdb1
+
+Install specified ISO on device /dev/usb-sdb1 but use given kernel and initrd
+instead of the ones provided by the ISO.
+
+  # grml2usb --squashfs=/grml/grml-live/grml_cd/live/grml.squashfs \
+             /home/grml/grml_2008.11.iso /dev/usb-sdb1
+
+Install specified ISO on device /dev/usb-sdb1 but use given squashfs
+file instead of the one provided by the ISO.
+
+  # grml2usb --bootoptions="lang=de ssh=mysecret" grml_2008.11.iso /dev/usb-sdb1
+
+Install specified ISO on device /dev/usb-sdb1 and use "lang=de ssh=mysecret" as
+default bootoptions.
 
 Bugs
 ----
-Please report feedback, link:http://grml.org/bugs/[bugreports] and wishes link:http://grml.org/contact/[to us]!
+Please report feedback, link:http://grml.org/bugs/[bugreports] and wishes link:http://grml.org/contact/[to the grml-team].
 
 Author
 ------
 Michael Prokop <mika@grml.org>
+
+/////////////////////////////////////////////////////////////////
+http://git.grml.org/?p=grml2usb.git
+http://wiki.grml.org/doku.php?id=tips#multiboot_usb_pen
+http://www.startx.ro/sugar/isotostick.sh
+https://help.ubuntu.com/community/Installation/FromUSBStick
+http://unetbootin.sourceforge.net/
+http://www.tux.org/pub/people/kent-robotti/looplinux/rip/mkusb.sh
+/////////////////////////////////////////////////////////////////
