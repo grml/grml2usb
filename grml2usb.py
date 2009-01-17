@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # Filename:      grml2usb
-# Purpose:       install grml-system to usb-device
+# Purpose:       install grml system to usb device
 # Authors:       grml-team (grml.org), (c) Michael Prokop <mika@grml.org>
 # Bug-Reports:   see http://grml.org/bugs/
 # License:       This file is licensed under the GPL v2 or any later version.
@@ -10,11 +10,17 @@
 # * write error messages to stderr
 # * log wrapper (log important messages to syslog, depending on loglevel)
 # * trap handling (umount devices when interrupting?)
+# * integrate https://www.mirbsd.org/cvs.cgi/src/sys/arch/i386/stand/mbr/mbr.S?rev=HEAD;content-type=text%2Fplain
+#   -> gcc -D_ASM_SOURCE  -D__BOOT_VER=\"GRML\" -DBOOTMANAGER -c mbr.S; ld
+#      -nostdlib -Ttext 0 -N -Bstatic --oformat binary mbr.o -o mbrmgr
 
 prog_version = "0.0.1"
 
 import os, re, subprocess, sys
 from optparse import OptionParser
+from os.path import exists, join, abspath
+from os import pathsep
+from string import split
 
 # cmdline parsing {{{
 usage = "Usage: %prog [options] <ISO[s]> <partition>\n\
@@ -79,6 +85,21 @@ def which(program):
                 return exe_file
 
     return None
+
+def search_file(filename, search_path):
+   """Given a search path, find file"""
+   file_found = 0
+   paths = split(search_path, pathsep)
+   for path in paths:
+       for current_dir, directories, files in os.walk(path):
+           if exists(join(current_dir, filename)):
+              file_found = 1
+              break
+   if file_found:
+      return abspath(join(current_dir, filename))
+   else:
+      return None
+
 # }}}
 
 
@@ -164,22 +185,26 @@ def main():
     device = args[len(args) - 1]
     isos = args[0:len(args) - 1]
 
-    if not which("syslinux2"):
+    if not which("syslinux"):
         print("Sorry, syslinux not available. Exiting.")
         print("Please install syslinux or consider using the --grub option.")
         sys.exit(1)
-    
+
     # TODO check for valid blockdevice, vfat and mount functions
     # if device is not None:
         # check_for_vat(device)
         # mount_target(partition)
 
-    # TODO it doesn't need to be a ISO, could be /live/image as well!
+    # TODO it doesn't need to be a ISO, could be /live/image as well
     for iso in isos:
         print("iso = %s") % iso
         # loopback_mount(iso)
         # copy_grml_files(iso, target)
         # loopback_unmount(iso)
+
+    search_path = '/bin' + pathsep + '/usr/bin'
+    find_file = search_file('grml-medium.squashfs', '/mnt/test')
+    print("find_file = %s") % find_file
 
     if options.mbr:
         print("would install MBR now")
