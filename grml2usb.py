@@ -86,7 +86,7 @@ def which(program):
 
     return None
 
-def search_file(filename, search_path):
+def search_file(filename, search_path='/bin' + pathsep + '/usr/bin'):
    """Given a search path, find file"""
    file_found = 0
    paths = split(search_path, pathsep)
@@ -99,7 +99,6 @@ def search_file(filename, search_path):
       return abspath(join(current_dir, filename))
    else:
       return None
-
 # }}}
 
 
@@ -111,7 +110,7 @@ def check_uid_root():
 
 def install_syslinux(device):
     """Install syslinux on specified device."""
-    print("syslinux %s") % device
+    print("debug: syslinux %s") % device
 
 
 def install_grub(device):
@@ -163,13 +162,42 @@ def check_for_vat(partition):
         print("Sorry, /lib/udev/vol_id not available.")
         return 1
 
-def copy_grml_files(target):
+def copy_grml_files(grml_flavour, iso_mount, target):
     """Copy files from ISO on given target"""
-    print("TODO")
+
+    # TODO: provide alternative search_file() if file information is stored in
+    # a config.ini file?
+    squashfs = search_file(grml_flavour + '.squashfs', iso_mount)
+    print("debug: copy squashfs to %s") % target + '/live/' + grml_flavour + '.squashfs'
+
+    filesystem_module = search_file('filesystem.module', iso_mount)
+    print("debug: copy filesystem.module to %s") % target + '/live/' + grml_flavour + '.module'
+
+    kernel = search_file('linux26', iso_mount)
+    print("debug: copy kernel to %s") % target + '/boot/release/' + grml_flavour + '/linux26'
+
+    initrd = search_file('initrd.gz', iso_mount)
+    print("debug: copy initrd to %s") % target + '/boot/release/' + grml_flavour + '/initrd.gz'
+
+    logo = search_file('logo.16', iso_mount)
+    print("debug: copy logo.16 to %s") % target + '/boot/isolinux/' + 'logo.16'
+
+    for file in 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10':
+        bootsplash = search_file(file, iso_mount)
+        print("debug: copy %s to %s") % (bootsplash, target + '/boot/isolinux/' + file)
 
 
 def uninstall_files(device):
     print("TODO")
+
+
+def identify_grml_flavour(mountpath):
+    version_file = search_file('grml-version', mountpath)
+    file = open(version_file, 'r')
+    grml_info = file.readline()
+    file.close
+    grml_flavour = re.match(r'[\w-]*', grml_info).group()
+    return grml_flavour
 
 
 def main():
@@ -195,19 +223,26 @@ def main():
         # check_for_vat(device)
         # mount_target(partition)
 
+    target = '/mnt/target'
+
     # TODO it doesn't need to be a ISO, could be /live/image as well
     for iso in isos:
-        print("iso = %s") % iso
+        print("debug: iso = %s") % iso
         # loopback_mount(iso)
         # copy_grml_files(iso, target)
         # loopback_unmount(iso)
+        iso_mount = '/mnt/test' # FIXME
 
-    search_path = '/bin' + pathsep + '/usr/bin'
-    find_file = search_file('grml-medium.squashfs', '/mnt/test')
-    print("find_file = %s") % find_file
+        grml_flavour = identify_grml_flavour(iso_mount)
+        print("debug: grml_flavour = %s") % grml_flavour
+
+        grml_flavour_short = grml_flavour.replace('-','')
+        print("debug: grml_flavour_short = %s") % grml_flavour_short
+
+        copy_grml_files(grml_flavour, iso_mount, target)
 
     if options.mbr:
-        print("would install MBR now")
+        print("debug: would install MBR now")
 
     install_bootloader(device)
 
@@ -215,4 +250,4 @@ if __name__ == "__main__":
     main()
 
 ## END OF FILE #################################################################
-# vim:foldmethod=marker expandtab ai ft=python
+# vim:foldmethod=marker expandtab ai ft=python tw=120

@@ -115,14 +115,9 @@ Directory layout on usb device
     |   |-- menu.lst
     |   |-- splash.xpm.gz
     |   `-- stage2_eltorito
-    |-- isolinux/
-    |   |-- boot.msg
-    |   |-- boot-beep.msg
-    |   |-- logo.16
-    |   |-- isolinux-main.cfg
-    |   |-- isolinux.cfg
-    |   `-- syslinux.cfg
-    `-- bootsplashes/
+    `-- isolinux/
+        |-- boot.msg
+        |-- boot-beep.msg
         |-- f1
         |-- f2
         |-- f3
@@ -132,7 +127,11 @@ Directory layout on usb device
         |-- f7
         |-- f8
         |-- f9
-        `-- f10
+        |-- f10
+        |-- logo.16
+        |-- isolinux-main.cfg
+        |-- isolinux.cfg
+        `-- syslinux.cfg
 
   grml/
     |-- grml2usb.txt
