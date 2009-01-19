@@ -10,8 +10,10 @@
 # * strongly improve error handling :)
 # * implement mount handling
 # * write error messages to stderr
-# * log wrapper (log important messages to syslog, depending on loglevel)
+# * log wrapper (log important messages to syslog, depending on loglevel -> logging module)
 # * trap handling (umount devices when interrupting?)
+# * provide progress bar?
+# * graphical version?
 # * integrate https://www.mirbsd.org/cvs.cgi/src/sys/arch/i386/stand/mbr/mbr.S?rev=HEAD;content-type=text%2Fplain ?
 #   -> gcc -D_ASM_SOURCE  -D__BOOT_VER=\"GRML\" -DBOOTMANAGER -c mbr.S; ld
 #      -nostdlib -Ttext 0 -N -Bstatic --oformat binary mbr.o -o mbrmgr
@@ -57,8 +59,6 @@ parser.add_option("--verbose", dest="verbose", action="store_true",
                   help="enable verbose mode")
 parser.add_option("-v", "--version", dest="version", action="store_true",
                   help="display version and exit")
-
-(options, args) = parser.parse_args()
 # }}}
 
 # wrapper functions {{{
@@ -70,6 +70,7 @@ def execute(command):
     if options.dryrun:
         print "would execute %s now" % command
     else:
+        # TODO: actual execution ;)
         print "executing %s" % command
 
 def which(program):
@@ -112,7 +113,7 @@ def check_uid_root():
 
 def install_syslinux(device):
     """Install syslinux on specified device."""
-    print("debug: syslinux %s") % device
+    print("debug: syslinux %s [TODO]") % device
 
 
 def generate_grub_config(grml_flavour):
@@ -216,7 +217,7 @@ def install_mbr(target):
     # Command logic (all executed *without* mounted device):
     # lilo -S /dev/null -M /dev/usb-sdb ext
     # lilo -S /dev/null -A /dev/usb-sdb 1
-    # cat ./mbr.bin > /dev/usb-sdb
+    # cat /usr/lib/syslinux/mbr.bin > /dev/usb-sdb
     # syslinux -d boot/isolinux /dev/usb-sdb1
 
 def loopback_mount(iso, target):
@@ -262,7 +263,6 @@ def copy_grml_files(grml_flavour, iso_mount, target):
     # * provide alternative search_file() if file information is stored in a config.ini file?
     # * catch "install: .. No space left on device" & CO
     # * abstract copy logic to make the code shorter?
-    # * provide progress bar?
 
     squashfs = search_file(grml_flavour + '.squashfs', iso_mount)
     squashfs_target = target + '/live/'
@@ -345,6 +345,8 @@ def identify_grml_flavour(mountpath):
 
 
 def main():
+    (options, args) = parser.parse_args()
+
     if options.version:
         print("%s %s")% (os.path.basename(sys.argv[0]), prog_version)
         sys.exit(0)
