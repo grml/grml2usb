@@ -7,10 +7,12 @@
 ################################################################################
 
 # TODO:
+# * strongly improve error handling :)
+# * implement mount handling
 # * write error messages to stderr
 # * log wrapper (log important messages to syslog, depending on loglevel)
 # * trap handling (umount devices when interrupting?)
-# * integrate https://www.mirbsd.org/cvs.cgi/src/sys/arch/i386/stand/mbr/mbr.S?rev=HEAD;content-type=text%2Fplain
+# * integrate https://www.mirbsd.org/cvs.cgi/src/sys/arch/i386/stand/mbr/mbr.S?rev=HEAD;content-type=text%2Fplain ?
 #   -> gcc -D_ASM_SOURCE  -D__BOOT_VER=\"GRML\" -DBOOTMANAGER -c mbr.S; ld
 #      -nostdlib -Ttext 0 -N -Bstatic --oformat binary mbr.o -o mbrmgr
 
@@ -113,6 +115,81 @@ def install_syslinux(device):
     print("debug: syslinux %s") % device
 
 
+def generate_grub_config(grml_flavour):
+    """Generate grub configuration for use via menu,lst"""
+
+    # TODO:
+    # * what about system using grub2 without having grub available?
+    # * support grub2
+
+    grml_name = grml_flavour
+
+    return("""\
+# misc options:
+timeout 30
+# color red/blue green/black
+splashimage=/boot/grub/splash.xpm.gz
+foreground  = 000000
+background  = FFCC33
+
+# define entries:
+title %(grml_name)s  - Default boot (using 1024x768 framebuffer)
+kernel /boot/release/%(grml_name)s/linux26 apm=power-off lang=us vga=791 quiet boot=live nomce module=%(grml_name)s
+initrd /boot/release/%(grml_name)s/initrd.gz
+
+# TODO: extend configuration :)
+""" % locals())
+
+
+def generate_isolinux_splash(grml_flavour):
+    """Generate bootsplash for isolinux/syslinux"""
+
+    # TODO:
+    # * adjust last bootsplash line
+
+    grml_name = grml_flavour
+
+    return("""\
+17/boot/isolinux/logo.16
+
+Some information and boot options available via keys F2 - F10. http://grml.org/
+%(grml_name)s
+""" % locals())
+
+def generate_syslinux_config(grml_flavour):
+    """Generate configuration for use in syslinux.cfg"""
+
+    # TODO:
+    # * unify isolinux and syslinux setup ("INCLUDE /boot/...")
+
+    grml_name = grml_flavour
+
+    return("""\
+# use this to control the bootup via a serial port
+# SERIAL 0 9600
+DEFAULT grml
+TIMEOUT 300
+PROMPT 1
+DISPLAY /boot/isolinux/boot.msg
+F1 /boot/isolinux/boot.msg
+F2 /boot/isolinux/f2
+F3 /boot/isolinux/f3
+F4 /boot/isolinux/f4
+F5 /boot/isolinux/f5
+F6 /boot/isolinux/f6
+F7 /boot/isolinux/f7
+F8 /boot/isolinux/f8
+F9 /boot/isolinux/f9
+F10 /boot/isolinux/f10
+
+LABEL grml
+KERNEL /boot/release/%(grml_name)s/linux26
+APPEND initrd=/boot/release/%(grml_name)s/initrd.gz apm=power-off lang=us boot=live nomce module=%(grml_name)s
+
+# TODO: extend configuration :)
+""" % locals())
+
+
 def install_grub(device):
     """Install grub on specified device."""
     print("grub-install %s") % device
@@ -136,14 +213,21 @@ def install_mbr(target):
     """Install a default master boot record on given target"""
     print("TODO")
 
+    # Command logic (all executed *without* mounted device):
+    # lilo -S /dev/null -M /dev/usb-sdb ext
+    # lilo -S /dev/null -A /dev/usb-sdb 1
+    # cat ./mbr.bin > /dev/usb-sdb
+    # syslinux -d boot/isolinux /dev/usb-sdb1
 
 def loopback_mount(iso, target):
     """Loopback mount specified ISO on given target"""
+
     print("mount -o loop %s %s") % (iso, target)
 
 
 def check_for_vat(partition):
     """Check whether specified partition is VFAT/FAT16 filesystem"""
+
     try:
         udev_info = subprocess.Popen(["/lib/udev/vol_id", "-t",
             partition],stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -156,42 +240,102 @@ def check_for_vat(partition):
         if filesystem != "vfat":
             return(1)
 
-        # TODO: check for ID_FS_VERSION=FAT16?
+        # TODO: check for ID_FS_VERSION=FAT16 as well?
 
     except OSError:
         print("Sorry, /lib/udev/vol_id not available.")
         return 1
 
+def mkdir(directory):
+    """Simple wrapper around os.makedirs to get shell mkdir -p behaviour"""
+    if not os.path.isdir(directory):
+        try:
+            os.makedirs(directory)
+        except OSError:
+            pass
+
+
 def copy_grml_files(grml_flavour, iso_mount, target):
     """Copy files from ISO on given target"""
 
-    # TODO: provide alternative search_file() if file information is stored in
-    # a config.ini file?
+    # TODO:
+    # * provide alternative search_file() if file information is stored in a config.ini file?
+    # * catch "install: .. No space left on device" & CO
+    # * abstract copy logic to make the code shorter?
+    # * provide progress bar?
+
     squashfs = search_file(grml_flavour + '.squashfs', iso_mount)
+    squashfs_target = target + '/live/'
+    mkdir(squashfs_target)
+
+    # use install(1) for now to make sure we can write the files afterwards as normal user as well
     print("debug: copy squashfs to %s") % target + '/live/' + grml_flavour + '.squashfs'
+    subprocess.Popen(["install", "--mode=664", squashfs, squashfs_target + grml_flavour + ".squashfs"])
 
     filesystem_module = search_file('filesystem.module', iso_mount)
-    print("debug: copy filesystem.module to %s") % target + '/live/' + grml_flavour + '.module'
+    print("debug: copy filesystem.module to %s") % squashfs_target + grml_flavour + '.module'
+    subprocess.Popen(["install", "--mode=664", filesystem_module, squashfs_target + grml_flavour + '.module'])
+
+    release_target = target + '/boot/release/' + grml_flavour
+    mkdir(release_target)
 
     kernel = search_file('linux26', iso_mount)
-    print("debug: copy kernel to %s") % target + '/boot/release/' + grml_flavour + '/linux26'
+    print("debug: copy kernel to %s") % release_target + '/linux26'
+    subprocess.Popen(["install", "--mode=664", kernel, release_target + '/linux26'])
 
     initrd = search_file('initrd.gz', iso_mount)
-    print("debug: copy initrd to %s") % target + '/boot/release/' + grml_flavour + '/initrd.gz'
+    print("debug: copy initrd to %s") % release_target + '/initrd.gz'
+    subprocess.Popen(["install", "--mode=664", initrd, release_target + '/initrd.gz'])
+
+    isolinux_target = target + '/boot/isolinux/'
+    mkdir(isolinux_target)
 
     logo = search_file('logo.16', iso_mount)
-    print("debug: copy logo.16 to %s") % target + '/boot/isolinux/' + 'logo.16'
+    print("debug: copy logo.16 to %s") % isolinux_target + 'logo.16'
+    subprocess.Popen(["install", "--mode=664", logo, isolinux_target + 'logo.16'])
 
     for file in 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10':
         bootsplash = search_file(file, iso_mount)
-        print("debug: copy %s to %s") % (bootsplash, target + '/boot/isolinux/' + file)
+        print("debug: copy %s to %s") % (bootsplash, isolinux_target + file)
+        subprocess.Popen(["install", "--mode=664", bootsplash, isolinux_target + file])
+
+    grub_target = target + '/boot/grub/'
+    mkdir(grub_target)
+
+    print("debug: copy grub/splash.xpm.gz to %s") % grub_target + 'splash.xpm.gz'
+    subprocess.Popen(["install", "--mode=664", 'grub/splash.xpm.gz', grub_target + 'splash.xpm.gz'])
+
+    print("debug: copy grub/stage2_eltorito to %s") % grub_target + 'stage2_eltorito'
+    subprocess.Popen(["install", "--mode=664", 'grub/stage2_eltorito', grub_target + 'stage2_eltorito'])
+
+    print("debug: generating grub configuration %s") % grub_target + 'menu.lst'
+    grub_config_file = open(grub_target + 'menu.lst', 'w')
+    grub_config_file.write(generate_grub_config(grml_flavour))
+    grub_config_file.close( )
+
+    syslinux_target = target + '/boot/isolinux/'
+    mkdir(syslinux_target)
+
+    print("debug: generating syslinux configuration %s") % syslinux_target + 'syslinux.cfg'
+    syslinux_config_file = open(syslinux_target + 'syslinux.cfg', 'w')
+    syslinux_config_file.write(generate_syslinux_config(grml_flavour))
+    syslinux_config_file.close( )
+
+    print("debug: generating isolinux/syslinux splash %s") % syslinux_target + 'boot.msg'
+    isolinux_splash = open(syslinux_target + 'boot.msg', 'w')
+    isolinux_splash.write(generate_isolinux_splash(grml_flavour))
+    isolinux_splash.close( )
 
 
 def uninstall_files(device):
+    """Get rid of all grml files on specified device"""
+
     print("TODO")
 
 
 def identify_grml_flavour(mountpath):
+    """Get name of grml flavour"""
+
     version_file = search_file('grml-version', mountpath)
     file = open(version_file, 'r')
     grml_info = file.readline()
@@ -223,7 +367,8 @@ def main():
         # check_for_vat(device)
         # mount_target(partition)
 
-    target = '/mnt/target'
+    # FIXME
+    target = '/mnt/usb-sdb1'
 
     # TODO it doesn't need to be a ISO, could be /live/image as well
     for iso in isos:
@@ -240,6 +385,7 @@ def main():
         print("debug: grml_flavour_short = %s") % grml_flavour_short
 
         copy_grml_files(grml_flavour, iso_mount, target)
+
 
     if options.mbr:
         print("debug: would install MBR now")
