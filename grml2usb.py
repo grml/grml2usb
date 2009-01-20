@@ -6,7 +6,7 @@
 # License:       This file is licensed under the GPL v2 or any later version.
 ################################################################################
 
-# TODO:
+# TODO
 # * strongly improve error handling :)
 # * implement mount handling
 # * write error messages to stderr
@@ -35,6 +35,9 @@ syslinux (just run 'aptitude install syslinux' on Debian-based systems)\n\
 and root access."
 parser = OptionParser(usage=usage)
 
+# TODO
+# * --copy-only?
+# * --bootloader-only?
 parser.add_option("--bootoptions", dest="bootoptions", action="store", type="string",
                   help="use specified bootoptions as defaut")
 parser.add_option("--dry-run", dest="dryrun", action="store_true",
@@ -59,10 +62,13 @@ parser.add_option("--verbose", dest="verbose", action="store_true",
                   help="enable verbose mode")
 parser.add_option("-v", "--version", dest="version", action="store_true",
                   help="display version and exit")
+
+(options, args) = parser.parse_args()
 # }}}
 
 # wrapper functions {{{
-# TODO: implement argument handling
+# TODO
+# * implement argument handling
 def execute(command):
     """Wrapper for executing a command. Either really executes
     the command (default) or when using --dry-run commandline option
@@ -70,13 +76,16 @@ def execute(command):
     if options.dryrun:
         print "would execute %s now" % command
     else:
-        # TODO: actual execution ;)
+        # TODO
+        # * actual execution ;)
+        # * wrap subprocess.Popen()?
         print "executing %s" % command
 
-def which(program):
-    def is_exe(fpath):
-        return os.path.exists(fpath) and os.access(fpath, os.X_OK)
+def is_exe(fpath):
+    return os.path.exists(fpath) and os.access(fpath, os.X_OK)
 
+
+def which(program):
     fpath, fname = os.path.split(program)
     if fpath:
         if is_exe(program):
@@ -88,6 +97,7 @@ def which(program):
                 return exe_file
 
     return None
+
 
 def search_file(filename, search_path='/bin' + pathsep + '/usr/bin'):
    """Given a search path, find file"""
@@ -112,14 +122,17 @@ def check_uid_root():
 
 
 def install_syslinux(device):
+    # TODO
     """Install syslinux on specified device."""
     print("debug: syslinux %s [TODO]") % device
+
+    # syslinux -d boot/isolinux /dev/usb-sdb1
 
 
 def generate_grub_config(grml_flavour):
     """Generate grub configuration for use via menu,lst"""
 
-    # TODO:
+    # TODO
     # * what about system using grub2 without having grub available?
     # * support grub2
 
@@ -145,7 +158,7 @@ initrd /boot/release/%(grml_name)s/initrd.gz
 def generate_isolinux_splash(grml_flavour):
     """Generate bootsplash for isolinux/syslinux"""
 
-    # TODO:
+    # TODO
     # * adjust last bootsplash line
 
     grml_name = grml_flavour
@@ -160,7 +173,7 @@ Some information and boot options available via keys F2 - F10. http://grml.org/
 def generate_syslinux_config(grml_flavour):
     """Generate configuration for use in syslinux.cfg"""
 
-    # TODO:
+    # TODO
     # * unify isolinux and syslinux setup ("INCLUDE /boot/...")
 
     grml_name = grml_flavour
@@ -210,15 +223,48 @@ def install_bootloader(partition):
         install_syslinux(device)
 
 
-def install_mbr(target):
-    """Install a default master boot record on given target"""
-    print("TODO")
+def isWriteable(device):
+    """Check if the device is writeable for the current user"""
 
-    # Command logic (all executed *without* mounted device):
-    # lilo -S /dev/null -M /dev/usb-sdb ext
-    # lilo -S /dev/null -A /dev/usb-sdb 1
-    # cat /usr/lib/syslinux/mbr.bin > /dev/usb-sdb
-    # syslinux -d boot/isolinux /dev/usb-sdb1
+    if not device:
+        raise "WrongArguments", "no device for checking write permissions"
+
+    if not os.path.exists(device):
+        return False
+
+    return os.access(device, os.W_OK) and os.access(device, os.R_OK)
+
+def install_mbr(device):
+    """Install a default master boot record on given device
+
+    @device: device where MBR should be installed to"""
+
+    if not isWriteable(device):
+        raise IOError, "device not writeable for user"
+
+    lilo = './lilo/lilo.static' # FIXME
+
+    if not is_exe(lilo):
+        raise Exception, "lilo executable not available."
+
+    # to support -A for extended partitions:
+    print("debug: ./lilo/lilo.static -S /dev/null -M %s ext") % device
+    subprocess.Popen(["./lilo/lilo.static", "-S", "/dev/null", "-M", device, "ext"])
+
+    # activate partition:
+    print("debug: ./lilo/lilo.static -S /dev/null -A %s 1") % device
+    subprocess.Popen(["./lilo/lilo.static", "-S", "/dev/null", "-A", device, "1"])
+
+    # lilo's mbr is broken, use the one from syslinux instead:
+    print("debug: cat /usr/lib/syslinux/mbr.bin > %s") % device
+    try:
+        # FIXME: use Popen instead?
+        retcode = subprocess.call("cat /usr/lib/syslinux/mbr.bin > "+ device, shell=True)
+        if retcode < 0:
+            print >>sys.stderr, "Error copying MBR to device", -retcode
+    except OSError, e:
+        print >>sys.stderr, "Execution failed:", e
+
 
 def loopback_mount(iso, target):
     """Loopback mount specified ISO on given target"""
@@ -241,7 +287,8 @@ def check_for_vat(partition):
         if filesystem != "vfat":
             return(1)
 
-        # TODO: check for ID_FS_VERSION=FAT16 as well?
+        # TODO
+        # * check for ID_FS_VERSION=FAT16 as well?
 
     except OSError:
         print("Sorry, /lib/udev/vol_id not available.")
@@ -259,7 +306,7 @@ def mkdir(directory):
 def copy_grml_files(grml_flavour, iso_mount, target):
     """Copy files from ISO on given target"""
 
-    # TODO:
+    # TODO
     # * provide alternative search_file() if file information is stored in a config.ini file?
     # * catch "install: .. No space left on device" & CO
     # * abstract copy logic to make the code shorter?
@@ -330,6 +377,7 @@ def copy_grml_files(grml_flavour, iso_mount, target):
 def uninstall_files(device):
     """Get rid of all grml files on specified device"""
 
+    # TODO
     print("TODO")
 
 
@@ -345,7 +393,6 @@ def identify_grml_flavour(mountpath):
 
 
 def main():
-    (options, args) = parser.parse_args()
 
     if options.version:
         print("%s %s")% (os.path.basename(sys.argv[0]), prog_version)
@@ -360,11 +407,12 @@ def main():
     isos = args[0:len(args) - 1]
 
     if not which("syslinux"):
-        print("Sorry, syslinux not available. Exiting.")
-        print("Please install syslinux or consider using the --grub option.")
+        print >> sys.stderr, 'Sorry, syslinux not available. Exiting.'
+        print >> sys.stderr, 'Please install syslinux or consider using the --grub option.'
         sys.exit(1)
 
-    # TODO check for valid blockdevice, vfat and mount functions
+    # TODO
+    # * check for valid blockdevice, vfat and mount functions
     # if device is not None:
         # check_for_vat(device)
         # mount_target(partition)
@@ -372,7 +420,8 @@ def main():
     # FIXME
     target = '/mnt/usb-sdb1'
 
-    # TODO it doesn't need to be a ISO, could be /live/image as well
+    # TODO
+    # * it doesn't need to be a ISO, could be /live/image as well
     for iso in isos:
         print("debug: iso = %s") % iso
         # loopback_mount(iso)
@@ -386,11 +435,21 @@ def main():
         grml_flavour_short = grml_flavour.replace('-','')
         print("debug: grml_flavour_short = %s") % grml_flavour_short
 
-        copy_grml_files(grml_flavour, iso_mount, target)
-
+        # copy_grml_files(grml_flavour, iso_mount, target)
 
     if options.mbr:
-        print("debug: would install MBR now")
+        # make sure we install MBR on /dev/sdX and not /dev/sdX#
+        if device[-1:].isdigit():
+            device = re.match(r'(.*?)\d*$', device).group(1)
+
+        try:
+            install_mbr(device)
+        except IOError, e:
+            print >>sys.stderr, "Execution failed:", e
+            sys.exit(1)
+        except Exception, e:
+            print >>sys.stderr, "Execution failed:", e
+            sys.exit(1)
 
     install_bootloader(device)
 
