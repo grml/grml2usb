@@ -1,44 +1,52 @@
 #!/usr/bin/env python
-# Filename:      grml2usb
-# Purpose:       install grml system to usb device
-# Authors:       grml-team (grml.org), (c) Michael Prokop <mika@grml.org>
-# Bug-Reports:   see http://grml.org/bugs/
-# License:       This file is licensed under the GPL v2 or any later version.
-################################################################################
+# -*- coding: utf-8 -*-
+"""
+grml2usb
+~~~~~~~~
 
-# TODO
-# * strongly improve error handling :)
-# * implement mount handling
-# * write error messages to stderr
-# * log wrapper (log important messages to syslog, depending on loglevel -> logging module)
-# * trap handling (umount devices when interrupting?)
-# * provide progress bar?
-# * graphical version?
-# * integrate https://www.mirbsd.org/cvs.cgi/src/sys/arch/i386/stand/mbr/mbr.S?rev=HEAD;content-type=text%2Fplain ?
-#   -> gcc -D_ASM_SOURCE  -D__BOOT_VER=\"GRML\" -DBOOTMANAGER -c mbr.S; ld
-#      -nostdlib -Ttext 0 -N -Bstatic --oformat binary mbr.o -o mbrmgr
+This script installs a grml system to a USB device
 
-prog_version = "0.0.1"
+:copyright: (c) 2009 by Michael Prokop <mika@grml.org>
+:license: GPL v2 or any later version
+:bugreports: http://grml.org/bugs/
 
-import os, re, subprocess, sys
+TODO
+----
+
+* improve error handling :)
+* implement mount handling
+* log wrapper (-> logging module)
+* implement logic for storing information about copied files
+  -> register every single file?
+* trap handling (like unmount devices when interrupting?)
+* get rid of all TODOs in code :)
+* graphical version
+"""
+
+import os, re, subprocess, sys, tempfile
 from optparse import OptionParser
 from os.path import exists, join, abspath
 from os import pathsep
+# TODO string.split() is deprecated - replace?
+#      -> http://docs.python.org/library/string.html#deprecated-string-functions
 from string import split
 
-# cmdline parsing {{{
+PROG_VERSION = "0.0.1"
+
+# cmdline parsing
+# TODO
+# * --copy-only?
+# * --bootloader-only?
 usage = "Usage: %prog [options] <ISO[s]> <partition>\n\
 \n\
 %prog installs a grml ISO to an USB device to be able to boot from it.\n\
 Make sure you have at least a grml ISO or a running grml system,\n\
 syslinux (just run 'aptitude install syslinux' on Debian-based systems)\n\
 and root access."
-parser = OptionParser(usage=usage)
 
-# TODO
-# * --copy-only?
-# * --bootloader-only?
-parser.add_option("--bootoptions", dest="bootoptions", action="store", type="string",
+parser = OptionParser(usage=usage)
+parser.add_option("--bootoptions", dest="bootoptions",
+                  action="store", type="string",
                   help="use specified bootoptions as defaut")
 parser.add_option("--dry-run", dest="dryrun", action="store_true",
                   help="do not actually execute any commands")
@@ -62,30 +70,32 @@ parser.add_option("--verbose", dest="verbose", action="store_true",
                   help="enable verbose mode")
 parser.add_option("-v", "--version", dest="version", action="store_true",
                   help="display version and exit")
-
 (options, args) = parser.parse_args()
-# }}}
 
-# wrapper functions {{{
-# TODO
-# * implement argument handling
-def execute(command):
+
+def execute(f, *args):
     """Wrapper for executing a command. Either really executes
     the command (default) or when using --dry-run commandline option
     just displays what would be executed."""
+    # demo: execute(subprocess.Popen, (["ls", "-la"]))
     if options.dryrun:
-        print "would execute %s now" % command
+        print "would execute %s(%s) now" % (f, args)
     else:
-        # TODO
-        # * actual execution ;)
-        # * wrap subprocess.Popen()?
-        print "executing %s" % command
+        return f(*args)
+
 
 def is_exe(fpath):
+    """Check whether a given file can be executed
+
+    @fpath: full path to file
+    @return:"""
     return os.path.exists(fpath) and os.access(fpath, os.X_OK)
 
 
 def which(program):
+    """Check whether a given program is available in PATH
+
+    @program: name of executable"""
     fpath, fname = os.path.split(program)
     if fpath:
         if is_exe(program):
@@ -100,19 +110,18 @@ def which(program):
 
 
 def search_file(filename, search_path='/bin' + pathsep + '/usr/bin'):
-   """Given a search path, find file"""
-   file_found = 0
-   paths = split(search_path, pathsep)
-   for path in paths:
-       for current_dir, directories, files in os.walk(path):
-           if exists(join(current_dir, filename)):
-              file_found = 1
-              break
-   if file_found:
-      return abspath(join(current_dir, filename))
-   else:
-      return None
-# }}}
+    """Given a search path, find file"""
+    file_found = 0
+    paths = split(search_path, pathsep)
+    for path in paths:
+        for current_dir, directories, files in os.walk(path):
+            if exists(join(current_dir, filename)):
+                file_found = 1
+                break
+    if file_found:
+        return abspath(join(current_dir, filename))
+    else:
+        return None
 
 
 def check_uid_root():
@@ -211,7 +220,8 @@ def install_grub(device):
 
 def install_bootloader(partition):
     """Install bootloader on device."""
-    # Install bootloader on the device (/dev/sda), not on the partition itself (/dev/sda1)
+    # Install bootloader on the device (/dev/sda),
+    # not on the partition itself (/dev/sda1)
     if partition[-1:].isdigit():
         device = re.match(r'(.*?)\d*$', partition).group(1)
     else:
@@ -223,11 +233,12 @@ def install_bootloader(partition):
         install_syslinux(device)
 
 
-def isWriteable(device):
+def is_writeable(device):
     """Check if the device is writeable for the current user"""
 
     if not device:
-        raise "WrongArguments", "no device for checking write permissions"
+        return False
+        #raise Exception, "no device for checking write permissions"
 
     if not os.path.exists(device):
         return False
@@ -239,7 +250,7 @@ def install_mbr(device):
 
     @device: device where MBR should be installed to"""
 
-    if not isWriteable(device):
+    if not is_writeable(device):
         raise IOError, "device not writeable for user"
 
     lilo = './lilo/lilo.static' # FIXME
@@ -249,31 +260,42 @@ def install_mbr(device):
 
     # to support -A for extended partitions:
     print("debug: ./lilo/lilo.static -S /dev/null -M %s ext") % device
-    subprocess.Popen(["./lilo/lilo.static", "-S", "/dev/null", "-M", device, "ext"])
+    proc = subprocess.Popen(["./lilo/lilo.static", "-S", "/dev/null", "-M", device, "ext"])
+    proc.wait()
+    if proc.returncode != 0:
+        raise Exception, "error executing lilo"
 
     # activate partition:
     print("debug: ./lilo/lilo.static -S /dev/null -A %s 1") % device
-    subprocess.Popen(["./lilo/lilo.static", "-S", "/dev/null", "-A", device, "1"])
+    proc = subprocess.Popen(["./lilo/lilo.static", "-S", "/dev/null", "-A", device, "1"])
+    proc.wait()
+    if proc.returncode != 0:
+        raise Exception, "error executing lilo"
 
     # lilo's mbr is broken, use the one from syslinux instead:
     print("debug: cat /usr/lib/syslinux/mbr.bin > %s") % device
     try:
-        # FIXME: use Popen instead?
+        # TODO use Popen instead?
         retcode = subprocess.call("cat /usr/lib/syslinux/mbr.bin > "+ device, shell=True)
         if retcode < 0:
-            print >>sys.stderr, "Error copying MBR to device", -retcode
-    except OSError, e:
-        print >>sys.stderr, "Execution failed:", e
+            print >> sys.stderr, "Error copying MBR to device", -retcode
+    except OSError, error:
+        print >> sys.stderr, "Execution failed:", error
 
 
 def loopback_mount(iso, target):
-    """Loopback mount specified ISO on given target"""
+    """Loopback mount specified ISO on given target
+
+    @iso: name of ISO that should be mounted
+    @target: directory where the ISO should be mounted to"""
 
     print("mount -o loop %s %s") % (iso, target)
 
 
 def check_for_vat(partition):
-    """Check whether specified partition is VFAT/FAT16 filesystem"""
+    """Check whether specified partition is a valid VFAT/FAT16 filesystem
+
+    @partition: device name of partition"""
 
     try:
         udev_info = subprocess.Popen(["/lib/udev/vol_id", "-t",
@@ -296,10 +318,12 @@ def check_for_vat(partition):
 
 def mkdir(directory):
     """Simple wrapper around os.makedirs to get shell mkdir -p behaviour"""
+
     if not os.path.isdir(directory):
         try:
             os.makedirs(directory)
         except OSError:
+            # just silently pass as it's just fine it the directory exists
             pass
 
 
@@ -341,10 +365,10 @@ def copy_grml_files(grml_flavour, iso_mount, target):
     print("debug: copy logo.16 to %s") % isolinux_target + 'logo.16'
     subprocess.Popen(["install", "--mode=664", logo, isolinux_target + 'logo.16'])
 
-    for file in 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10':
-        bootsplash = search_file(file, iso_mount)
-        print("debug: copy %s to %s") % (bootsplash, isolinux_target + file)
-        subprocess.Popen(["install", "--mode=664", bootsplash, isolinux_target + file])
+    for ffile in 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10':
+        bootsplash = search_file(ffile, iso_mount)
+        print("debug: copy %s to %s") % (bootsplash, isolinux_target + ffile)
+        subprocess.Popen(["install", "--mode=664", bootsplash, isolinux_target + ffile])
 
     grub_target = target + '/boot/grub/'
     mkdir(grub_target)
@@ -378,24 +402,30 @@ def uninstall_files(device):
     """Get rid of all grml files on specified device"""
 
     # TODO
-    print("TODO")
+    print("TODO: %s") % device
 
 
 def identify_grml_flavour(mountpath):
-    """Get name of grml flavour"""
+    """Get name of grml flavour
+
+    @mountpath: path where the grml ISO is mounted to
+    @return: name of grml-flavour"""
 
     version_file = search_file('grml-version', mountpath)
-    file = open(version_file, 'r')
-    grml_info = file.readline()
-    file.close
+
+    tmpfile = open(version_file, 'r')
+    grml_info = tmpfile.readline()
+    #tmpfile.close # pylint: Statement seems to have no effect
+
     grml_flavour = re.match(r'[\w-]*', grml_info).group()
     return grml_flavour
 
 
 def main():
+    """Main function [make pylint happy :)]"""
 
     if options.version:
-        print("%s %s")% (os.path.basename(sys.argv[0]), prog_version)
+        print("%s %s")% (os.path.basename(sys.argv[0]), PROG_VERSION)
         sys.exit(0)
 
     if len(args) < 2:
@@ -417,17 +447,20 @@ def main():
         # check_for_vat(device)
         # mount_target(partition)
 
-    # FIXME
-    target = '/mnt/usb-sdb1'
+    # TODO
+    # target = '/mnt/usb-sdb1'
+    target = tempfile.mkdtemp()
+    print("debug: target = %s") % target
 
     # TODO
     # * it doesn't need to be a ISO, could be /live/image as well
     for iso in isos:
         print("debug: iso = %s") % iso
         # loopback_mount(iso)
+        iso_mount = '/mnt/test' # FIXME
+        loopback_mount(iso, target) # FIXME s/target/iso_mount/
         # copy_grml_files(iso, target)
         # loopback_unmount(iso)
-        iso_mount = '/mnt/test' # FIXME
 
         grml_flavour = identify_grml_flavour(iso_mount)
         print("debug: grml_flavour = %s") % grml_flavour
@@ -435,6 +468,7 @@ def main():
         grml_flavour_short = grml_flavour.replace('-','')
         print("debug: grml_flavour_short = %s") % grml_flavour_short
 
+        # TODO - re-enable :)
         # copy_grml_files(grml_flavour, iso_mount, target)
 
     if options.mbr:
@@ -444,17 +478,20 @@ def main():
 
         try:
             install_mbr(device)
-        except IOError, e:
-            print >>sys.stderr, "Execution failed:", e
+        except IOError, error:
+            print >> sys.stderr, "Execution failed:", error
             sys.exit(1)
-        except Exception, e:
-            print >>sys.stderr, "Execution failed:", e
+        except Exception, error:
+            print >> sys.stderr, "Execution failed:", error
             sys.exit(1)
 
     install_bootloader(device)
+
+    if os.path.isdir(target):
+        os.rmdir(target)
 
 if __name__ == "__main__":
     main()
 
 ## END OF FILE #################################################################
-# vim:foldmethod=marker expandtab ai ft=python tw=120
+# vim:foldmethod=marker expandtab ai ft=python tw=120 fileencoding=utf-8

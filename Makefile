@@ -30,3 +30,9 @@ online: all
 
 clean:
 	rm -rf grml2usb.8.html grml2usb.8.xml grml2usb.8 html-stamp man-stamp
+
+codecheck:
+	pylint --reports=n --include-ids=y ./grml2usb.py
+
+#graph:
+#	pycallgraph ./grml2usb.py TODO
