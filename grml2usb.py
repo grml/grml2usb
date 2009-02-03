@@ -13,6 +13,11 @@ This script installs a grml system (running system / ISO(s) to a USB device
 TODO
 ----
 
+* detect old grml2usb usage and inform user about it and exit then
+  -> rename grml2usb.py to grml2usb then
+* handling of bootloader configuration for multiple ISOs
+* verify that the specified device is really USB (/dev/usb-sd* -> /sys/devices/*/removable_)
+* validate partition schema? bootable flag
 * implement missing options (--kernel, --initrd, --uninstall,...)
 * improve error handling :)
 * get rid of "if not dry_run" inside code/functions
@@ -33,6 +38,8 @@ from inspect import isroutine, isclass
 import logging
 
 PROG_VERSION = "0.0.1"
+
+skip_mbr = False # By default we don't want to skip it; TODO - can we get rid of that?
 
 # cmdline parsing
 usage = "Usage: %prog [options] <[ISO[s] | /live/image]> </dev/ice>\n\
@@ -64,6 +71,8 @@ parser.add_option("--kernel", dest="kernel", action="store", type="string",
                   help="install specified kernel instead of the default")
 parser.add_option("--mbr", dest="mbr", action="store_true",
                   help="install master boot record (MBR) on the device")
+parser.add_option("--mountpath", dest="mountpath", action="store_true",
+                  help="install system to specified mount path")
 parser.add_option("--quiet", dest="quiet", action="store_true",
                   help="do not output anything than errors on console")
 parser.add_option("--squashfs", dest="squashfs", action="store", type="string",
@@ -299,28 +308,30 @@ def install_mbr(device, dry_run=False):
             logging.critical("Execution failed:", error)
 
 
-def mount(source, target, options, dry_run=False):
+def mount(source, target, options):
     """Mount specified source on given target
 
     @source: name of device/ISO that should be mounted
     @target: directory where the ISO should be mounted to
     @options: mount specific options"""
 
-    if not dry_run:
-        logging.critial("TODO: mount %s %s %s" % (options, source, target))
-    else:
-        logging.debug("TODO: mount %s %s %s" % (options, source, target))
+#   notice: dry_run does not work here, as we have to locate files, identify flavour,...
+    logging.debug("mount %s %s %s" % (options, source, target))
+    proc = subprocess.Popen(["mount"] + list(options) + [source, target])
+    proc.wait()
+    if proc.returncode != 0:
+        raise Exception, "Error executing mount"
 
-
-def unmount(directory, dry_run=False):
+def unmount(directory):
     """Unmount specified directory
 
     @directory: directory where something is mounted on and which should be unmounted"""
 
-    if not dry_run:
-        logging.info("TODO: umount %s" % directory)
-    else:
-        logging.debug("TODO: umount %s" % directory)
+    logging.debug("umount %s" % directory)
+    proc = subprocess.Popen(["umount"] + [directory])
+    proc.wait()
+    if proc.returncode != 0:
+        raise Exception, "Error executing umount"
 
 
 def check_for_vat(partition):
@@ -375,44 +386,53 @@ def copy_grml_files(grml_flavour, iso_mount, target, dry_run=False):
 
     # use install(1) for now to make sure we can write the files afterwards as normal user as well
     logging.debug("cp %s %s" % (squashfs, target + '/live/' + grml_flavour + '.squashfs'))
-    execute(subprocess.Popen, ["install", "--mode=664", squashfs, squashfs_target + grml_flavour + ".squashfs"])
+    proc = execute(subprocess.Popen, ["install", "--mode=664", squashfs, squashfs_target + grml_flavour + ".squashfs"])
+    proc.wait()
 
     filesystem_module = search_file('filesystem.module', iso_mount)
     logging.debug("cp %s %s" % (filesystem_module, squashfs_target + grml_flavour + '.module'))
-    execute(subprocess.Popen, ["install", "--mode=664", filesystem_module, squashfs_target + grml_flavour + '.module'])
+    proc = execute(subprocess.Popen, ["install", "--mode=664", filesystem_module, squashfs_target + grml_flavour + '.module'])
+    proc.wait()
 
     release_target = target + '/boot/release/' + grml_flavour
     execute(mkdir, release_target)
 
     kernel = search_file('linux26', iso_mount)
     logging.debug("cp %s %s" % (kernel, release_target + '/linux26'))
-    execute(subprocess.Popen, ["install", "--mode=664", kernel, release_target + '/linux26'])
+    proc = execute(subprocess.Popen, ["install", "--mode=664", kernel, release_target + '/linux26'])
+    proc.wait()
 
     initrd = search_file('initrd.gz', iso_mount)
     logging.debug("cp %s %s" % (initrd, release_target + '/initrd.gz'))
-    execute(subprocess.Popen, ["install", "--mode=664", initrd, release_target + '/initrd.gz'])
+    proc = execute(subprocess.Popen, ["install", "--mode=664", initrd, release_target + '/initrd.gz'])
+    proc.wait()
 
     if not options.copyonly:
         isolinux_target = target + '/boot/isolinux/'
         execute(mkdir, isolinux_target)
 
+        # FIXME - Fatal: could not identify grml flavour, sorry.
         logo = search_file('logo.16', iso_mount)
         logging.debug("cp %s %s" % logo, isolinux_target + 'logo.16')
-        execute(subprocess.Popen, ["install", "--mode=664", logo, isolinux_target + 'logo.16'])
+        proc = execute(subprocess.Popen, ["install", "--mode=664", logo, isolinux_target + 'logo.16'])
+        proc.wait()
 
         for ffile in 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10':
             bootsplash = search_file(ffile, iso_mount)
             logging.debug("cp %s %s" % (bootsplash, isolinux_target + ffile))
-            execute(subprocess.Popen, ["install", "--mode=664", bootsplash, isolinux_target + ffile])
+            proc = execute(subprocess.Popen, ["install", "--mode=664", bootsplash, isolinux_target + ffile])
+            proc.wait()
 
         grub_target = target + '/boot/grub/'
         execute(mkdir, grub_target)
 
         logging.debug("cp grub/splash.xpm.gz %s" % grub_target + 'splash.xpm.gz')
-        execute(subprocess.Popen, ["install", "--mode=664", 'grub/splash.xpm.gz', grub_target + 'splash.xpm.gz'])
+        proc = execute(subprocess.Popen, ["install", "--mode=664", 'grub/splash.xpm.gz', grub_target + 'splash.xpm.gz'])
+        proc.wait()
 
         logging.debug("cp grub/stage2_eltorito to %s" % grub_target + 'stage2_eltorito')
-        execute(subprocess.Popen, ["install", "--mode=664", 'grub/stage2_eltorito', grub_target + 'stage2_eltorito'])
+        proc = execute(subprocess.Popen, ["install", "--mode=664", 'grub/stage2_eltorito', grub_target + 'stage2_eltorito'])
+        proc.wait()
 
         logging.debug("Generating grub configuration %s" % grub_target + 'menu.lst')
         if not dry_run:
@@ -437,6 +457,10 @@ def copy_grml_files(grml_flavour, iso_mount, target, dry_run=False):
             isolinux_splash.write(generate_isolinux_splash(grml_flavour))
             isolinux_splash.close( )
 
+
+    # make sure we are sync before continuing
+    proc = subprocess.Popen(["sync"])
+    proc.wait()
 
 def uninstall_files(device):
     """Get rid of all grml files on specified device"""
@@ -478,33 +502,39 @@ def handle_iso(iso, device):
     if os.path.isdir(iso):
         logging.critical("TODO: /live/image handling not yet implemented") # TODO
     else:
-        iso_mountpoint = '/mnt/test'     # FIXME
-        # iso_mount = tempfile.mkdtemp()
-        mount(iso, iso_mountpoint, "-o loop -t iso9660", dry_run=options.dryrun)
-        # device_mountpoint = '/mnt/usb-sdb1'
-        # device_mountpoint = tempfile.mkdtemp()
-        device_mountpoint = '/dev/shm/grml2usb' # FIXME
-        mount(device, device_mountpoint, "", dry_run=options.dryrun)
+        iso_mountpoint = tempfile.mkdtemp()
+        remove_iso_mountpoint = True
+        mount(iso, iso_mountpoint, ["-o", "loop", "-t", "iso9660"])
+
+        if os.path.isdir(device):
+            logging.debug("Specified target is a directory, not mounting therefore.")
+            device_mountpoint = device
+            remove_device_mountpoint = False
+            skip_mbr = True
+
+        else:
+            device_mountpoint = tempfile.mkdtemp()
+            remove_device_mountpoint = True
+            mount(device, device_mountpoint, "")
 
         try:
             grml_flavour = identify_grml_flavour(iso_mountpoint)
             logging.info("Identified grml flavour \"%s\"." % grml_flavour)
+            copy_grml_files(grml_flavour, iso_mountpoint, device_mountpoint, dry_run=options.dryrun)
         except TypeError:
             logging.critical("Fatal: could not identify grml flavour, sorry.")
             sys.exit(1)
+        finally:
+            if os.path.isdir(iso_mountpoint) and remove_iso_mountpoint:
+                unmount(iso_mountpoint)
+                os.rmdir(iso_mountpoint)
+            if os.path.isdir(device_mountpoint) and remove_device_mountpoint:
+                unmount(device_mountpoint)
+                os.rmdir(device_mountpoint)
 
         # grml_flavour_short = grml_flavour.replace('-','')
         # logging.debug("grml_flavour_short = %s" % grml_flavour_short)
 
-        copy_grml_files(grml_flavour, iso_mountpoint, device_mountpoint, dry_run=options.dryrun)
-
-        unmount(device_mountpoint, dry_run=options.dryrun) # TODO
-        unmount(iso_mountpoint, dry_run=options.dryrun)    # TODO
-
-        #if os.path.isdir(target):
-        #    os.rmdir(target)
-        #if os.path.isdir(iso_mount):
-        #    os.rmdir(iso_mount)
 
 def main():
     """Main function [make pylint happy :)]"""
@@ -545,12 +575,10 @@ def main():
         # check_for_vat(device)
         # mount_target(partition)
 
-    # TODO
-    # * it doesn't need to be a ISO, could be /live/image as well
     for iso in isos:
         handle_iso(iso, device)
 
-    if options.mbr:
+    if options.mbr and not skip_mbr:
         # make sure we install MBR on /dev/sdX and not /dev/sdX#
         if device[-1:].isdigit():
             device = re.match(r'(.*?)\d*$', device).group(1)
@@ -572,7 +600,10 @@ def main():
     logging.info("Finished execution of grml2usb (%s). Have fun with your grml system." % PROG_VERSION)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print "TODO: handle me! :)"
 
 ## END OF FILE #################################################################
 # vim:foldmethod=marker expandtab ai ft=python tw=120 fileencoding=utf-8

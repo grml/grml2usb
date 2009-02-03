@@ -16,6 +16,16 @@ Important! The grml team does not take responsibility for loss of any data!
 Options
 -------
 
+The ISO[s] might be the path to one or multiple grml-ISOs as well as the path to
+the currently running live-system (being /live/image).
+
+The device either might be a device name like /dev/usb-sda1 or a directory. When
+specifying a device name the device is mounted automatically. When specifying a
+directory it won't be touched but instead grml2usb is assuming that you did set
+up a bootloader on your own and a bootloader won't be installed automatically.
+
+The following options are supported:
+
   *--bootoptions=...*::
 
 Use specified bootoptions as default.
@@ -53,8 +63,7 @@ option *--initrd* as well. (Be aware when using multiboot setup.)
 
   *--mbr*::
 
-Install master boot record (MBR) on the device. **Important:** this will destroy any
-existing data on the device!
+Install master boot record (MBR) on the device.
 
   *--squashfs=*::
 
