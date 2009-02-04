@@ -19,7 +19,7 @@ Options
 The ISO[s] might be the path to one or multiple grml-ISOs as well as the path to
 the currently running live-system (being /live/image).
 
-The device either might be a device name like /dev/usb-sda1 or a directory. When
+The device either might be a device name like /dev/sda1 or a directory. When
 specifying a device name the device is mounted automatically. When specifying a
 directory it won't be touched but instead grml2usb is assuming that you did set
 up a bootloader on your own and a bootloader won't be installed automatically.
@@ -124,9 +124,8 @@ Directory layout on usb device
     |   |-- menu.lst
     |   |-- splash.xpm.gz
     |   `-- stage2_eltorito
-    `-- isolinux/
+    `-- syslinux/
         |-- boot.msg
-        |-- boot-beep.msg
         |-- f1
         |-- f2
         |-- f3
@@ -138,8 +137,6 @@ Directory layout on usb device
         |-- f9
         |-- f10
         |-- logo.16
-        |-- isolinux-main.cfg
-        |-- isolinux.cfg
         `-- syslinux.cfg
 
   grml/
@@ -175,41 +172,41 @@ Directory layout on usb device
 Usage examples
 --------------
 
-  # grml2usb /home/grml/grml_2008.11.iso /dev/usb-sdb1
+  # grml2usb /home/grml/grml_2008.11.iso /dev/sdb1
 
-Install specified ISOs on device /dev/usb-sdb1.
+Install specified ISOs on device /dev/sdb1.
 
-  # grml2usb /home/grml/grml_2008.11.iso /home/grml/grml_small_2008.11.iso /dev/usb-sdb1
+  # grml2usb /home/grml/grml_2008.11.iso /home/grml/grml_small_2008.11.iso /dev/sdb1
 
-Install specified ISOs on device /dev/usb-sdb1 for multibooting ISOs.
+Install specified ISOs on device /dev/sdb1 for multibooting ISOs.
 Note: boot "grml" as usual, for booting grml-small use "grml-small on the
 bootprompt, for grml64 use "grml64" and so on...
 
-  # grml2usb --fat16 --mbr /home/grml/grml_2008.11.iso /dev/usb-sdb1
+  # grml2usb --fat16 --mbr /home/grml/grml_2008.11.iso /dev/sdb1
 
-Install specified ISO on device /dev/usb-sdb1, install MBR on /dev/usb-sdb and
-format partition /dev/usb-sdb1 with FAT16 filesystem.
+Install specified ISO on device /dev/sdb1, install MBR on /dev/sdb and
+format partition /dev/sdb1 with FAT16 filesystem.
 
-  # grml2usb --grub /home/grml/grml_2008.11.iso /dev/usb-sdb1
+  # grml2usb --grub /home/grml/grml_2008.11.iso /dev/sdb1
 
-Install specified ISO on device /dev/usb-sdb1 and use Grub as bootloader
+Install specified ISO on device /dev/sdb1 and use Grub as bootloader
 (instead of syslinux being the default).
 
   # grml2usb --kernel=/boot/vmlinuz-2.6.28-grml --initrd=/boot/initrd.img-2.6.28-grml \
-             /home/grml/grml_2008.11.iso /dev/usb-sdb1
+             /home/grml/grml_2008.11.iso /dev/sdb1
 
-Install specified ISO on device /dev/usb-sdb1 but use given kernel and initrd
+Install specified ISO on device /dev/sdb1 but use given kernel and initrd
 instead of the ones provided by the ISO.
 
   # grml2usb --squashfs=/grml/grml-live/grml_cd/live/grml.squashfs \
-             /home/grml/grml_2008.11.iso /dev/usb-sdb1
+             /home/grml/grml_2008.11.iso /dev/sdb1
 
-Install specified ISO on device /dev/usb-sdb1 but use given squashfs
+Install specified ISO on device /dev/sdb1 but use given squashfs
 file instead of the one provided by the ISO.
 
-  # grml2usb --bootoptions="lang=de ssh=mysecret" grml_2008.11.iso /dev/usb-sdb1
+  # grml2usb --bootoptions="lang=de ssh=mysecret" grml_2008.11.iso /dev/sdb1
 
-Install specified ISO on device /dev/usb-sdb1 and use "lang=de ssh=mysecret" as
+Install specified ISO on device /dev/sdb1 and use "lang=de ssh=mysecret" as
 default bootoptions.
 
 Bugs
