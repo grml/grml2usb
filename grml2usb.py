@@ -404,7 +404,11 @@ def install_mbr(device):
     if options.lilo:
         lilo = options.lilo
     else:
-        lilo = '/usr/share/grml2usb/lilo/lilo.static'
+        from platform import architecture
+        if architecture()[0] == '64bit':
+            lilo = '/usr/share/grml2usb/lilo/lilo.static.amd64'
+        else:
+            lilo = '/usr/share/grml2usb/lilo/lilo.static.i386'
 
     if not is_exe(lilo):
         raise Exception, "lilo executable can not be execute"

@@ -13,6 +13,18 @@ grml2usb [ options ] <ISO[s]> <device>
 Important! The grml team does not take responsibility for loss of any data!
 *******************************************************************************
 
+Introduction
+------------
+
+grml2usb installs grml on a given partition of your usb device and makes it
+bootable.
+
+grml2usb provides multi-iso support, meaning you can specify several grml ISOs
+on the command line at once and select the grml flavour you would like to boot
+on the bootbrompt then. Notice that the default ISO (that's when pressing just
+enter on the bootprompt or wait until the timeout matches) will be the *first*
+one specified on the grml2usb command line.
+
 Options
 -------
 
@@ -104,20 +116,11 @@ Return version and exit.
 
 Enable verbose mode.
 
-Introduction
-------------
-
-grml2usb installs grml on a given partition of your usb device and makes it
-bootable.
-
-grml2usb provides multi-iso support, meaning you can specify several grml ISOs
-on the command line at once and select the grml flavour you would like to boot
-on the bootbrompt then. Notice that the default ISO (that's when pressing just
-enter on the bootprompt or wait until the timeout matches) will be the *first*
-one specified on the grml2usb command line.
+Developers Corner
+-----------------
 
 Directory layout on usb device
-------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   boot/ ->
     |-- addons/
@@ -194,6 +197,34 @@ Directory layout on usb device
     |-- grml64-small.module
     `-- grml64-small.squashfs
 
+Grabbing the source
+~~~~~~~~~~~~~~~~~~~
+
+  git clone git://git.grml.org/grml2usb.git
+
+Developers Debugging Hints
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To play with grml2usb you can avoid using a real device via a loopback file
+setup, like:
+
+  dd if=/dev/zero of=~/loopback bs=1M count=100 # adjust size to your needs
+  losetup /dev/loop1 ~/loopback
+
+Then create according partitions either running for example:
+
+  echo -en "n\np\n1\n\n\n t \n 6\n a\n1\n w\n" | fdisk /dev/loop1
+
+or:
+
+  parted /dev/loop1 -s "mkpart primary fat16 0 -1s mkfs 1 fat16"
+
+Finally create a filesystem and execute grml2usb as needed:
+
+  mkfs.vfat /dev/loop1
+  grml2usb --bootloader-only --mbr /grml/isos/grml-small_2008.11.iso /dev/loop1
+
+
 Usage examples
 --------------
 
@@ -245,10 +276,10 @@ Author
 Michael Prokop <mika@grml.org>
 
 /////////////////////////////////////////////////////////////////
-http://git.grml.org/?p=grml2usb.git
 http://wiki.grml.org/doku.php?id=tips#multiboot_usb_pen
 http://www.startx.ro/sugar/isotostick.sh
 https://help.ubuntu.com/community/Installation/FromUSBStick
 http://unetbootin.sourceforge.net/
 http://www.tux.org/pub/people/kent-robotti/looplinux/rip/mkusb.sh
+https://fedorahosted.org/liveusb-creator/
 /////////////////////////////////////////////////////////////////
