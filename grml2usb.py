@@ -37,7 +37,7 @@ import logging
 import datetime, time
 
 # global variables
-PROG_VERSION = "0.0.1"
+PROG_VERSION = "0.9.2"
 skip_mbr = True  # hm, can we get rid of that? :)
 mounted = set()  # register mountpoints
 tmpfiles = set() # register tmpfiles

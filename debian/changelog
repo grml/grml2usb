@@ -1,3 +1,14 @@
+grml2usb (0.9.2) UNRELEASED; urgency=low
+
+  * Rewrote grml2usb from scratch (in python). New features:
+    - you no longer need to setup the device via /etc/fstab, just
+      directly invoke "grml2usb /path/to/iso /dev/sdb1"
+    - initial multi-iso support
+    - provide *several* new options like --mbr, --bootoptions=...
+      check out the manpage for all the glory details!
+
+ -- Michael Prokop <mika@grml.org>  Mon, 16 Feb 2009 23:31:53 +0100
+
 grml2usb (0.9.1) unstable; urgency=low
 
   * Fix problem with comment chars in /etc/fstab.

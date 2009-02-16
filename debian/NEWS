@@ -1,0 +1,17 @@
+grml2usb (0.9.2) UNRELEASED; urgency=low
+
+  * Please notice that grml2usb was rewritten from scratch.
+    The invocation of grml2usb changed. Instead of invoking:
+
+        # grmlusb /path/to/iso /mnt/usb-sdb1
+
+    from now on you can directly invoke it with the device, meaning:
+
+        # grmlusb /path/to/iso /dev/sdb1
+
+    The new release brings many new features (like multi-iso
+    support, several new options like --mbr, --bootoptions=...).
+    Check out the manpage for all the details.  Please let us
+    know if you explore any problems or have any questions.
+
+ -- Michael Prokop <mika@grml.org>  Mon, 16 Feb 2009 23:36:23 +0100
