@@ -15,6 +15,7 @@ build-stamp:
 	dh_testdir
 
 	# Add here commands to compile the package.
+	$(MAKE)
 	touch build-stamp
 
 clean:
@@ -23,16 +24,20 @@ clean:
 	rm -f build-stamp
 
 	# Add here commands to clean up after the build process.
+	$(MAKE) clean
 	dh_clean 
 
 install: build
 	dh_testdir
 	dh_testroot
 	dh_clean -k 
-	dh_installdirs
+	dh_installdirs usr/share/grml2usb/lilo usr/share/grml2usb/grub
 
 	# Add here commands to install the package into debian/grml2usb.
-	install -m 755 grml2usb debian/grml2usb/usr/sbin/
+	install -m 755 grml2usb             debian/grml2usb/usr/sbin/
+	install -m 755 lilo/lilo.static     debian/grml2usb/usr/share/grml2usb/lilo/lilo.static
+	install -m 644 grub/splash.xpm.gz   debian/grml2usb/usr/share/grml2usb/grub/splash.xpm.gz
+	install -m 644 grub/stage2_eltorito debian/grml2usb/usr/share/grml2usb/grub/stage2_eltorito
 
 # Build architecture-dependent files here.
 binary-arch: build install
