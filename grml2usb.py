@@ -14,16 +14,17 @@ TODO
 ----
 
 * install memtest, dos, grub,... to /boot/addons/
-* implement missing options (--kernel, --initrd, --uninstall,...)
+* copy grml files to /grml/
+* implement missing options (--grub, --kernel, --initrd, --squashfs, --uninstall)
 * code improvements:
-  - improve error handling :)
-  - get rid of all TODOs in code :)
+  - improve error handling wherever possible :)
+  - get rid of all TODOs in code
   - use 'with open("...", "w") as f: ... f.write("...")'
-  - simplify functions/code as much as possible -> audit
-* validate partition schema/layout: is the partition schema ok and the bootable flag set?
+  - simplify functions/code as much as possible (move stuff to further functions) -> audit
+* validate partition schema/layout: is the partition schema ok and the bootable flag set? (--validate?)
 * implement logic for storing information about copied files -> register every file in a set()
 * the last line in bootsplash (boot.msg) should mention all installed grml flavours
-* graphical version? :)
+* graphical version? any volunteers? :)
 """
 
 from __future__ import with_statement
@@ -53,33 +54,33 @@ and root access."
 parser = OptionParser(usage=usage)
 parser.add_option("--bootoptions", dest="bootoptions",
                   action="store", type="string",
-                  help="use specified bootoptions as defaut")
+                  help="use specified bootoptions as default")
 parser.add_option("--bootloader-only", dest="bootloaderonly", action="store_true",
-                  help="do not copy files only but just install a bootloader")
+                  help="do not copy files but just install a bootloader")
 parser.add_option("--copy-only", dest="copyonly", action="store_true",
-                  help="copy files only and do not install bootloader")
+                  help="copy files only but do not install bootloader")
 parser.add_option("--dry-run", dest="dryrun", action="store_true",
-                  help="do not actually execute any commands")
+                  help="avoid executing commands")
 parser.add_option("--fat16", dest="fat16", action="store_true",
                   help="format specified partition with FAT16")
 parser.add_option("--force", dest="force", action="store_true",
                   help="force any actions requiring manual interaction")
 parser.add_option("--grub", dest="grub", action="store_true",
-                  help="install grub bootloader instead of syslinux")
+                  help="install grub bootloader instead of syslinux [TODO]")
 parser.add_option("--initrd", dest="initrd", action="store", type="string",
-                  help="install specified initrd instead of the default")
+                  help="install specified initrd instead of the default [TODO]")
 parser.add_option("--kernel", dest="kernel", action="store", type="string",
-                  help="install specified kernel instead of the default")
+                  help="install specified kernel instead of the default [TODO]")
 parser.add_option("--lilo", dest="lilo",  action="store", type="string",
                   help="lilo executable to be used for installing MBR")
 parser.add_option("--mbr", dest="mbr", action="store_true",
                   help="install master boot record (MBR) on the device")
 parser.add_option("--quiet", dest="quiet", action="store_true",
-                  help="do not output anything than errors on console")
+                  help="do not output anything but just errors on console")
 parser.add_option("--squashfs", dest="squashfs", action="store", type="string",
-                  help="install specified squashfs file instead of the default")
+                  help="install specified squashfs file instead of the default [TODO]")
 parser.add_option("--uninstall", dest="uninstall", action="store_true",
-                  help="remove grml ISO files")
+                  help="remove grml ISO files from specified device [TODO]")
 parser.add_option("--verbose", dest="verbose", action="store_true",
                   help="enable verbose mode")
 parser.add_option("-v", "--version", dest="version", action="store_true",
@@ -576,34 +577,34 @@ def copy_grml_files(grml_flavour, iso_mount, target):
     if options.dryrun:
         logging.info("Would copy files to %s", iso_mount)
     elif not options.bootloaderonly:
-	    logging.info("Copying files. This might take a while....")
+        logging.info("Copying files. This might take a while....")
 
-	    squashfs = search_file(grml_flavour + '.squashfs', iso_mount)
-	    squashfs_target = target + '/live/'
-	    execute(mkdir, squashfs_target)
+        squashfs = search_file(grml_flavour + '.squashfs', iso_mount)
+        squashfs_target = target + '/live/'
+        execute(mkdir, squashfs_target)
 
-	    # use install(1) for now to make sure we can write the files afterwards as normal user as well
-	    logging.debug("cp %s %s" % (squashfs, target + '/live/' + grml_flavour + '.squashfs'))
-	    proc = subprocess.Popen(["install", "--mode=664", squashfs, squashfs_target + grml_flavour + ".squashfs"])
-	    proc.wait()
+        # use install(1) for now to make sure we can write the files afterwards as normal user as well
+        logging.debug("cp %s %s" % (squashfs, target + '/live/' + grml_flavour + '.squashfs'))
+        proc = subprocess.Popen(["install", "--mode=664", squashfs, squashfs_target + grml_flavour + ".squashfs"])
+        proc.wait()
 
-	    filesystem_module = search_file('filesystem.module', iso_mount)
-	    logging.debug("cp %s %s" % (filesystem_module, squashfs_target + grml_flavour + '.module'))
-	    proc = subprocess.Popen(["install", "--mode=664", filesystem_module, squashfs_target + grml_flavour + '.module'])
-	    proc.wait()
+        filesystem_module = search_file('filesystem.module', iso_mount)
+        logging.debug("cp %s %s" % (filesystem_module, squashfs_target + grml_flavour + '.module'))
+        proc = subprocess.Popen(["install", "--mode=664", filesystem_module, squashfs_target + grml_flavour + '.module'])
+        proc.wait()
 
-	    release_target = target + '/boot/release/' + grml_flavour
-	    execute(mkdir, release_target)
+        release_target = target + '/boot/release/' + grml_flavour
+        execute(mkdir, release_target)
 
-	    kernel = search_file('linux26', iso_mount)
-	    logging.debug("cp %s %s" % (kernel, release_target + '/linux26'))
-	    proc = subprocess.Popen(["install", "--mode=664", kernel, release_target + '/linux26'])
-	    proc.wait()
+        kernel = search_file('linux26', iso_mount)
+        logging.debug("cp %s %s" % (kernel, release_target + '/linux26'))
+        proc = subprocess.Popen(["install", "--mode=664", kernel, release_target + '/linux26'])
+        proc.wait()
 
-	    initrd = search_file('initrd.gz', iso_mount)
-	    logging.debug("cp %s %s" % (initrd, release_target + '/initrd.gz'))
-	    proc = subprocess.Popen(["install", "--mode=664", initrd, release_target + '/initrd.gz'])
-	    proc.wait()
+        initrd = search_file('initrd.gz', iso_mount)
+        logging.debug("cp %s %s" % (initrd, release_target + '/initrd.gz'))
+        proc = subprocess.Popen(["install", "--mode=664", initrd, release_target + '/initrd.gz'])
+        proc.wait()
 
     if not options.copyonly:
         syslinux_target = target + '/boot/syslinux/'
@@ -821,7 +822,7 @@ def main():
     isos = args[0:len(args) - 1]
 
     # make sure we can replace old grml2usb script and warn user when using old way of life:
-    if device.startswith("/mnt/external") or device.startswith("/mnt/usb"):
+    if device.startswith("/mnt/external") or device.startswith("/mnt/usb") and not options.force:
         print "Warning: the semantics of grml2usb has changed."
         print "Instead of using grml2usb /path/to/iso %s you might" % device
         print "want to use grml2usb /path/to/iso /dev/... instead."
@@ -840,10 +841,18 @@ def main():
             sys.exit(1)
 
     # make sure we have mkfs.vfat available
-    if options.fat16:
+    if options.fat16 and not options.force:
         if not which("mkfs.vfat") and not options.copyonly and not options.dryrun:
             logging.critical('Sorry, mkfs.vfat not available. Exiting.')
-            logging.critical('Please install dosfstools.')
+            logging.critical('Please make sure to install dosfstools.')
+            sys.exit(1)
+
+        # make sure the user is aware of what he is doing
+        f = raw_input("Are you sure you want to format the device with a fat16 filesystem? y/N ")
+        if f == "y" or f == "Y":
+            logging.info("Note: you can skip this question using the option --force")
+            mkfs_fat16(device)
+        else:
             sys.exit(1)
 
     # check for vfat filesystem

@@ -30,22 +30,32 @@ The following options are supported:
 
 Use specified bootoptions as default.
 
+  *--bootloader-only*::
+
+Do *not* copy files but instead just install a bootloader.
+
+  *--copy-only*::
+
+Copy files only but do *not* install a bootloader.
+
   *--dry-run*::
 
-Do not actually execute any commands, instead just show what would be executed.
+Avoid executing commands, instead show what would be executed.
+Warning: please notice that the ISO has to be mounted anyway, otherwise
+identifying the grml flavour would not be possible.
 
   *--fat16*::
 
-Format specified partition with FAT16. **Important:** this will defstroy any existing
-data on the specified partition!
+Format specified partition with FAT16.
+**Important:** this will destroy any existing data on the specified partition!
 
   *--force*::
 
-Force any actions requiring manual interaction (like --fat16, --mbr).
+Force any (possible dangerous) actions requiring manual interaction (like --fat16).
 
   *--grub*::
 
-Install grub bootloader instead of syslinux.
+Install grub bootloader instead of syslinux. [Notice: not implemented yet.]
 
   *--help*::
 
@@ -54,28 +64,37 @@ Display usage information and exit.
   *--initrd=...*::
 
 Install specified initrd instead of the default. You might want to specify
-option *--kernel* as well.
+option *--kernel* as well. (Be aware when using multiboot setup.)
+[Notice: not implemented yet.]
 
   *--kernel=...*::
 
 Install specified kernel instead of the default. You might want to specify
 option *--initrd* as well. (Be aware when using multiboot setup.)
+[Notice: not implemented yet.]
+
+  *--lilo=...*::
+
+Use specified lilo executable to for installing master boot record (MBR)
+instead of the default, being /usr/share/grml2usb/lilo/lilo.static.
 
   *--mbr*::
 
-Install master boot record (MBR) on the device.
+Install a default master boot record (MBR) on the device.
+
+  *--quiet*::
+
+Do not output anything but just errors on console.
 
   *--squashfs=*::
 
-Install specified squashfs file as the default.
-
-  *--syslinux*::
-
-Install syslinux bootloader (default, requires FAT16 filesystem on the specified partition).
+Install specified squashfs file instead of the default.
+[Notice: not implemented yet.]
 
   *--uninstall*::
 
 Uninstall grml ISO files.
+[Notice: not implemented yet.]
 
   *-v*, *--version*::
 
@@ -88,8 +107,14 @@ Enable verbose mode.
 Introduction
 ------------
 
-grml2usb installs grml on a given partition on your usb device and makes it
+grml2usb installs grml on a given partition of your usb device and makes it
 bootable.
+
+grml2usb provides multi-iso support, meaning you can specify several grml ISOs
+on the command line at once and select the grml flavour you would like to boot
+on the bootbrompt then. Notice that the default ISO (that's when pressing just
+enter on the bootprompt or wait until the timeout matches) will be the *first*
+one specified on the grml2usb command line.
 
 Directory layout on usb device
 ------------------------------
@@ -174,13 +199,15 @@ Usage examples
 
   # grml2usb /home/grml/grml_2008.11.iso /dev/sdb1
 
-Install specified ISOs on device /dev/sdb1.
+Install specified ISO on device /dev/sdb1.
 
   # grml2usb /home/grml/grml_2008.11.iso /home/grml/grml_small_2008.11.iso /dev/sdb1
 
 Install specified ISOs on device /dev/sdb1 for multibooting ISOs.
 Note: boot "grml" as usual, for booting grml-small use "grml-small on the
-bootprompt, for grml64 use "grml64" and so on...
+bootprompt, for grml64 use "grml64" and so on... The *first* specified ISO is
+the one being the default (when just pressing enter or waiting until the timeout
+is reached).
 
   # grml2usb --fat16 --mbr /home/grml/grml_2008.11.iso /dev/sdb1
 
