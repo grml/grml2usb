@@ -204,7 +204,7 @@ Directory layout on usb device
 Grabbing the source
 ~~~~~~~~~~~~~~~~~~~
 
-  git clone git://git.grml.org/grml2usb.git
+  % git clone git://git.grml.org/grml2usb.git
 
 Developers Debugging Hints
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -212,21 +212,27 @@ Developers Debugging Hints
 To play with grml2usb you can avoid using a real device via a loopback file
 setup, like:
 
-  dd if=/dev/zero of=~/loopback bs=1M count=100 # adjust size to your needs
-  losetup /dev/loop1 ~/loopback
+  # dd if=/dev/zero of=~/loopback bs=1M count=100 # adjust size to your needs
+  # losetup /dev/loop1 ~/loopback
 
 Then create according partitions either running for example:
 
-  echo -en "n\np\n1\n\n\n t \n 6\n a\n1\n w\n" | fdisk /dev/loop1
+  # echo -en "n\np\n1\n\n\nt\n6\na\n1\n w\n" | fdisk /dev/loop1
 
 or:
 
-  parted /dev/loop1 -s "mkpart primary fat16 0 -1s mkfs 1 fat16"
+  # parted /dev/loop1 -s "mkpart primary fat16 0 -1s mkfs 1 fat16"
 
 Finally create a filesystem and execute grml2usb as needed:
 
-  mkfs.vfat /dev/loop1
-  grml2usb --bootloader-only --mbr /grml/isos/grml-small_2008.11.iso /dev/loop1
+  # mkfs.vfat /dev/loop1
+  # grml2usb --bootloader-only --mbr /grml/isos/grml-small_2008.11.iso /dev/loop1
+
+Performance tracing
+~~~~~~~~~~~~~~~~~~~
+
+  # blktrace -d /dev/sdb -o - | blkparse -i -
+  # grml2usb grml_2008.11.iso /dev/sdb1
 
 Frequently Asked Questions (FAQ)
 --------------------------------

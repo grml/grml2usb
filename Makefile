@@ -32,7 +32,9 @@ clean:
 	rm -rf grml2usb.8.html grml2usb.8.xml grml2usb.8 html-stamp man-stamp
 
 codecheck:
-	pylint --reports=n --include-ids=y ./grml2usb.py
+	pylint --include-ids=y --max-line-length=120 grml2usb.py
+	# pylint --include-ids=y --disable-msg-cat=C0301 --disable-msg-cat=W0511 grml2usb.py
+	# pylint --reports=n --include-ids=y --disable-msg-cat=C0301 grml2usb.py
 
-#graph:
-#	pycallgraph ./grml2usb.py TODO
+# graph:
+#	sudo pycallgraph grml2usb /grml/isos/grml-small_2008.11.iso /dev/sdb1
