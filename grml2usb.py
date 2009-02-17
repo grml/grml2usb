@@ -13,35 +13,31 @@ This script installs a grml system (either a running system or ISO[s]) to a USB 
 TODO
 ----
 
-* install memtest, dos, grub,... to /boot/addons/
-* copy grml files to /grml/
 * implement missing options (--grub, --kernel, --initrd, --squashfs, --uninstall)
-* code improvements:
-  - improve error handling wherever possible :)
-  - get rid of all TODOs in code
-  - use 'with open("...", "w") as f: ... f.write("...")'
-  - simplify functions/code as much as possible (move stuff to further functions) -> audit
 * validate partition schema/layout: is the partition schema ok and the bootable flag set? (--validate?)
+* provide --create-partition option?
 * implement logic for storing information about copied files -> register every file in a set()
 * the last line in bootsplash (boot.msg) should mention all installed grml flavours
+* code improvements:
+  - improve error handling wherever possible :)
+  - use 'with open("...", "w") as f: ... f.write("...")'
+  - simplify functions/code as much as possible, especially:
+    Too many local variables
+    Too many branches
+    Too many statements
 * graphical version? any volunteers? :)
 """
 
 from __future__ import with_statement
-import os, re, subprocess, sys, tempfile
 from optparse import OptionParser
-from os.path import exists, join, abspath
-from os import pathsep
 from inspect import isroutine, isclass
-import logging
-import datetime, time
+import datetime, logging, os, re, subprocess, sys, tempfile, time
 
 # global variables
 PROG_VERSION = "0.9.2"
-skip_mbr = True  # hm, can we get rid of that? :)
 mounted = set()  # register mountpoints
 tmpfiles = set() # register tmpfiles
-datestamp= time.mktime(datetime.datetime.now().timetuple()) # unique identifier for syslinux.cfg
+datestamp = time.mktime(datetime.datetime.now().timetuple()) # unique identifier for syslinux.cfg
 
 # cmdline parsing
 usage = "Usage: %prog [options] <[ISO[s] | /live/image]> </dev/ice>\n\
@@ -49,7 +45,7 @@ usage = "Usage: %prog [options] <[ISO[s] | /live/image]> </dev/ice>\n\
 %prog installs a grml ISO to an USB device to be able to boot from it.\n\
 Make sure you have at least a grml ISO or a running grml system (/live/image),\n\
 syslinux (just run 'aptitude install syslinux' on Debian-based systems)\n\
-and root access."
+and root access. Further information can be found in: man grml2usb"
 
 parser = OptionParser(usage=usage)
 parser.add_option("--bootoptions", dest="bootoptions",
@@ -77,6 +73,8 @@ parser.add_option("--mbr", dest="mbr", action="store_true",
                   help="install master boot record (MBR) on the device")
 parser.add_option("--quiet", dest="quiet", action="store_true",
                   help="do not output anything but just errors on console")
+parser.add_option("--skip-addons", dest="skipaddons", action="store_true",
+                  help="do not install /boot/addons/ files")
 parser.add_option("--squashfs", dest="squashfs", action="store", type="string",
                   help="install specified squashfs file instead of the default [TODO]")
 parser.add_option("--uninstall", dest="uninstall", action="store_true",
@@ -105,6 +103,10 @@ def cleanup():
 
 
 def get_function_name(obj):
+    """Helper function for use in execute() to retrive name of a function
+
+    @obj: the function object
+    """
     if not (isroutine(obj) or isclass(obj)):
         obj = type(obj)
     return obj.__module__ + '.' + obj.__name__
@@ -147,17 +149,20 @@ def which(program):
     return None
 
 
-def search_file(filename, search_path='/bin' + pathsep + '/usr/bin'):
-    """Given a search path, find file"""
+def search_file(filename, search_path='/bin' + os.pathsep + '/usr/bin'):
+    """Given a search path, find file
+
+    @filename: name of file to search for
+    @search_path: path where searching for the specified filename"""
     file_found = 0
-    paths = search_path.split(pathsep)
+    paths = search_path.split(os.pathsep)
     for path in paths:
         for current_dir, directories, files in os.walk(path):
-            if exists(join(current_dir, filename)):
+            if os.path.exists(os.path.join(current_dir, filename)):
                 file_found = 1
                 break
     if file_found:
-        return abspath(join(current_dir, filename))
+        return os.path.abspath(os.path.join(current_dir, filename))
     else:
         return None
 
@@ -279,7 +284,7 @@ APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live n
 # memtest
 LABEL  memtest
 KERNEL /boot/addons/memtest
-APPEND BOOT_IMAGE=memtest
+#APPEND BOOT_IMAGE=memtest
 
 # grub
 LABEL grub
@@ -427,25 +432,23 @@ def install_mbr(device):
 
     # activate partition:
     logging.debug("%s -S /dev/null -A %s 1" % (lilo, device))
-    if not options.dryrun:
-        proc = subprocess.Popen([lilo, "-S", "/dev/null", "-A", device, "1"])
-        proc.wait()
-        if proc.returncode != 0:
-            raise Exception, "error executing lilo"
+    proc = subprocess.Popen([lilo, "-S", "/dev/null", "-A", device, "1"])
+    proc.wait()
+    if proc.returncode != 0:
+        raise Exception, "error executing lilo"
 
     # lilo's mbr is broken, use the one from syslinux instead:
     if not os.path.isfile("/usr/lib/syslinux/mbr.bin"):
         raise Exception, "/usr/lib/syslinux/mbr.bin can not be read"
 
     logging.debug("cat /usr/lib/syslinux/mbr.bin > %s" % device)
-    if not options.dryrun:
-        try:
-            # TODO -> use Popen instead?
-            retcode = subprocess.call("cat /usr/lib/syslinux/mbr.bin > "+ device, shell=True)
-            if retcode < 0:
-                logging.critical("Error copying MBR to device (%s)" % retcode)
-        except OSError, error:
-            logging.critical("Execution failed:", error)
+    try:
+        # TODO -> use Popen instead?
+        retcode = subprocess.call("cat /usr/lib/syslinux/mbr.bin > "+ device, shell=True)
+        if retcode < 0:
+            logging.critical("Error copying MBR to device (%s)" % retcode)
+    except OSError, error:
+        logging.critical("Execution failed:", error)
 
 
 def register_tmpfile(path):
@@ -478,7 +481,7 @@ def unregister_mountpoint(target):
         mounted.remove(target)
 
 
-def mount(source, target, options):
+def mount(source, target, mount_options):
     """Mount specified source on given target
 
     @source: name of device/ISO that should be mounted
@@ -487,8 +490,8 @@ def mount(source, target, options):
 
     # notice: options.dryrun does not work here, as we have to
     # locate files and identify the grml flavour
-    logging.debug("mount %s %s %s" % (options, source, target))
-    proc = subprocess.Popen(["mount"] + list(options) + [source, target])
+    logging.debug("mount %s %s %s" % (mount_options, source, target))
+    proc = subprocess.Popen(["mount"] + list(mount_options) + [source, target])
     proc.wait()
     if proc.returncode != 0:
         raise Exception, "Error executing mount"
@@ -497,7 +500,7 @@ def mount(source, target, options):
         register_mountpoint(target)
 
 
-def unmount(target, options):
+def unmount(target, unmount_options):
     """Unmount specified target
 
     @target: target where something is mounted on and which should be unmounted
@@ -514,8 +517,8 @@ def unmount(target, options):
     if not target_unmount:
         logging.debug("%s not mounted anymore" % target)
     else:
-        logging.debug("umount %s %s" % (list(options), target))
-        proc = subprocess.Popen(["umount"] + list(options) + [target])
+        logging.debug("umount %s %s" % (list(unmount_options), target))
+        proc = subprocess.Popen(["umount"] + list(unmount_options) + [target])
         proc.wait()
         if proc.returncode != 0:
             raise Exception, "Error executing umount"
@@ -546,7 +549,7 @@ def check_for_fat(partition):
     @partition: device name of partition"""
 
     try:
-        udev_info = subprocess.Popen(["/lib/udev/vol_id", "-t", partition],stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        udev_info = subprocess.Popen(["/lib/udev/vol_id", "-t", partition], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         filesystem = udev_info.communicate()[0].rstrip()
 
         if udev_info.returncode == 2:
@@ -580,35 +583,114 @@ def copy_grml_files(grml_flavour, iso_mount, target):
 
     if options.dryrun:
         logging.info("Would copy files to %s", iso_mount)
+        return 0
     elif not options.bootloaderonly:
         logging.info("Copying files. This might take a while....")
 
         squashfs = search_file(grml_flavour + '.squashfs', iso_mount)
-        squashfs_target = target + '/live/'
-        execute(mkdir, squashfs_target)
-
-        # use install(1) for now to make sure we can write the files afterwards as normal user as well
-        logging.debug("cp %s %s" % (squashfs, target + '/live/' + grml_flavour + '.squashfs'))
-        proc = subprocess.Popen(["install", "--mode=664", squashfs, squashfs_target + grml_flavour + ".squashfs"])
-        proc.wait()
+        if squashfs is None:
+            logging.critical("Fatal: squashfs file not found")
+        else:
+            squashfs_target = target + '/live/'
+            execute(mkdir, squashfs_target)
+            # use install(1) for now to make sure we can write the files afterwards as normal user as well
+            logging.debug("cp %s %s" % (squashfs, target + '/live/' + grml_flavour + '.squashfs'))
+            proc = subprocess.Popen(["install", "--mode=664", squashfs, squashfs_target + grml_flavour + ".squashfs"])
+            proc.wait()
 
         filesystem_module = search_file('filesystem.module', iso_mount)
-        logging.debug("cp %s %s" % (filesystem_module, squashfs_target + grml_flavour + '.module'))
-        proc = subprocess.Popen(["install", "--mode=664", filesystem_module, squashfs_target + grml_flavour + '.module'])
-        proc.wait()
+        if filesystem_module is None:
+            logging.critical("Fatal: filesystem.module not found")
+        else:
+            logging.debug("cp %s %s" % (filesystem_module, squashfs_target + grml_flavour + '.module'))
+            proc = subprocess.Popen(["install", "--mode=664", filesystem_module, squashfs_target + grml_flavour + '.module'])
+            proc.wait()
 
         release_target = target + '/boot/release/' + grml_flavour
         execute(mkdir, release_target)
 
         kernel = search_file('linux26', iso_mount)
-        logging.debug("cp %s %s" % (kernel, release_target + '/linux26'))
-        proc = subprocess.Popen(["install", "--mode=664", kernel, release_target + '/linux26'])
-        proc.wait()
+        if kernel is None:
+            logging.critical("Fatal kernel not found")
+        else:
+            logging.debug("cp %s %s" % (kernel, release_target + '/linux26'))
+            proc = subprocess.Popen(["install", "--mode=664", kernel, release_target + '/linux26'])
+            proc.wait()
 
         initrd = search_file('initrd.gz', iso_mount)
-        logging.debug("cp %s %s" % (initrd, release_target + '/initrd.gz'))
-        proc = subprocess.Popen(["install", "--mode=664", initrd, release_target + '/initrd.gz'])
-        proc.wait()
+        if initrd is None:
+            logging.critical("Fatal: initrd not found")
+        else:
+            logging.debug("cp %s %s" % (initrd, release_target + '/initrd.gz'))
+            proc = subprocess.Popen(["install", "--mode=664", initrd, release_target + '/initrd.gz'])
+            proc.wait()
+
+        grml_target = target + '/grml/'
+        execute(mkdir, grml_target)
+
+        for myfile in 'grml-cheatcodes.txt', 'grml-version', 'LICENSE.txt', 'md5sums', 'README.txt':
+            grml_file = search_file(myfile, iso_mount)
+            if grml_file is None:
+                logging.warn("Warning: myfile %s could not be found - can not install it", myfile)
+            else:
+                logging.debug("cp %s %s" % (grml_file, grml_target + grml_file))
+                proc = subprocess.Popen(["install", "--mode=664", grml_file, grml_target + myfile])
+                proc.wait()
+
+        grml_web_target = grml_target + '/web/'
+        execute(mkdir, grml_web_target)
+
+        for myfile in 'index.html', 'style.css':
+            grml_file = search_file(myfile, iso_mount)
+            if grml_file is None:
+                logging.warn("Warning: myfile %s could not be found - can not install it")
+            else:
+                logging.debug("cp %s %s" % (grml_file, grml_web_target + grml_file))
+                proc = subprocess.Popen(["install", "--mode=664", grml_file, grml_web_target + myfile])
+                proc.wait()
+
+        grml_webimg_target = grml_web_target + '/images/'
+        execute(mkdir, grml_webimg_target)
+
+        for myfile in 'button.png', 'favicon.png', 'linux.jpg', 'logo.png':
+            grml_file = search_file(myfile, iso_mount)
+            if grml_file is None:
+                logging.warn("Warning: myfile %s could not be found - can not install it")
+            else:
+                logging.debug("cp %s %s" % (grml_file, grml_webimg_target + grml_file))
+                proc = subprocess.Popen(["install", "--mode=664", grml_file, grml_webimg_target + myfile])
+                proc.wait()
+
+    if not options.skipaddons:
+        addons = target + '/boot/addons/'
+        execute(mkdir, addons)
+
+        # grub all-in-one image
+        allinoneimg = search_file('allinone.img', iso_mount)
+        if allinoneimg is None:
+            logging.warn("Warning: allinone.img not found - can not install it")
+        else:
+            logging.debug("cp %s %s" % (allinoneimg, addons + '/allinone.img'))
+            proc = subprocess.Popen(["install", "--mode=664", allinoneimg, addons + 'allinone.img'])
+            proc.wait()
+
+        # freedos image
+        balderimg = search_file('balder10.imz', iso_mount)
+        if balderimg is None:
+            logging.warn("Warning: balder10.imz not found - can not install it")
+        else:
+            logging.debug("cp %s %s" % (balderimg, addons + '/balder10.imz'))
+            proc = subprocess.Popen(["install", "--mode=664", balderimg, addons + 'balder10.imz'])
+            proc.wait()
+
+        # memtest86+ image
+        memdiskimg = search_file('memdisk', iso_mount)
+        if memdiskimg is None:
+            logging.warn("Warning: memdisk not found - can not install it")
+        else:
+            logging.debug("cp %s %s" % (memdiskimg, addons + '/memdisk'))
+            proc = subprocess.Popen(["install", "--mode=664", memdiskimg, addons + 'memdisk'])
+            proc.wait()
 
     if not options.copyonly:
         syslinux_target = target + '/boot/syslinux/'
@@ -665,9 +747,9 @@ def copy_grml_files(grml_flavour, iso_mount, target):
                     syslinux_config_file.write(generate_main_syslinux_config(grml_flavour, options.bootoptions))
                     syslinux_config_file.close()
             else:
-                    syslinux_config_file = open(syslinux_cfg, 'w')
-                    syslinux_config_file.write(generate_main_syslinux_config(grml_flavour, options.bootoptions))
-                    syslinux_config_file.close()
+                syslinux_config_file = open(syslinux_cfg, 'w')
+                syslinux_config_file.write(generate_main_syslinux_config(grml_flavour, options.bootoptions))
+                syslinux_config_file.close()
 
             # install flavour specific configuration only *once* as well
             # kind of ugly - I'm pretty sure this could be smoother...
@@ -752,13 +834,17 @@ def handle_iso(iso, device):
             cleanup()
             sys.exit(1)
 
-        mount(iso, iso_mountpoint, ["-o", "loop", "-t", "iso9660"])
+        try:
+            mount(iso, iso_mountpoint, ["-o", "loop", "-t", "iso9660"])
+        except Exception, error:
+            logging.critical("Fatal: %s" % error)
+            sys.exit(1)
 
         if os.path.isdir(device):
-            logging.info("Specified target is a directory, not mounting therefore.")
+            logging.info("Specified target is a directory, not mounting therefor.")
             device_mountpoint = device
             remove_device_mountpoint = False
-            skip_mbr = True
+            # skip_mbr = True
 
         else:
             device_mountpoint = tempfile.mkdtemp()
@@ -775,7 +861,7 @@ def handle_iso(iso, device):
             logging.info("Identified grml flavour \"%s\"." % grml_flavour)
             copy_grml_files(grml_flavour, iso_mountpoint, device_mountpoint)
         except TypeError:
-            logging.critical("Fatal: a critical error happend during execution, giving up")
+            logging.critical("Fatal: a critical error happend during execution (not a grml ISO?), giving up")
             sys.exit(1)
         finally:
             if os.path.isdir(iso_mountpoint) and remove_iso_mountpoint:
@@ -816,10 +902,10 @@ def main():
         FORMAT = "Info: %(message)s"
         logging.basicConfig(level=logging.INFO, format=FORMAT)
 
+    check_uid_root()
+
     if options.dryrun:
         logging.info("Running in simulate mode as requested via option dry-run.")
-    else:
-        check_uid_root()
 
     # specified arguments
     device = args[len(args) - 1]
@@ -833,7 +919,7 @@ def main():
         print "Please check out the grml2usb manpage for details."
         f = raw_input("Do you really want to continue? y/N ")
         if f == "y" or f == "Y":
-           pass
+            pass
         else:
             sys.exit(1)
 
@@ -871,7 +957,7 @@ def main():
         print "Warning: the specified device %s does not look like a removable usb device." % device
         f = raw_input("Do you really want to continue? y/N ")
         if f == "y" or f == "Y":
-           pass
+            pass
         else:
             sys.exit(1)
 
@@ -884,7 +970,7 @@ def main():
         handle_iso(iso, device)
 
     # install MBR
-    if not options.mbr or skip_mbr:
+    if not options.mbr:
         logging.info("You are NOT using the --mbr option. Consider using it if your device does not boot.")
     else:
         # make sure we install MBR on /dev/sdX and not /dev/sdX#

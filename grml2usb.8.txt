@@ -98,6 +98,10 @@ Install a default master boot record (MBR) on the device.
 
 Do not output anything but just errors on console.
 
+  *--skip-addons*::
+
+Do not install /boot/addons/ files (like dos, grub, memdisk,...).
+
   *--squashfs=*::
 
 Install specified squashfs file instead of the default.
