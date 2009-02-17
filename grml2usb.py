@@ -34,16 +34,16 @@ from inspect import isroutine, isclass
 import datetime, logging, os, re, subprocess, sys, tempfile, time
 
 # global variables
-PROG_VERSION = "0.9.2"
+PROG_VERSION = "0.9.2(pre1)"
 mounted = set()  # register mountpoints
 tmpfiles = set() # register tmpfiles
 datestamp = time.mktime(datetime.datetime.now().timetuple()) # unique identifier for syslinux.cfg
 
 # cmdline parsing
-usage = "Usage: %prog [options] <[ISO[s] | /live/image]> </dev/ice>\n\
+usage = "Usage: %prog [options] <[ISO[s] | /live/image]> </dev/sdX#>\n\
 \n\
 %prog installs a grml ISO to an USB device to be able to boot from it.\n\
-Make sure you have at least a grml ISO or a running grml system (/live/image),\n\
+Make sure you have at least one grml ISO or a running grml system (/live/image),\n\
 syslinux (just run 'aptitude install syslinux' on Debian-based systems)\n\
 and root access. Further information can be found in: man grml2usb"
 
