@@ -1006,10 +1006,6 @@ def handle_vfat(device):
         else:
             sys.exit(1)
 
-    # format partition:
-    if options.fat16:
-        mkfs_fat16(device)
-
 
 def handle_compat_warning(device):
     """TODO"""
