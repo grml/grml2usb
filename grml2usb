@@ -10,22 +10,6 @@ This script installs a grml system (either a running system or ISO[s]) to a USB 
 :license: GPL v2 or any later version
 :bugreports: http://grml.org/bugs/
 
-TODO
-----
-
-* implement missing options (--grub, --kernel, --initrd, --squashfs, --uninstall)
-* validate partition schema/layout: is the partition schema ok and the bootable flag set? (--validate?)
-* provide --create-partition option?
-* implement logic for storing information about copied files -> register every file in a set()
-* the last line in bootsplash (boot.msg) should mention all installed grml flavours
-* code improvements:
-  - improve error handling wherever possible :)
-  - use 'with open("...", "w") as f: ... f.write("...")'
-  - simplify functions/code as much as possible, especially:
-    Too many local variables
-    Too many branches
-    Too many statements
-* graphical version? any volunteers? :)
 """
 
 from __future__ import with_statement

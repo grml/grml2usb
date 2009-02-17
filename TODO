@@ -1,0 +1,15 @@
+TODOs
+-----
+
+* implement missing options (--grub, --kernel, --initrd, --squashfs, --uninstall)
+* validate partition schema/layout: is the partition schema ok and the bootable flag set? (--validate?)
+* provide --create-partition option?
+* implement logic for storing information about copied files (register every file in a set()?)
+* the last line in bootsplash (boot.msg) should mention all installed grml flavours
+  (attention, the line should become too long :))
+* code improvements:
+  - improve error handling wherever possible :) => especially disk full, any other known test cases?
+  - use 'with open("...", "w") as f: ... f.write("...")'
+* provide unit-testing (any ideas for useful/test-able scenarious?)
+* provide progress bar when copying files
+* provide graphical version; any volunteers? :)
