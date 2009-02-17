@@ -90,10 +90,6 @@ default any system wide (from $PATH) lilo executable is taken.  If there can not
 be find any lilo executable the statically compiled version of the grml2usb
 Debian package (see /usr/share/grml2usb/lilo/lilo.static.[amd64|i386]) is taken.
 
-  *--mbr*::
-
-Install a default master boot record (MBR) on the device.
-
   *--quiet*::
 
 Do not output anything but just errors on console.
@@ -226,7 +222,7 @@ or:
 Finally create a filesystem and execute grml2usb as needed:
 
   # mkfs.vfat /dev/loop1
-  # grml2usb --bootloader-only --mbr /grml/isos/grml-small_2008.11.iso /dev/loop1
+  # grml2usb --bootloader-only /grml/isos/grml-small_2008.11.iso /dev/loop1
 
 Performance tracing
 ~~~~~~~~~~~~~~~~~~~
@@ -256,9 +252,9 @@ Why do I have to use a FAT16 filesystem?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You have to use a FAT16 filesystem if you consider using syslinux (being the
-default when using the --mbr option). Syslinux currently does not support any
-other filesystems. If you want to use another filesystem (like ext2/3) consider
-using the --grub option instead.
+default). Syslinux currently does not support any other filesystems. If you want
+to use another filesystem (like ext2/3) consider using the --grub option
+instead.
 
 I think I've got a really cool idea!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -286,10 +282,10 @@ bootprompt, for grml64 use "grml64" and so on... The *first* specified ISO is
 the one being the default (when just pressing enter or waiting until the timeout
 is reached).
 
-  # grml2usb --fat16 --mbr /home/grml/grml_2008.11.iso /dev/sdb1
+  # grml2usb --fat16 /home/grml/grml_2008.11.iso /dev/sdb1
 
-Install specified ISO on device /dev/sdb1, install MBR on /dev/sdb and
-format partition /dev/sdb1 with FAT16 filesystem.
+Install specified ISO on device /dev/sdb1 and format partition /dev/sdb1 with
+FAT16 filesystem.
 
   # grml2usb --grub /home/grml/grml_2008.11.iso /dev/sdb1
 
