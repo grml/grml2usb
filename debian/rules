@@ -34,7 +34,7 @@ install: build
 	dh_installdirs usr/share/grml2usb/lilo usr/share/grml2usb/grub
 
 	# Add here commands to install the package into debian/grml2usb.
-	install -m 755 grml2usb.py            debian/grml2usb/usr/sbin/grml2usb
+	install -m 755 grml2usb               debian/grml2usb/usr/sbin/grml2usb
 	install -m 755 lilo/lilo.static.i386  debian/grml2usb//usr/share/grml2usb/lilo/lilo.static.i386
 	install -m 755 lilo/lilo.static.amd64 debian/grml2usb//usr/share/grml2usb/lilo/lilo.static.amd64
 	install -m 644 grub/splash.xpm.gz     debian/grml2usb/usr/share/grml2usb/grub/splash.xpm.gz
