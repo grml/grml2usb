@@ -87,8 +87,10 @@ option *--initrd* as well. (Be aware when using multiboot setup.)
 
   *--lilo=...*::
 
-Use specified lilo executable to for installing master boot record (MBR)
-instead of the default, being /usr/share/grml2usb/lilo/lilo.static.
+Use specified lilo executable for installing master boot record (MBR).  By
+default any system wide (from $PATH) lilo executable is taken.  If there can not
+be find any lilo executable the statically compiled version of the grml2usb
+Debian package (see /usr/share/grml2usb/lilo/lilo.static.[amd64|i386]) is taken.
 
   *--mbr*::
 

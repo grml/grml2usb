@@ -406,14 +406,21 @@ def install_mbr(device):
     if not is_writeable(device):
         raise IOError, "device not writeable for user"
 
+    # use specified lilo
     if options.lilo:
         lilo = options.lilo
     else:
-        from platform import architecture
-        if architecture()[0] == '64bit':
-            lilo = '/usr/share/grml2usb/lilo/lilo.static.amd64'
+        # otherwise try to use system's lilo
+        if which("lilo"):
+            lilo = which("lilo")
+            print "debug: lilo = %s" % lilo
         else:
-            lilo = '/usr/share/grml2usb/lilo/lilo.static.i386'
+            # finally fall back to our static version
+            from platform import architecture
+            if architecture()[0] == '64bit':
+                lilo = '/usr/share/grml2usb/lilo/lilo.static.amd64'
+            else:
+                lilo = '/usr/share/grml2usb/lilo/lilo.static.i386'
 
     if not is_exe(lilo):
         raise Exception, "lilo executable can not be execute"
