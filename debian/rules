@@ -25,16 +25,16 @@ clean:
 
 	# Add here commands to clean up after the build process.
 	$(MAKE) clean
-	dh_clean 
+	dh_clean
 
 install: build
 	dh_testdir
 	dh_testroot
-	dh_clean -k 
+	dh_clean -k
 	dh_installdirs usr/share/grml2usb/lilo usr/share/grml2usb/grub
 
 	# Add here commands to install the package into debian/grml2usb.
-	install -m 755 grml2usb               debian/grml2usb/usr/sbin/
+	install -m 755 grml2usb.py            debian/grml2usb/usr/sbin/grml2usb
 	install -m 755 lilo/lilo.static.i386  debian/grml2usb//usr/share/grml2usb/lilo/lilo.static.i386
 	install -m 755 lilo/lilo.static.amd64 debian/grml2usb//usr/share/grml2usb/lilo/lilo.static.amd64
 	install -m 644 grub/splash.xpm.gz     debian/grml2usb/usr/share/grml2usb/grub/splash.xpm.gz
@@ -48,12 +48,14 @@ binary-arch: build install
 binary-indep: build install
 	dh_testdir
 	dh_testroot
-	dh_installchangelogs 
+	dh_installchangelogs
 	dh_installdocs
 	dh_installman grml2usb.8
 	dh_link
 	dh_strip
 	dh_compress
+	mkdir -p debian/grml2usb/usr/share/lintian/overrides/
+	cp -av debian/overrides debian/grml2usb/usr/share/lintian/overrides/grml2usb
 	dh_fixperms
 	dh_installdeb
 	dh_shlibdeps
