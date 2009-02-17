@@ -292,7 +292,6 @@ APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live n
 # memtest
 LABEL  memtest
 KERNEL /boot/addons/memtest
-#APPEND BOOT_IMAGE=memtest
 
 # grub
 LABEL grub
@@ -694,13 +693,22 @@ def copy_addons(iso_mount, target):
         proc = subprocess.Popen(["install", "--mode=664", balderimg, addons + 'balder10.imz'])
         proc.wait()
 
-    # memtest86+ image
+    # memdisk image
     memdiskimg = search_file('memdisk', iso_mount)
     if memdiskimg is None:
         logging.warn("Warning: memdisk not found - can not install it")
     else:
         logging.debug("cp %s %s" % (memdiskimg, addons + '/memdisk'))
         proc = subprocess.Popen(["install", "--mode=664", memdiskimg, addons + 'memdisk'])
+        proc.wait()
+
+    # memtest86+ image
+    memtestimg = search_file('memtest', iso_mount)
+    if memtestimg is None:
+        logging.warn("Warning: memtest not found - can not install it")
+    else:
+        logging.debug("cp %s %s" % (memtestimg, addons + '/memtest'))
+        proc = subprocess.Popen(["install", "--mode=664", memtestimg, addons + 'memtest'])
         proc.wait()
 
 
