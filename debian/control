@@ -3,14 +3,15 @@ Section: grml
 Priority: optional
 Maintainer: Michael Prokop <mika@grml.org>
 Build-Depends: debhelper (>= 4.0.0)
-Standards-Version: 3.7.3
-Homepage: http://hg.grml.org/grml2usb/
-XS-Vcs-hg: http://hg.grml.org/grml2usb/
-XS-Vcs-Browser: http://hg.grml.org/grml2usb/
+Standards-Version: 3.8.0
+Homepage: http://grml.org/grml2usb/
+Vcs-git: git://git.grml.org/grml2usb.git
+Vcs-Browser: http://git.grml.org/?p=grml2usb.git
 
 Package: grml2usb
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, syslinux, mtools
-Description: install grml-system to usb device
- This script installs a grml-system (more precise: a grml-ISO) to
- an usb device.
+Depends: ${shlibs:Depends}, ${misc:Depends}, syslinux
+Description: install grml system to usb device
+ This script installs a grml ISO to an USB device to be able to boot from it.
+ Make sure you have at least one grml ISO or a running grml system (/live/image)
+ available.
