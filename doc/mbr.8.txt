@@ -1,0 +1,179 @@
+Master Boot Record, Booting from USB etc.(8)
+============================================
+
+Name
+----
+mbr - Master Boot Record, Booting from USB etc.
+
+Synopsis
+--------
+
+None. :)
+
+[IMPORTANT]
+This document is work in progress.
+
+[NOTE]
+We are using /dev/sdz as the typical device name. Adjust it to whatever
+your device corresponds to of course, it's just to prevent any data loss due to
+wrong copy/paste.
+
+Layout
+------
+
+The Master Boot Record (MBR) is the first data block with 512 bytes on the x86
+architecture providing a partition table and a bootloader.  In the first 446
+bytes is the bootcode, providing the bootloader (400 bytes), a disk signature (4
+bytes) and NULL (2 bytes).  The following 64 bytes are the partition table,
+followed by 2 bytes which are the MBR signature.
+
+Bootcode
+~~~~~~~~
+
+The bootcode consists of bootloader and disk signature:
+
+Bootloader
+^^^^^^^^^^
+
+Windows: ntldr with boot.ini (Windows NT/XP) or bootmgr with \Boot\BCD (Windows Vista)
+
+Disk Signature
+^^^^^^^^^^^^^^
+
+Operating systems like Windows identify the disk using the disk signature.
+Running 'fixmbr' doesn't touch the disk signature but just the bootloader.
+Running 'fdisk /mbr' touches the bootloader *and* the disk signature (it writes
+a standard MBR, it won't touch the partition table though).
+TODO: what about fixboot?
+
+Partition table
+~~~~~~~~~~~~~~~
+
+Harddisk addressable: 8GB (Cylinder Head Sector, CHS), 2TB (Logical Block
+Addressing with 32bit, LBA) or >2TB (GUID Partition Table, GPT)
+
+MBR Signature
+~~~~~~~~~~~~~
+
+The 2 bytes 55 and AA (both hex), known as the Magic Number. This signature
+tells the system that there should exist a valid MBR - otherwise you'll get
+something like "No operating system" or "Non-Bootable Disk".
+
+Backup and Restore
+------------------
+
+Clone whole MBR:
+
+  # dd if=/dev/sdz of=mbr_backup.dd bs=512 count=1
+
+Restore the MBR again:
+
+  # dd if=mbr_backup.dd of=/dev/sdz bs=512 count=1
+
+Clone MBR *without* partition table:
+
+  # dd if=/dev/sdz of=mbr_bootcode.dd bs=446 count=1
+
+Restore MBR *without* partition table again:
+
+  # dd if=mbr_bootcode.dd of=/dev/sdz bs=446 count=1
+
+Backup partition layout:
+
+  # sfdisk -d /dev/sdz > backup.sfdisk
+
+Restore partition layout again:
+
+  # sfdisk /dev/sdz < backup.sfdisk
+
+Write new, clean MBR:
+
+  lilo -M /dev/sdz -s /dev/null
+
+Troubleshooting and Pitfalls when booting
+-----------------------------------------
+
+///////////////////////////////////////////////////////////
+TODO: better list type for the error message / reason part?
+See http://www.methods.co.nz/asciidoc/userguide.html
+///////////////////////////////////////////////////////////
+
+[horizontal]
+*Error message*:: ran out of input data. System halted
+
+*Reason*:: Everything OK, except for the filesystem used on your usb device. So
+instead of fat16 you use for example fat32. Fix: use the appropriate filesystem
+(fat16 for usb pens usually). The Bootsplash might be displayed, the kernel
+loads but you very soon get the error message.
+
+*Error message*:: Invalid operating system
+
+*Reason*:: the partition layout is not ok. Very probably there’s no primary
+  partition or none has the flag ‘bootable’ set.
+
+*Error message*:: No operating system found.
+
+*Reason*:: you forgot to set the boot-flag on the partition. Or there really isn't
+any operating system at all.
+
+*Error message*:: kernel-panic: unable to mount root-fs...
+
+*Reason*:: Kernel boots but fails to find the root filesystem. root= argument in
+your kernel commandline is pointing to the wrong device. Adjust root=...,
+consider using root=UUID=....
+
+*Error message*::  Could not find kernel image: ...
+
+*Reason*:: either a broken isolinux/syslinux version or a broken BIOS. Check out
+whether the vendor provides a BIOS update or if using bootloader grub instead of
+isolinux/syslinux fixes the problem.
+
+USB modes
+---------
+
+  * USB-HDD: usually the default and prefered booting mode.
+  * USB-ZIP: ??? - can be set up via:
+
+    # mkdiskimage -4    /dev/sdz 1  64 32 # device = 1GB
+    # mkdiskimage -4    /dev/sdz 0 128 32 # device >1GB and <=2GB
+    # mkdiskimage -F -4 /dev/sdz 0 255 63 # device >2GB and <=8GB
+
+    For devices above 8GB (taken from
+    http://www.knoppix.net/wiki/Bootable_USB_Key):
+
+    # mkdiskimage -F -4 /dev/sdz 1 255 63
+    # dd if=/dev/zero of=/dev/sdz bs=1 seek=446 count=64
+    # echo -e ',0\n,0\n,0\n,,C,*' | sfdisk /dev/sdz
+
+    USB-ZIP requires to have 64 heads and 32 sectors and less than 1024
+    cylinder count.
+
+  * USB-Floppy: ???
+
+TODO
+----
+
+Check out the *real* difference between:
+
+  # mbr-install /dev/ice
+  # lilo -S /dev/null -M /dev/ice ext && lilo -S /dev/null -A /dev/ice 1
+  # cat /usr/lib/syslinux/mbr.bin > /dev/ice
+  # syslinux /dev/iceX
+  # syslinux -sf /dev/iceX
+  # mkdiskimage ... (USB-ZIP?)
+  # ...?
+
+Partition stuff:
+
+  * How does a correct partition look like?
+  * The partition should start behind MBR at 1st cylinder and 63rd sector?
+  * fdisk -l -u /dev/sdz vs. fdisk -l /dev/sdz
+
+Resources
+---------
+
+* http://de.wikipedia.org/wiki/Master_Boot_Record
+* http://en.wikipedia.org/wiki/Master_boot_record
+* http://michael-prokop.at/blog/2007/04/22/booting-from-usb-pen-troubleshooting-and-pitfalls/
+* http://www.ata-atapi.com/hiwmbr.html
+* http://thestarman.pcministry.com/asm/mbr/index.html
