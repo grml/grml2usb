@@ -287,7 +287,7 @@ F10 /boot/syslinux/f10
 # the default option (using %(grml_flavour)s)
 LABEL  grml
 KERNEL /boot/release/%(grml_flavour)s/linux26
-APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce quiet module=%(grml_flavour)s %(bootoptions)s
+APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce vga=791 quiet module=%(grml_flavour)s %(bootoptions)s
 
 # memtest
 LABEL  memtest
@@ -322,22 +322,22 @@ def generate_flavour_specific_syslinux_config(grml_flavour, bootoptions):
 # flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 LABEL  %(grml_flavour)s
 KERNEL /boot/release/%(grml_flavour)s/linux26
-APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce quiet module=%(grml_flavour)s %(bootoptions)s
+APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce vga=791 quiet module=%(grml_flavour)s %(bootoptions)s
 
 # flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 LABEL  %(grml_flavour)s2ram
 KERNEL /boot/release/%(grml_flavour)s/linux26
-APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce quiet module=%(grml_flavour)s toram=%(grml_flavour)s %(bootoptions)s
+APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce vga=791 quiet module=%(grml_flavour)s toram=%(grml_flavour)s %(bootoptions)s
 
 # flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 LABEL  %(grml_flavour)s-debug
 KERNEL /boot/release/%(grml_flavour)s/linux26
-APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce quiet module=%(grml_flavour)s debug boot=live initcall_debug%(bootoptions)s
+APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce vga=791 quiet module=%(grml_flavour)s debug boot=live initcall_debug%(bootoptions)s
 
 # flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 LABEL  %(grml_flavour)s-x
 KERNEL /boot/release/%(grml_flavour)s/linux26
-APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce quiet module=%(grml_flavour)s startx=wm-ng %(bootoptions)s
+APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce vga=791 quiet module=%(grml_flavour)s startx=wm-ng %(bootoptions)s
 
 # flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 LABEL  %(grml_flavour)s-nofb
@@ -352,7 +352,7 @@ APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live n
 # flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 LABEL  %(grml_flavour)s-forensic
 KERNEL /boot/release/%(grml_flavour)s/linux26
-APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce quiet module=%(grml_flavour)s nofstab noraid nolvm noautoconfig noswap raid=noautodetect %(bootoptions)s
+APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce vga=791 quiet module=%(grml_flavour)s nofstab noraid nolvm noautoconfig noswap raid=noautodetect %(bootoptions)s
 
 # flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 LABEL  %(grml_flavour)s-serial
@@ -410,6 +410,13 @@ def install_bootloader(device):
 
 def install_lilo_mbr(lilo, device):
     """TODO"""
+
+    # TODO: check out the *real* difference between:
+    # * mbr-install /dev/ice
+    # * lilo -S /dev/null -M /dev/ice ext && lilo -S /dev/null -A /dev/ice 1
+    # * cat /usr/lib/syslinux/mbr.bin > /dev/ice
+    # * syslinux -sf /dev/iceX
+    # * ...?
 
     # to support -A for extended partitions:
     logging.info("Installing MBR")
