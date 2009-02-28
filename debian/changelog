@@ -3,9 +3,15 @@ grml2usb (0.9.2) UNRELEASED; urgency=low
   * Rewrote grml2usb from scratch (in python). New features:
     - you no longer need to setup the device via /etc/fstab, just
       directly invoke "grml2usb /path/to/iso /dev/sdb1"
-    - initial multi-iso support
+    - initial multi-iso / multi-boot support
+      [Closes: issue501]  [Closes: issue584]
     - provide *several* new options like --mbr, --bootoptions=...
       check out the manpage for all the glory details!
+    - get rid of "polution" of root directory on usb-pen
+      [Closes: issue466]
+    - always write a default MBR [Closes: issue295]
+    - fix regressions for temporary mountpoints / wrong directories
+      [Closes: issue603] [Closes: issue602]
   * Update debian stuff:
     - Bump Standard Version to 3.8.0 (no further changes)
     - Change XS-Vcs-* to Vcs-* headers and replace mercurial with
@@ -13,7 +19,7 @@ grml2usb (0.9.2) UNRELEASED; urgency=low
     - drop mtools from depends
     - slightly improve long description
 
- -- Michael Prokop <mika@grml.org>  Tue, 17 Feb 2009 01:11:13 +0100
+ -- Michael Prokop <mika@grml.org>  Sat, 28 Feb 2009 17:20:47 +0100
 
 grml2usb (0.9.1) unstable; urgency=low
 
