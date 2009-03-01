@@ -65,7 +65,7 @@ Force any (possible dangerous) actions requiring manual interaction (like --fat1
 
   *--grub*::
 
-Install grub bootloader instead of syslinux. [Notice: not implemented yet.]
+Install grub bootloader instead of syslinux.
 
   *--help*::
 
