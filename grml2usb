@@ -1032,7 +1032,7 @@ def copy_addons(iso_mount, target):
     allinoneimg = search_file('allinone.img', iso_mount)
     if allinoneimg is None:
         logging.warn("Warning: allinone.img not found - can not install it...")
-        logging.warn(" |-> that's fine if you don't need it - or are you using grml-small?")
+        logging.warn(" |-> that's fine if you don't need it")
     else:
         logging.debug("cp %s %s" % (allinoneimg, addons + '/allinone.img'))
         proc = subprocess.Popen(["cp", allinoneimg, addons + 'allinone.img'])
@@ -1042,7 +1042,7 @@ def copy_addons(iso_mount, target):
     bsdimg = search_file('bsd4grml', iso_mount)
     if bsdimg is None:
         logging.warn("Warning: bsd4grml not found - can not install it...")
-        logging.warn(" |-> that's fine if you don't need it - or are you using grml-small?")
+        logging.warn(" |-> that's fine if you don't need it")
     else:
         logging.debug("cp -a %s %s" % (bsdimg, addons + '/'))
         proc = subprocess.Popen(["cp", "-a", bsdimg, addons + '/'])
@@ -1052,7 +1052,7 @@ def copy_addons(iso_mount, target):
     balderimg = search_file('balder10.imz', iso_mount)
     if balderimg is None:
         logging.warn("Warning: balder10.imz not found - can not install it...")
-        logging.warn(" |-> that's fine if you don't need it - or are you using grml-small?")
+        logging.warn(" |-> that's fine if you don't need it")
     else:
         logging.debug("cp %s %s" % (balderimg, addons + '/balder10.imz'))
         proc = subprocess.Popen(["cp", balderimg, addons + 'balder10.imz'])
@@ -1062,7 +1062,7 @@ def copy_addons(iso_mount, target):
     memdiskimg = search_file('memdisk', iso_mount)
     if memdiskimg is None:
         logging.warn("Warning: memdisk not found - can not install it...")
-        logging.warn(" |-> that's fine if you don't need it - or are you using grml-small?")
+        logging.warn(" |-> that's fine if you don't need it")
     else:
         logging.debug("cp %s %s" % (memdiskimg, addons + '/memdisk'))
         proc = subprocess.Popen(["cp", memdiskimg, addons + 'memdisk'])
@@ -1072,7 +1072,7 @@ def copy_addons(iso_mount, target):
     memtestimg = search_file('memtest', iso_mount)
     if memtestimg is None:
         logging.warn("Warning: memtest not found - can not install it...")
-        logging.warn(" |-> that's fine if you don't need it - or are you using grml-small?")
+        logging.warn(" |-> that's fine if you don't need it")
     else:
         logging.debug("cp %s %s" % (memtestimg, addons + '/memtest'))
         proc = subprocess.Popen(["cp", memtestimg, addons + 'memtest'])

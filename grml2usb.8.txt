@@ -347,6 +347,17 @@ Check whether the partition has the right partition type. For example do NOT use
 FAT16 (partition type 6) when using a ext3 filesystem on the partition but
 instead use the correct partition type ('83' - Linux) then.
 
+grub-install complains about /sbin/grub-install and/or xfs_freeze?!
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following message:
+
+  You shouldn't call /sbin/grub-install. Please call /usr/sbin/grub-install instead!
+  xfs_freeze: specified file ["/tmp/tmpqaBK6z/boot/grub"] is not on an XFS filesystem
+
+... is "normal". grub-install sends those messages to stderr. To avoid hiding any
+possible real error messages grml2usb doesn't ignore those messages.
+
 Why do I have to use a FAT16 filesystem?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
