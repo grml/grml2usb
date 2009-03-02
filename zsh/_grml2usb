@@ -1,0 +1,48 @@
+#compdef grml2usb
+# Filename:      /etc/zsh/completion.d/_grml2usb
+# Purpose:       completion of command grml2usb for zsh (z shell)
+# Authors:       grml-team (grml.org), (c) Michael Prokop <mika@grml.org>
+# Bug-Reports:   see http://grml.org/bugs/
+# License:       This file is licensed under the GPL v2.
+################################################################################
+
+local arguments dev
+local -a devices
+
+devices=()
+
+for dev in /dev/sd* /dev/hd* ; do
+  if [[ $(cat /sys/block/${dev#*dev/}/removable 2>/dev/null) == '1' ]] ; then
+     part=$(ls /dev/${dev#*dev/}[0-9])
+     devices+=$part
+  fi
+done
+
+# TODO:
+# * handling of --bootoptions=BOOTOPTIONS and --lilo-binary=LILOBIN
+# * $devices should also list directories as valid target
+# * as output before :device:.... ISO files and/or /live/image should be suggested
+
+arguments=(
+  '--help[display help message and exit]:'
+  '--bootoptions=[use specified bootoptions as default]:'
+  '--bootloader-only[do not copy files but just install a bootloader]'
+  '--copy-only[copy files only but do not install bootloader]'
+  '--dry-run[avoid executing commands]'
+  '--fat16[format specified partition with FAT16]'
+  '--force[force any actions requiring manual interaction]'
+  '--lilo-binary=LILOBIN[lilo executable to be used for installing MBR]:'
+  '--mbr-manager[enable interactive boot manager menu in MBR]'
+  '--quiet[do not output anything but just errors on console]'
+  '--skip-addons[do not install /boot/addons/ files]'
+  '--skip-mbr[do not install a master boot record (MBR) on the device]'
+  '--syslinux[install syslinux bootloader instead of grub]'
+  '--syslinux-mbr[install syslinux master boot record (MBR) instead of default]'
+  '--verbose[enable verbose mode]'
+  '--version[display program version and exit]'
+  ':device:($devices)'
+)
+_arguments -s $arguments
+
+## END OF FILE #################################################################
+# vim:foldmethod=marker

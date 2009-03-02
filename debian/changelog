@@ -1,3 +1,9 @@
+grml2usb (0.9.3) UNRELEASED; urgency=low
+
+  * Add zsh completion for grml2usb.
+
+ -- Michael Prokop <mika@grml.org>  Tue, 03 Mar 2009 00:02:37 +0100
+
 grml2usb (0.9.2) unstable; urgency=low
 
   * Rewrote grml2usb from scratch (in python). New features:
