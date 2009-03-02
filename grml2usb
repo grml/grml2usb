@@ -597,7 +597,7 @@ def install_grub(device):
     if options.dryrun:
         logging.info("Would execute grub-install [--root-directory=mount_point] %s now.", device)
     else:
-        device_mountpoint = tempfile.mkdtemp()
+        device_mountpoint = tempfile.mkdtemp(prefix="grml2usb")
         register_tmpfile(device_mountpoint)
         try:
             mount(device, device_mountpoint, "")
@@ -1032,7 +1032,7 @@ def copy_addons(iso_mount, target):
     allinoneimg = search_file('allinone.img', iso_mount)
     if allinoneimg is None:
         logging.warn("Warning: allinone.img not found - can not install it...")
-        logging.warn(" -> that's fine if you don't need it - or are you using grml-small?")
+        logging.warn(" |-> that's fine if you don't need it - or are you using grml-small?")
     else:
         logging.debug("cp %s %s" % (allinoneimg, addons + '/allinone.img'))
         proc = subprocess.Popen(["cp", allinoneimg, addons + 'allinone.img'])
@@ -1042,7 +1042,7 @@ def copy_addons(iso_mount, target):
     bsdimg = search_file('bsd4grml', iso_mount)
     if bsdimg is None:
         logging.warn("Warning: bsd4grml not found - can not install it...")
-        logging.warn(" -> that's fine if you don't need it - or are you using grml-small?")
+        logging.warn(" |-> that's fine if you don't need it - or are you using grml-small?")
     else:
         logging.debug("cp -a %s %s" % (bsdimg, addons + '/'))
         proc = subprocess.Popen(["cp", "-a", bsdimg, addons + '/'])
@@ -1052,7 +1052,7 @@ def copy_addons(iso_mount, target):
     balderimg = search_file('balder10.imz', iso_mount)
     if balderimg is None:
         logging.warn("Warning: balder10.imz not found - can not install it...")
-        logging.warn(" -> that's fine if you don't need it - or are you using grml-small?")
+        logging.warn(" |-> that's fine if you don't need it - or are you using grml-small?")
     else:
         logging.debug("cp %s %s" % (balderimg, addons + '/balder10.imz'))
         proc = subprocess.Popen(["cp", balderimg, addons + 'balder10.imz'])
@@ -1062,7 +1062,7 @@ def copy_addons(iso_mount, target):
     memdiskimg = search_file('memdisk', iso_mount)
     if memdiskimg is None:
         logging.warn("Warning: memdisk not found - can not install it...")
-        logging.warn(" -> that's fine if you don't need it - or are you using grml-small?")
+        logging.warn(" |-> that's fine if you don't need it - or are you using grml-small?")
     else:
         logging.debug("cp %s %s" % (memdiskimg, addons + '/memdisk'))
         proc = subprocess.Popen(["cp", memdiskimg, addons + 'memdisk'])
@@ -1072,7 +1072,7 @@ def copy_addons(iso_mount, target):
     memtestimg = search_file('memtest', iso_mount)
     if memtestimg is None:
         logging.warn("Warning: memtest not found - can not install it...")
-        logging.warn(" -> that's fine if you don't need it - or are you using grml-small?")
+        logging.warn(" |-> that's fine if you don't need it - or are you using grml-small?")
     else:
         logging.debug("cp %s %s" % (memtestimg, addons + '/memtest'))
         proc = subprocess.Popen(["cp", memtestimg, addons + 'memtest'])
@@ -1147,7 +1147,10 @@ def install_iso_files(grml_flavour, iso_mount, device, target):
         copy_grml_files(iso_mount, target)
 
     if not options.skipaddons:
-        copy_addons(iso_mount, target)
+        if grml_flavour.endswith('-small'):
+            logging.info("grml-small doesn't provide any addons, not installing them therefor.")
+        else:
+            copy_addons(iso_mount, target)
 
     if not options.copyonly:
         copy_bootloader_files(iso_mount, target)
@@ -1252,6 +1255,7 @@ def handle_grub2_config(grml_flavour, install_partition, grub_target, bootopt):
         if not re.match(main_identifier, string):
             grub2_config_file = open(grub2_cfg, 'w')
             logging.info("Note: grml flavour %s is being installed as the default booting system." % grml_flavour)
+            grub_flavour_is_default = True
             grub2_config_file.write(generate_main_grub2_config(grml_flavour, install_partition, bootopt))
             grub2_config_file.close()
     else:
@@ -1270,7 +1274,9 @@ def handle_grub2_config(grml_flavour, install_partition, grub_target, bootopt):
 
     if grub_flavour_config:
         grub2_config_file = open(grub2_cfg, 'a')
-        logging.info("Note: you can boot flavour %s using '%s' on the commandline." % (grml_flavour, grml_flavour))
+        # display only if the grml flavour isn't the default
+        if not grub_flavour_is_default:
+            logging.info("Note: you can boot flavour %s using '%s' on the commandline." % (grml_flavour, grml_flavour))
         grub2_config_file.write(generate_flavour_specific_grub2_config(grml_flavour, install_partition, bootopt))
         grub2_config_file.close( )
 
@@ -1389,7 +1395,7 @@ def handle_iso(iso, device):
         logging.critical("TODO: /live/image handling not yet implemented - sorry")
         sys.exit(1)
 
-    iso_mountpoint = tempfile.mkdtemp()
+    iso_mountpoint = tempfile.mkdtemp(prefix="grml2usb")
     register_tmpfile(iso_mountpoint)
     remove_iso_mountpoint = True
 
@@ -1410,7 +1416,7 @@ def handle_iso(iso, device):
         remove_device_mountpoint = False
         # skip_mbr = True
     else:
-        device_mountpoint = tempfile.mkdtemp()
+        device_mountpoint = tempfile.mkdtemp(prefix="grml2usb")
         register_tmpfile(device_mountpoint)
         remove_device_mountpoint = True
         try:
