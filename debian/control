@@ -2,7 +2,7 @@ Source: grml2usb
 Section: grml
 Priority: optional
 Maintainer: Michael Prokop <mika@grml.org>
-Build-Depends: debhelper (>= 4.0.0)
+Build-Depends: debhelper (>= 4.0.0), build-essential
 Standards-Version: 3.8.0
 Homepage: http://grml.org/grml2usb/
 Vcs-git: git://git.grml.org/grml2usb.git
@@ -11,7 +11,7 @@ Vcs-Browser: http://git.grml.org/?p=grml2usb.git
 Package: grml2usb
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, syslinux, python
-Description: install grml system to usb device
+Description: install grml system / ISO to usb device
  This script installs a grml ISO to an USB device to be able to boot from it.
  Make sure you have at least one grml ISO or a running grml system (/live/image)
  available.

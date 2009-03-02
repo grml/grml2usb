@@ -1,4 +1,4 @@
-grml2usb (0.9.2) UNRELEASED; urgency=low
+grml2usb (0.9.2) unstable; urgency=low
 
   * Please notice that grml2usb was rewritten from scratch.
     The invocation of grml2usb changed. Instead of invoking:
@@ -10,7 +10,7 @@ grml2usb (0.9.2) UNRELEASED; urgency=low
         # grmlusb /path/to/iso /dev/sdb1
 
     The new release brings many new features (like multi-iso
-    support, several new options like --mbr, --bootoptions=...).
+    support, support for grub as bootloader, several new options).
     Check out the manpage for all the details.  Please let us
     know if you explore any problems or have any questions.
 

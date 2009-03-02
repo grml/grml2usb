@@ -5,12 +5,14 @@ grml2usb (0.9.2) UNRELEASED; urgency=low
       directly invoke "grml2usb /path/to/iso /dev/sdb1"
     - initial multi-iso / multi-boot support
       [Closes: issue501]  [Closes: issue584]
-    - provide *several* new options like --bootloader-only, --bootoptions=...
-      check out the manpage for all the glory details!
+    - provide *several* new options like --bootloader-only,
+      --bootoptions=... check out the manpage for all the details
     - get rid of "polution" of root directory on usb-pen
       [Closes: issue466]
     - always write a default MBR (thanks a lot to the work
       and help of Thorsten Glaser!) [Closes: issue295]
+    - use grub by default (but support for syslinux is present as
+      well of course)
     - fix regressions for temporary mountpoints / wrong directories
       [Closes: issue603] [Closes: issue602]
   * Update debian stuff:
@@ -19,8 +21,9 @@ grml2usb (0.9.2) UNRELEASED; urgency=low
       grml's nowadays git repository URLs
     - drop mtools from depends
     - slightly improve long description
+    - add build-essential to Build-Depends
 
- -- Michael Prokop <mika@grml.org>  Mon, 02 Mar 2009 14:58:12 +0100
+ -- Michael Prokop <mika@grml.org>  Mon, 02 Mar 2009 16:40:55 +0100
 
 grml2usb (0.9.1) unstable; urgency=low
 
