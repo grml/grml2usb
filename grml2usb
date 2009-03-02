@@ -26,10 +26,11 @@ DATESTAMP = time.mktime(datetime.datetime.now().timetuple()) # unique identifier
 # cmdline parsing
 USAGE = "Usage: %prog [options] <[ISO[s] | /live/image]> </dev/sdX#>\n\
 \n\
-%prog installs a grml ISO to an USB device to be able to boot from it.\n\
+%prog installs grml ISO[s] to an USB device to be able to boot from it.\n\
 Make sure you have at least one grml ISO or a running grml system (/live/image),\n\
-syslinux (just run 'aptitude install syslinux' on Debian-based systems)\n\
-and root access. Further information can be found in: man grml2usb"
+grub or syslinux and root access.\n\
+\n\
+Execute %prog --help for usage hints, further information can be found in: man grml2usb"
 
 # pylint: disable-msg=C0103
 parser = OptionParser(usage=USAGE)
