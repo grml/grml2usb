@@ -77,17 +77,21 @@ Force any (possible dangerous) actions requiring manual interaction (like --fat1
 
 Display usage information and exit.
 
+//////////////////////////////////////////////////////////////////////////
   *--initrd=...*::
 
 Install specified initrd instead of the default. You might want to specify
 option *--kernel* as well. (Be aware when using multiboot setup.)
 [Notice: not implemented yet.]
+//////////////////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////////////////////
   *--kernel=...*::
 
 Install specified kernel instead of the default. You might want to specify
 option *--initrd* as well. (Be aware when using multiboot setup.)
 [Notice: not implemented yet.]
+//////////////////////////////////////////////////////////////////////////
 
   *--lilo-binary=...*::
 
@@ -129,15 +133,19 @@ with it you can try using the syslinux MBR instead. If that works for you please
 Note: When using the --syslinux-mbr option lilo is executed before the MBR
 is installed so the according partitions are set active.
 
+//////////////////////////////////////////////////////////////////////////
   *--squashfs=*::
 
 Install specified squashfs file instead of the default.
 [Notice: not implemented yet.]
+//////////////////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////////////////////
   *--uninstall*::
 
 Uninstall grml ISO files.
 [Notice: not implemented yet.]
+//////////////////////////////////////////////////////////////////////////
 
   *-v*, *--version*::
 
@@ -349,7 +357,10 @@ but use the default bootloader (grub) instead.
 I think I've got a really cool idea!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Please <<X7,report it to the author>>. Or even better: send us a patch. :)
+Great! Please check out
+link:http://git.grml.org/?p=grml2usb.git;a=blob;f=TODO;hb=HEAD[the TODO file].
+Feel free to <<X7,report your wishes to the author>>. Patches highly
+appreciated.
 
 I've problems with booting from USB.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -387,6 +398,7 @@ FAT16 filesystem.
 Install specified ISO on device /dev/sdb1 and use syslinux as bootloader
 (instead of grub being the default).
 
+/////////////////////////////////////////////////////////////////
   # grml2usb --kernel=/boot/vmlinuz-2.6.28-grml --initrd=/boot/initrd.img-2.6.28-grml \
              /home/grml/grml_2008.11.iso /dev/sdb1
 
@@ -395,6 +407,7 @@ instead of the ones provided by the ISO.
 
   # grml2usb --squashfs=/grml/grml-live/grml_cd/live/grml.squashfs \
              /home/grml/grml_2008.11.iso /dev/sdb1
+/////////////////////////////////////////////////////////////////
 
 Install specified ISO on device /dev/sdb1 but use given squashfs
 file instead of the one provided by the ISO.

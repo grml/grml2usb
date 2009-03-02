@@ -1,13 +1,16 @@
 TODOs
 -----
 
-* implement missing options (--kernel, --initrd, --squashfs, --uninstall)
-* provide --create-partition[s] option
-* provide --verify to check md5sums/sha1sums of files on usb device
-* validate partition schema/layout: is the partition schema ok and the bootable flag set? (--validate)
-* implement logic for storing information about copied files (register every file in a set())
+* implement --kernel option to install specific linux26 file
+* implement --initrd option to install specific initrd file
+* implement --squashfs option to install specific squashfs file
+* implement --verify option to check md5sums/sha1sums of files on usb device
+* implement --uninstall option to remove all grml2usb files in a clean manner
+  -> implement logic for storing information about copied files (register every file in a set())
+* implement --create-partition[s] option to generate a default partition setup
+* implement --validate option to validate partition schema/layout: is the partition schema ok and the bootable flag set?
 * the last line in bootsplash (boot.msg) of syslinux should mention all installed grml flavours
-  (attention, the line should become too long :))
+  (attention, the line should NOT become too long :))
 * code improvements:
   - improve error handling wherever possible :) => especially disk full, any other known test cases?
   - use 'with open("...", "w") as f: ... f.write("...")'
