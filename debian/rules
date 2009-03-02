@@ -42,6 +42,7 @@ install: build
 	install -m 644 grub/splash.xpm.gz     debian/grml2usb/usr/share/grml2usb/grub/splash.xpm.gz
 	install -m 644 grub/stage2_eltorito   debian/grml2usb/usr/share/grml2usb/grub/stage2_eltorito
 	install -m 644 mbr/mbrmgr             debian/grml2usb/usr/share/grml2usb/mbr/mbrmgr
+	install -m 644 mbr/mbrldr             debian/grml2usb/usr/share/grml2usb/mbr/mbrldr
 
 # Build architecture-dependent files here.
 binary-arch: build install

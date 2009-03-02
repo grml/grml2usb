@@ -18,7 +18,7 @@ from inspect import isroutine, isclass
 import datetime, logging, os, re, subprocess, sys, tempfile, time
 
 # global variables
-PROG_VERSION = "0.9.2(pre1)"
+PROG_VERSION = "0.9.2(pre2)"
 MOUNTED = set()  # register mountpoints
 TMPFILES = set() # register tmpfiles
 DATESTAMP = time.mktime(datetime.datetime.now().timetuple()) # unique identifier for syslinux.cfg
@@ -54,12 +54,16 @@ parser.add_option("--kernel", dest="kernel", action="store", type="string",
                   help="install specified kernel instead of the default [TODO]")
 parser.add_option("--lilo", dest="lilo",  action="store", type="string",
                   help="lilo executable to be used for installing MBR")
+parser.add_option("--mbr-manager", dest="mbrmgr", action="store_true",
+                  help="enable boot manager menu in MBR")
 parser.add_option("--quiet", dest="quiet", action="store_true",
                   help="do not output anything but just errors on console")
 parser.add_option("--skip-addons", dest="skipaddons", action="store_true",
                   help="do not install /boot/addons/ files")
 parser.add_option("--skip-mbr", dest="skipmbr", action="store_true",
                   help="do not install a master boot record (MBR) on the device")
+parser.add_option("--syslinux-mbr", dest="syslinuxmbr", action="store_true",
+                  help="install syslinux master boot record (MBR) instead of default")
 parser.add_option("--squashfs", dest="squashfs", action="store", type="string",
                   help="install specified squashfs file instead of the default [TODO]")
 parser.add_option("--uninstall", dest="uninstall", action="store_true",
@@ -245,37 +249,26 @@ menuentry "%(grml_flavour)s (default)" {
 }
 
 menuentry "Memory test (memtest86+)" {
-   linux   /boot/addons/memtest
+    set root=(hd0,%(install_partition)s)
+    linux   /boot/addons/memtest
 }
 
 menuentry "Grub - all in one image" {
-   linux   /boot/addons/memdisk
-   initrd  /boot/addons/allinone.img
+    set root=(hd0,%(install_partition)s)
+    linux   /boot/addons/memdisk
+    initrd  /boot/addons/allinone.img
 }
 
 menuentry "FreeDOS" {
-   linux   /boot/addons/memdisk
-   initrd  /boot/addons/balder10.imz
+    set root=(hd0,%(install_partition)s)
+    linux   /boot/addons/memdisk
+    initrd  /boot/addons/balder10.imz
 }
 
-#menuentry "Operating System on first partition of first disk" {
-#    set root=(hd0,1)
-#    chainloader +1
-#}
-#
-#menuentry "Operating System on second partition of first disk" {
-#    set root=(hd0,2)
-#    chainloader +1
-#}
-#
-#menuentry "Operating System on first partition of second disk" {
-#    set root=(hd1,1)
-#    chainloader +1
-#}
-#menuentry "Operating System on second partition of second disk" {
-#    set root=(hd1,2)
-#    chainloader +1
-#}
+menuentry "Boot Operating System on first partition of first disk" {
+    set root=(hd0,1)
+    chainloader +1
+}
 
 """ % {'grml_flavour': grml_flavour, 'local_datestamp': local_datestamp, 'bootoptions': bootoptions, 'install_partition': install_partition } )
 
@@ -290,55 +283,56 @@ def generate_flavour_specific_grub2_config(grml_flavour, install_partition, boot
     local_datestamp = DATESTAMP
 
     return("""\
-# flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
+## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s" {
     set root=(hd0,%(install_partition)s)
     linux  /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce vga=791 quiet module=%(grml_flavour)s %(bootoptions)s
     initrd /boot/release/%(grml_flavour)s/initrd.gz
 }
 
-# flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
+## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s2ram" {
     set root=(hd0,%(install_partition)s)
     linux  /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce vga=791 quiet module=%(grml_flavour)s toram=%(grml_flavour)s %(bootoptions)s
     initrd /boot/release/%(grml_flavour)s/initrd.gz
+}
 
-# flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
+## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s-debug" {
     set root=(hd0,%(install_partition)s)
     linux /boot/release/%(grml_flavour)s/linux26
     initrd /boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce vga=791 quiet module=%(grml_flavour)s debug boot=live initcall_debug%(bootoptions)s
 }
 
-# flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
+## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s-x" {
     set root=(hd0,%(install_partition)s)
     linux  /boot/release/%(grml_flavour)s/linux26
     initrd /boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce vga=791 quiet module=%(grml_flavour)s startx=wm-ng %(bootoptions)s
 }
 
-# flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
+## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s-nofb" {
     set root=(hd0,%(install_partition)s)
     linux  /boot/release/%(grml_flavour)s/linux26
     initrd /boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce quiet module=%(grml_flavour)s vga=normal video=ofonly %(bootoptions)s
 }
 
-# flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
+## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s-failsafe" {
     set root=(hd0,%(install_partition)s)
     linux /boot/release/%(grml_flavour)s/linux26
     initrd /boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce quiet module=%(grml_flavour)s vga=normal lang=us boot=live noautoconfig atapicd noacpi acpi=off nomodules nofirewire noudev nousb nohotplug noapm nopcmcia maxcpus=1 noscsi noagp nodma ide=nodma noswap nofstab nosound nogpm nosyslog nodhcp nocpu nodisc nomodem xmodule=vesa noraid nolvm %(bootoptions)s
 }
 
-# flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
+## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s-forensic" {
     set root=(hd0,%(install_partition)s)
     linux /boot/release/%(grml_flavour)s/linux26
     initrd /boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce vga=791 quiet module=%(grml_flavour)s nofstab noraid nolvm noautoconfig noswap raid=noautodetect %(bootoptions)s
 }
 
-# flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
+## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s-serial" {
     set root=(hd0,%(install_partition)s)
     linux /boot/release/%(grml_flavour)s/linux26
@@ -570,7 +564,7 @@ def install_lilo_mbr(lilo, device):
     """TODO"""
 
     # to support -A for extended partitions:
-    logging.info("Installing MBR")
+    logging.info("Activating partitions in MBR via lilo")
     logging.debug("%s -S /dev/null -M %s ext" % (lilo, device))
     proc = subprocess.Popen([lilo, "-S", "/dev/null", "-M", device, "ext"])
     proc.wait()
@@ -592,6 +586,7 @@ def install_syslinux_mbr(device):
     if not os.path.isfile("/usr/lib/syslinux/mbr.bin"):
         raise Exception("/usr/lib/syslinux/mbr.bin can not be read")
 
+    logging.info("Installing syslinux MBR")
     logging.debug("cat /usr/lib/syslinux/mbr.bin > %s" % device)
     try:
         # TODO -> use Popen instead?
@@ -602,7 +597,7 @@ def install_syslinux_mbr(device):
         logging.critical("Execution failed:", error)
 
 
-def InstallMBR(mbrtemplate, device, partition, ismirbsdmbr=True):
+def install_mir_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     """Installs an MBR to a device.
 
     Retrieve the partition table from "device", install an MBR from
@@ -617,6 +612,12 @@ def InstallMBR(mbrtemplate, device, partition, ismirbsdmbr=True):
     If "ismirbsdmbr", the partitions' active flags are not changed.
     Instead, the MBR's default value is set accordingly.
     """
+
+    logging.info("Installing default MBR")
+
+    if not os.path.isfile(mbrtemplate):
+        logging.critical("Error: %s can not be read." % mbrtemplate)
+        raise CriticalException("Error installing MBR (either try --syslinux-mbr or install missing file?)")
 
     if (partition < 0) or (partition > 3):
         raise ValueError("partition must be between 0 and 3")
@@ -633,14 +634,12 @@ def InstallMBR(mbrtemplate, device, partition, ismirbsdmbr=True):
     proc.wait()
     if proc.returncode != 0:
         raise Exception("error executing dd (first run)")
-    # os.system("dd if='%s' of='%s' bs=512 count=1" % (device, tmpf.name))
 
     logging.debug("executing: dd if=%s of=%s bs=%s count=1 conv=notrunc" % (mbrtemplate, tmpf.name, nmbrbytes))
     proc = subprocess.Popen(["dd", "if=%s" % mbrtemplate, "of=%s" % tmpf.name, "bs=%s" % nmbrbytes, "count=1", "conv=notrunc"], stderr=file(os.devnull, "r+"))
     proc.wait()
     if proc.returncode != 0:
         raise Exception("error executing dd (second run)")
-    # os.system("dd if='%s' of='%s' bs=%d count=1 conv=notrunc" % (mbrtemplate, tmpf.name, nmbrbytes))
 
     mbrcode = tmpf.file.read(512)
     if len(mbrcode) < 512:
@@ -663,17 +662,16 @@ def InstallMBR(mbrtemplate, device, partition, ismirbsdmbr=True):
     tmpf.file.write(mbrcode)
     tmpf.file.close()
 
-    #os.system("dd if='%s' of='%s' bs=512 count=1 conv=notrunc" % (tmpf.name, device))
-    logging.debug("executing: dd if='%s' of='%s' bs=512 count=1 conv=notrunc" % (tmpf.name, "/tmp/mbr"))
-    proc = subprocess.Popen(["dd", "if=%s" % tmpf.name, "of=%s" % "/tmp/mbr", "bs=512", "count=1", "conv=notrunc"], stderr=file(os.devnull, "r+"))
+    logging.debug("executing: dd if='%s' of='%s' bs=512 count=1 conv=notrunc" % (tmpf.name, device))
+    proc = subprocess.Popen(["dd", "if=%s" % tmpf.name, "of=%s" % device, "bs=512", "count=1", "conv=notrunc"], stderr=file(os.devnull, "r+"))
     proc.wait()
     if proc.returncode != 0:
         raise Exception("error executing dd (third run)")
-    # os.system("dd if='%s' of='%s' bs=512 count=1 conv=notrunc" % (tmpf.name, "/tmp/mbr"))
     del tmpf
 
-def install_mbr(device):
-    """Install a default master boot record on given device
+
+def handle_syslinux_mbr(device):
+    """Install syslinux master boot record on given device
 
     @device: device where MBR should be installed to"""
 
@@ -729,6 +727,11 @@ def mount(source, target, mount_options):
 
     # note: options.dryrun does not work here, as we have to
     # locate files and identify the grml flavour
+
+    for x in file('/proc/mounts').readlines():
+        if x.startswith(source):
+            raise CriticalException("Error executing mount: %s already mounted - please unmount before invoking grml2usb" % source)
+
     logging.debug("mount %s %s %s" % (mount_options, source, target))
     proc = subprocess.Popen(["mount"] + list(mount_options) + [source, target])
     proc.wait()
@@ -797,7 +800,7 @@ def check_for_fat(partition):
                                     " (wrong UID/permissions or device not present?)" % partition)
 
         if filesystem != "vfat":
-            raise CriticalException("Device %s does not contain a FAT16 partition." % partition)
+            raise CriticalException("Partition %s does not contain a FAT16 filesystem. (Use --fat16 or run mkfs.vfat %s)" % (partition, partition))
 
     except OSError:
         raise CriticalException("Sorry, /lib/udev/vol_id not available.")
@@ -1042,6 +1045,7 @@ def identify_grml_flavour(mountpath):
 
     return grml_flavour
 
+
 def handle_grub_config(grml_flavour, device, target):
     """ TODO """
 
@@ -1056,10 +1060,16 @@ def handle_grub_config(grml_flavour, device, target):
     if device[-1:].isdigit():
         install_partition = device[-1:]
 
+    # do NOT write "None" in kernel cmdline
+    if options.bootoptions is None:
+        bootopt = ""
+    else:
+        bootopt = options.bootoptions
+
     # grub1 config
     #logging.debug("Creating grub1 configuration file")
     #grub_config_file = open(grub_target + 'menu.lst', 'w')
-    #grub_config_file.write(generate_grub1_config(grml_flavour, install_partition, options.bootoptions))
+    #grub_config_file.write(generate_grub1_config(grml_flavour, install_partition, bootopt))
     #grub_config_file.close()
     # TODO => generate_main_grub1_config() && generate_flavour_specific_grub1_config()
 
@@ -1074,11 +1084,11 @@ def handle_grub_config(grml_flavour, device, target):
         if not re.match(main_identifier, string):
             grub2_config_file = open(grub2_cfg, 'w')
             logging.info("Note: grml flavour %s is being installed as the default booting system." % grml_flavour)
-            grub2_config_file.write(generate_main_grub2_config(grml_flavour, install_partition, options.bootoptions))
+            grub2_config_file.write(generate_main_grub2_config(grml_flavour, install_partition, bootopt))
             grub2_config_file.close()
     else:
         grub2_config_file = open(grub2_cfg, 'w')
-        grub2_config_file.write(generate_main_grub2_config(grml_flavour, install_partition, options.bootoptions))
+        grub2_config_file.write(generate_main_grub2_config(grml_flavour, install_partition, bootopt))
         grub2_config_file.close()
 
     grub_flavour_config = True
@@ -1092,13 +1102,19 @@ def handle_grub_config(grml_flavour, device, target):
 
     if grub_flavour_config:
         grub2_config_file = open(grub2_cfg, 'a')
-        grub2_config_file.write(generate_flavour_specific_grub2_config(grml_flavour, install_partition, options.bootoptions))
+        grub2_config_file.write(generate_flavour_specific_grub2_config(grml_flavour, install_partition, bootopt))
         grub2_config_file.close( )
 
 
 def handle_syslinux_config(grml_flavour, target):
     """ TODO
     """
+
+    # do NOT write "None" in kernel cmdline
+    if options.bootoptions is None:
+        bootopt = ""
+    else:
+        bootopt = options.bootoptions
 
     logging.info("Generating syslinux configuration")
     syslinux_target = target + '/boot/syslinux/'
@@ -1113,11 +1129,11 @@ def handle_syslinux_config(grml_flavour, target):
         if not re.match(main_identifier, string):
             syslinux_config_file = open(syslinux_cfg, 'w')
             logging.info("Note: grml flavour %s is being installed as the default booting system." % grml_flavour)
-            syslinux_config_file.write(generate_main_syslinux_config(grml_flavour, options.bootoptions))
+            syslinux_config_file.write(generate_main_syslinux_config(grml_flavour, bootopt))
             syslinux_config_file.close()
     else:
         syslinux_config_file = open(syslinux_cfg, 'w')
-        syslinux_config_file.write(generate_main_syslinux_config(grml_flavour, options.bootoptions))
+        syslinux_config_file.write(generate_main_syslinux_config(grml_flavour, bootopt))
         syslinux_config_file.close()
 
     # install flavour specific configuration only *once* as well
@@ -1133,7 +1149,7 @@ def handle_syslinux_config(grml_flavour, target):
 
     if syslinux_flavour_config:
         syslinux_config_file = open(syslinux_cfg, 'a')
-        syslinux_config_file.write(generate_flavour_specific_syslinux_config(grml_flavour, options.bootoptions))
+        syslinux_config_file.write(generate_flavour_specific_syslinux_config(grml_flavour, bootopt))
         syslinux_config_file.close( )
 
     logging.debug("Generating isolinux/syslinux splash %s" % syslinux_target + 'boot.msg')
@@ -1236,8 +1252,13 @@ def handle_mbr(device):
             partition_number = int(device[-1:]) - 1
 
         try:
-            # install_mbr(mbr_device)
-            InstallMBR('/usr/share/grml2usb/mbr/mbrmgr', mbr_device, partition_number, True)
+            if options.syslinuxmbr:
+                handle_syslinux_mbr(mbr_device)
+            else:
+                if options.mbrmgr:
+                    install_mir_mbr('/usr/share/grml2usb/mbr/mbrmgr', mbr_device, partition_number, True)
+                else:
+                    install_mir_mbr('/usr/share/grml2usb/mbr/mbrldr', mbr_device, partition_number, True)
         except IOError, error:
             logging.critical("Execution failed: %s", error)
             sys.exit(1)
@@ -1304,7 +1325,7 @@ def handle_logging():
         FORMAT = "%(asctime)-15s %(message)s"
         logging.basicConfig(level=logging.DEBUG, format=FORMAT)
     elif options.quiet:
-        FORMAT = "Critial: %(message)s"
+        FORMAT = "Critical: %(message)s"
         logging.basicConfig(level=logging.CRITICAL, format=FORMAT)
     else:
         FORMAT = "Info: %(message)s"
@@ -1337,7 +1358,7 @@ def main():
     check_uid_root()
 
     if options.dryrun:
-        logging.info("Running in simulate mode as requested via option dry-run.")
+        logging.info("Running in simulation mode as requested via option dry-run.")
 
     # specified arguments
     device = args[len(args) - 1]
