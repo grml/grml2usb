@@ -1,6 +1,17 @@
 TODOs
 -----
 
+* support installation of new ISO[s] additionally to already existing grml ISOs on the usb device
+  -> add "old"/already existing images automatically to bootloader configuration [thx gebi]
+* write bootloader configuration snippets to boot/releases/<release>/{grub.cfg,syslinux.cfg,...}
+  -> this could simplify live dramatically especially when supporting "already existing" images [thx gebi]
+* provide simple output being between default and --quiet [thx gebi], like:
+  # grml2usb iso1 iso2 /dev/sda1
+  installing:
+    iso1.... OK
+    iso2.... FAIL (error)
+  done.
+* provide default entry of all installed ISOs on the top of the bootscreen (in grub's config)
 * implement --kernel option to install specific linux26 file
 * implement --initrd option to install specific initrd file
 * implement --squashfs option to install specific squashfs file

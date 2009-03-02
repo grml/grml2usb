@@ -216,6 +216,10 @@ def mkfs_fat16(device):
     @device: partition that should be formated"""
 
     # syslinux -d boot/isolinux /dev/sdb1
+    if options.dryrun:
+        logging.info("Would execute mkfs.vfat -F 16 %s now.", device)
+        return 0
+
     logging.info("Formating partition with fat16 filesystem")
     logging.debug("mkfs.vfat -F 16 %s" % device)
     proc = subprocess.Popen(["mkfs.vfat", "-F", "16", device])
@@ -1027,7 +1031,8 @@ def copy_addons(iso_mount, target):
     # grub all-in-one image
     allinoneimg = search_file('allinone.img', iso_mount)
     if allinoneimg is None:
-        logging.warn("Warning: allinone.img not found - can not install it")
+        logging.warn("Warning: allinone.img not found - can not install it...")
+        logging.warn(" -> that's fine if you don't need it - or are you using grml-small?")
     else:
         logging.debug("cp %s %s" % (allinoneimg, addons + '/allinone.img'))
         proc = subprocess.Popen(["cp", allinoneimg, addons + 'allinone.img'])
@@ -1036,7 +1041,8 @@ def copy_addons(iso_mount, target):
     # bsd imag
     bsdimg = search_file('bsd4grml', iso_mount)
     if bsdimg is None:
-        logging.warn("Warning: bsd4grml not found - can not install it")
+        logging.warn("Warning: bsd4grml not found - can not install it...")
+        logging.warn(" -> that's fine if you don't need it - or are you using grml-small?")
     else:
         logging.debug("cp -a %s %s" % (bsdimg, addons + '/'))
         proc = subprocess.Popen(["cp", "-a", bsdimg, addons + '/'])
@@ -1045,7 +1051,8 @@ def copy_addons(iso_mount, target):
     # freedos image
     balderimg = search_file('balder10.imz', iso_mount)
     if balderimg is None:
-        logging.warn("Warning: balder10.imz not found - can not install it")
+        logging.warn("Warning: balder10.imz not found - can not install it...")
+        logging.warn(" -> that's fine if you don't need it - or are you using grml-small?")
     else:
         logging.debug("cp %s %s" % (balderimg, addons + '/balder10.imz'))
         proc = subprocess.Popen(["cp", balderimg, addons + 'balder10.imz'])
@@ -1054,7 +1061,8 @@ def copy_addons(iso_mount, target):
     # memdisk image
     memdiskimg = search_file('memdisk', iso_mount)
     if memdiskimg is None:
-        logging.warn("Warning: memdisk not found - can not install it")
+        logging.warn("Warning: memdisk not found - can not install it...")
+        logging.warn(" -> that's fine if you don't need it - or are you using grml-small?")
     else:
         logging.debug("cp %s %s" % (memdiskimg, addons + '/memdisk'))
         proc = subprocess.Popen(["cp", memdiskimg, addons + 'memdisk'])
@@ -1063,7 +1071,8 @@ def copy_addons(iso_mount, target):
     # memtest86+ image
     memtestimg = search_file('memtest', iso_mount)
     if memtestimg is None:
-        logging.warn("Warning: memtest not found - can not install it")
+        logging.warn("Warning: memtest not found - can not install it...")
+        logging.warn(" -> that's fine if you don't need it - or are you using grml-small?")
     else:
         logging.debug("cp %s %s" % (memtestimg, addons + '/memtest'))
         proc = subprocess.Popen(["cp", memtestimg, addons + 'memtest'])
@@ -1131,7 +1140,6 @@ def install_iso_files(grml_flavour, iso_mount, device, target):
     # * catch "install: .. No space left on device" & CO
 
     if options.dryrun:
-        logging.info("Would copy files to %s", iso_mount)
         return 0
     elif not options.bootloaderonly:
         logging.info("Copying files. This might take a while....")
@@ -1436,9 +1444,13 @@ def handle_mbr(device):
 
     @device: device where the MBR should be installed to"""
 
+    if options.dryrun:
+        logging.info("Would install MBR")
+        return 0
+
     # make sure we have syslinux available
     if not options.skipmbr:
-        if not which("syslinux") and not options.copyonly and not options.dryrun:
+        if not which("syslinux") and not options.copyonly:
             logging.critical('Sorry, syslinux not available. Exiting.')
             logging.critical('Please install syslinux or consider using the --grub option.')
             sys.exit(1)
