@@ -30,7 +30,7 @@ USAGE = "Usage: %prog [options] <[ISO[s] | /live/image]> </dev/sdX#>\n\
 Make sure you have at least one grml ISO or a running grml system (/live/image),\n\
 grub or syslinux and root access.\n\
 \n\
-Execute %prog --help for usage hints, further information can be found in: man grml2usb"
+Run %prog --help for usage hints, further information via: man grml2usb"
 
 # pylint: disable-msg=C0103
 parser = OptionParser(usage=USAGE)
@@ -1148,7 +1148,7 @@ def install_iso_files(grml_flavour, iso_mount, device, target):
 
     if not options.skipaddons:
         if grml_flavour.endswith('-small'):
-            logging.info("grml-small doesn't provide any addons, not installing them therefor.")
+            logging.info("Note: grml-small doesn't provide any addons, not installing them therefor.")
         else:
             copy_addons(iso_mount, target)
 
@@ -1233,7 +1233,7 @@ def handle_grub1_config(grml_flavour, install_partition, grub_target, bootopt):
     if grub_flavour_config:
         grub1_config_file = open(grub1_cfg, 'a')
         grub1_config_file.write(generate_flavour_specific_grub1_config(grml_flavour, install_partition, bootopt))
-        grub1_config_file.close( )
+        grub1_config_file.close()
 
 
 def handle_grub2_config(grml_flavour, install_partition, grub_target, bootopt):
@@ -1249,6 +1249,7 @@ def handle_grub2_config(grml_flavour, install_partition, grub_target, bootopt):
     logging.debug("Creating grub2 configuration file (grub.lst)")
 
     # install main configuration only *once*, no matter how many ISOs we have:
+    grub_flavour_is_default = False
     if os.path.isfile(grub2_cfg):
         string = open(grub2_cfg).readline()
         main_identifier = re.compile(".*main config generated at: %s.*" % re.escape(str(DATESTAMP)))
@@ -1261,9 +1262,11 @@ def handle_grub2_config(grml_flavour, install_partition, grub_target, bootopt):
     else:
         grub2_config_file = open(grub2_cfg, 'w')
         logging.info("Note: grml flavour %s is being installed as the default booting system." % grml_flavour)
+        grub_flavour_is_default = True
         grub2_config_file.write(generate_main_grub2_config(grml_flavour, install_partition, bootopt))
         grub2_config_file.close()
 
+    # install flavour specific configuration only *once* as well
     grub_flavour_config = True
     if os.path.isfile(grub2_cfg):
         string = open(grub2_cfg).readlines()
@@ -1278,7 +1281,7 @@ def handle_grub2_config(grml_flavour, install_partition, grub_target, bootopt):
         if not grub_flavour_is_default:
             logging.info("Note: you can boot flavour %s using '%s' on the commandline." % (grml_flavour, grml_flavour))
         grub2_config_file.write(generate_flavour_specific_grub2_config(grml_flavour, install_partition, bootopt))
-        grub2_config_file.close( )
+        grub2_config_file.close()
 
 
 def handle_grub_config(grml_flavour, device, target):
@@ -1331,25 +1334,27 @@ def handle_syslinux_config(grml_flavour, target):
     syslinux_cfg = syslinux_target + 'syslinux.cfg'
 
     # install main configuration only *once*, no matter how many ISOs we have:
+    syslinux_flavour_is_default = False
     if os.path.isfile(syslinux_cfg):
         string = open(syslinux_cfg).readline()
         main_identifier = re.compile(".*main config generated at: %s.*" % re.escape(str(DATESTAMP)))
         if not re.match(main_identifier, string):
             syslinux_config_file = open(syslinux_cfg, 'w')
             logging.info("Note: grml flavour %s is being installed as the default booting system." % grml_flavour)
+            syslinux_flavour_is_default = True
             syslinux_config_file.write(generate_main_syslinux_config(grml_flavour, bootopt))
             syslinux_config_file.close()
     else:
         syslinux_config_file = open(syslinux_cfg, 'w')
+        logging.info("Note: grml flavour %s is being installed as the default booting system." % grml_flavour)
+        syslinux_flavour_is_default = True
         syslinux_config_file.write(generate_main_syslinux_config(grml_flavour, bootopt))
         syslinux_config_file.close()
 
     # install flavour specific configuration only *once* as well
-    # kind of ugly - I'm pretty sure this could be smoother...
     syslinux_flavour_config = True
     if os.path.isfile(syslinux_cfg):
         string = open(syslinux_cfg).readlines()
-        logging.info("Note: you can boot flavour %s using '%s' on the commandline." % (grml_flavour, grml_flavour))
         flavour = re.compile("grml2usb for %s: %s" % (re.escape(grml_flavour), re.escape(str(DATESTAMP))))
         for line in string:
             if flavour.match(line):
@@ -1357,13 +1362,16 @@ def handle_syslinux_config(grml_flavour, target):
 
     if syslinux_flavour_config:
         syslinux_config_file = open(syslinux_cfg, 'a')
+        # display only if the grml flavour isn't the default
+        if not syslinux_flavour_is_default:
+            logging.info("Note: you can boot flavour %s using '%s' on the commandline." % (grml_flavour, grml_flavour))
         syslinux_config_file.write(generate_flavour_specific_syslinux_config(grml_flavour, bootopt))
-        syslinux_config_file.close( )
+        syslinux_config_file.close()
 
     logging.debug("Generating isolinux/syslinux splash %s" % syslinux_target + 'boot.msg')
     isolinux_splash = open(syslinux_target + 'boot.msg', 'w')
     isolinux_splash.write(generate_isolinux_splash(grml_flavour))
-    isolinux_splash.close( )
+    isolinux_splash.close()
 
 
 def handle_bootloader_config(grml_flavour, device, target):
@@ -1439,10 +1447,14 @@ def handle_iso(iso, device):
             os.rmdir(iso_mountpoint)
             unregister_tmpfile(iso_mountpoint)
         if remove_device_mountpoint:
-            unmount(device_mountpoint, "")
-            if os.path.isdir(device_mountpoint):
-                os.rmdir(device_mountpoint)
-                unregister_tmpfile(device_mountpoint)
+            try:
+                unmount(device_mountpoint, "")
+                if os.path.isdir(device_mountpoint):
+                    os.rmdir(device_mountpoint)
+                    unregister_tmpfile(device_mountpoint)
+            except CriticalException, error:
+                logging.critical("Fatal: %s" % error)
+                cleanup()
 
 
 def handle_mbr(device):
