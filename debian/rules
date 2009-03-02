@@ -37,13 +37,10 @@ install: build
 
 	# Add here commands to install the package into debian/grml2usb.
 	install -m 755 grml2usb               debian/grml2usb/usr/sbin/grml2usb
-	install -m 755 lilo/lilo.static.i386  debian/grml2usb//usr/share/grml2usb/lilo/lilo.static.i386
-	install -m 755 lilo/lilo.static.amd64 debian/grml2usb//usr/share/grml2usb/lilo/lilo.static.amd64
-	install -m 644 grub/splash.xpm.gz     debian/grml2usb/usr/share/grml2usb/grub/splash.xpm.gz
-	install -m 644 grub/stage2_eltorito   debian/grml2usb/usr/share/grml2usb/grub/stage2_eltorito
-	install -m 644 grub/grml.png          debian/grml2usb/usr/share/grml2usb/grub/grml.png
 	install -m 644 mbr/mbrmgr             debian/grml2usb/usr/share/grml2usb/mbr/mbrmgr
 	install -m 644 mbr/mbrldr             debian/grml2usb/usr/share/grml2usb/mbr/mbrldr
+	cp -a          lilo/                  debian/grml2usb/usr/share/grml2usb/
+	cp -a          grub/                  debian/grml2usb/usr/share/grml2usb/
 
 # Build architecture-dependent files here.
 binary-arch: build install

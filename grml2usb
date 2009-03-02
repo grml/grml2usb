@@ -1077,15 +1077,6 @@ def copy_bootloader_files(iso_mount, target):
                                 grub_target + 'ascii.pff'])
         proc.wait()
 
-    if not os.path.isfile("/usr/share/grml2usb/grub/stage2_eltorito"):
-        logging.critical("Error: /usr/share/grml2usb/grub/stage2_eltorito can not be read.")
-        raise
-    else:
-        logging.debug("cp /usr/share/grml2usb/grub/stage2_eltorito to %s" % grub_target + 'stage2_eltorito')
-        proc = subprocess.Popen(["install", "--mode=664", '/usr/share/grml2usb/grub/stage2_eltorito',
-                                grub_target + 'stage2_eltorito'])
-        proc.wait()
-
 
 def install_iso_files(grml_flavour, iso_mount, device, target):
     """Copy files from ISO on given target"""

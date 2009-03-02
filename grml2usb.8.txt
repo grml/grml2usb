@@ -186,7 +186,6 @@ Directory layout on usb device
     |   |-- grub.cfg         [configuration file for grub2]
     |   |-- menu.lst         [configuration file for grub1]
     |   |-- splash.xpm.gz    [splash screen for grub1]
-    |   `-- stage2_eltorito  [stage 2 loader for grub1]
     `-- syslinux/
         |-- boot.msg         [boot splash for syslinux]
         |-- f1               [screen when pressing f1]
