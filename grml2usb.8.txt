@@ -34,8 +34,11 @@ grub doesn't work for you check out the --syslinux option.
 Options
 -------
 
-The ISO[s] might be the path to one or multiple grml-ISOs as well as the path to
-the currently running live-system (being /live/image).
+The ISO[s] is the path to one or multiple grml-ISOs.
+/////////////////////////////////////////////////////////////////////////////
+TODO:
+as well as the path to the currently running live-system (being /live/image).
+/////////////////////////////////////////////////////////////////////////////
 
 The device either might be a device name like /dev/sda1 or a directory. When
 specifying a device name the device is mounted automatically. When specifying a

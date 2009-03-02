@@ -837,6 +837,10 @@ def mount(source, target, mount_options):
         if x.startswith(source):
             raise CriticalException("Error executing mount: %s already mounted - please unmount before invoking grml2usb" % source)
 
+    if os.path.isdir(source):
+        logging.debug("Source %s is not a device, not mounting therefor." % source)
+        return 0
+
     logging.debug("mount %s %s %s" % (mount_options, source, target))
     proc = subprocess.Popen(["mount"] + list(mount_options) + [source, target])
     proc.wait()
@@ -902,7 +906,7 @@ def check_for_fat(partition):
 
         if udev_info.returncode == 2:
             raise CriticalException("Failed to read device %s"
-                                    " (wrong UID/permissions or device not present?)" % partition)
+                                    " (wrong UID/permissions or device/directory not present?)" % partition)
 
         if options.syslinux and filesystem != "vfat":
             raise CriticalException("Partition %s does not contain a FAT16 filesystem. (Use --fat16 or run mkfs.vfat %s)" % (partition, partition))
@@ -1118,6 +1122,7 @@ def install_iso_files(grml_flavour, iso_mount, device, target):
 
     @grml_flavour: name of grml flavour the configuration should be generated for
     @iso_mount: path where a grml ISO is mounted on
+    @device: device/partition where bootloader should be installed to
     @target: path where grml's main files should be copied to"""
 
     # TODO => several improvements:
@@ -1139,7 +1144,7 @@ def install_iso_files(grml_flavour, iso_mount, device, target):
     if not options.copyonly:
         copy_bootloader_files(iso_mount, target)
 
-        if not options.dryrun:
+        if not options.dryrun and not os.path.isdir(device):
             handle_bootloader_config(grml_flavour, device, target)
 
     # make sure we sync filesystems before returning
@@ -1278,6 +1283,8 @@ def handle_grub_config(grml_flavour, device, target):
     if device[-1:].isdigit():
         install_grub1_partition = int(device[-1:]) - 1
         install_grub2_partition = device[-1:]
+    else:
+        raise CriticalException("error validating partition schema (raw device?)")
 
     # do NOT write "None" in kernel cmdline
     if options.bootoptions is None:
@@ -1355,7 +1362,11 @@ def handle_bootloader_config(grml_flavour, device, target):
     if options.syslinux:
         handle_syslinux_config(grml_flavour, target)
     else:
-        handle_grub_config(grml_flavour, device, target)
+        try:
+            handle_grub_config(grml_flavour, device, target)
+        except CriticalException, error:
+            logging.critical("Fatal: %s" % error)
+            sys.exit(1)
 
 
 def handle_iso(iso, device):
@@ -1485,7 +1496,7 @@ def handle_vfat(device):
             logging.critical("Execution failed: %s", error)
             sys.exit(1)
 
-    if not check_for_usbdevice(device):
+    if not check_for_usbdevice(device) and not os.path.isdir(device):
         print "Warning: the specified device %s does not look like a removable usb device." % device
         f = raw_input("Do you really want to continue? y/N ")
         if f == "y" or f == "Y":
@@ -1534,6 +1545,8 @@ def handle_bootloader(device):
     # Install bootloader only if not using the --copy-only option
     if options.copyonly:
         logging.info("Not installing bootloader and its files as requested via option copyonly.")
+    elif os.path.isdir(device):
+        logging.info("Not installing bootloader as %s is a directory." % device)
     else:
         install_bootloader(device)
 
@@ -1561,13 +1574,15 @@ def main():
     device = args[len(args) - 1]
     isos = args[0:len(args) - 1]
 
-    if device[-1:].isdigit():
-        if int(device[-1:]) > 4:
-            logging.critical("Fatal: installation on partition number >4 not supported. (BIOS won't support it.)")
-            sys.exit(1)
-    else:
-        logging.critical("Fatal: installation on raw device not supported. (BIOS won't support it.)")
-        sys.exit(1)
+    if not os.path.isdir(device):
+        if device[-1:].isdigit():
+            if int(device[-1:]) > 4:
+                logging.critical("Fatal: installation on partition number >4 not supported. (BIOS won't support it.)")
+                sys.exit(1)
+        else:
+             if os.path.exists(device):
+                logging.critical("Fatal: installation on raw device not supported. (BIOS won't support it.)")
+                sys.exit(1)
 
     # provide upgrade path
     handle_compat_warning(device)
@@ -1580,7 +1595,8 @@ def main():
         handle_iso(iso, device)
 
     # install mbr
-    handle_mbr(device)
+    if not os.path.isdir(device):
+        handle_mbr(device)
 
     handle_bootloader(device)
 
