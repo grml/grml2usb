@@ -2,5 +2,6 @@ grml2usb: arch-dependent-file-in-usr-share ./usr/share/grml2usb/lilo/lilo.static
 grml2usb: arch-dependent-file-in-usr-share ./usr/share/grml2usb/lilo/lilo.static.i386
 grml2usb: arch-independent-package-contains-binary-or-object ./usr/share/grml2usb/lilo/lilo.static.amd64
 grml2usb: arch-independent-package-contains-binary-or-object ./usr/share/grml2usb/lilo/lilo.static.i386
+grml2usb: extra-license-file usr/share/grml2usb/lilo/COPYING
 grml2usb: statically-linked-binary ./usr/share/grml2usb/lilo/lilo.static.amd64
 grml2usb: statically-linked-binary ./usr/share/grml2usb/lilo/lilo.static.i386
