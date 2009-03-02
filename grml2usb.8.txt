@@ -224,18 +224,16 @@ Directory layout on usb device
             `-- logo.png
 
   live/
-    |-- filesystem.module      [file specifying which squashfs should be used by default]
-    |-- grml.squashfs          [squashfs file]
-    |-- grml-medium.module     [module specifying which squashfs should be used for grml-medium]
-    |-- grml-medium.squashfs   [squashfs file for grml-medium]
-    |-- grml-small.module      [...]
-    |-- grml-small.squashfs
-    |-- grml64.module
-    |-- grml64.squashfs
-    |-- grml64-medium.module
-    |-- grml64-medium.squashfs
-    |-- grml64-small.module
-    `-- grml64-small.squashfs
+    |-- grml/
+    |   |-- filesystem.module    [module specifying which squashfs should be used for grml]
+    |   `-- grml.squashfs        [squashfs file for grml]
+    |-- grml-medium/
+    |   |-- filesystem.module    [module specifying which squashfs should be used for grml-medium]
+    |   `-- grml-medium.squashfs [squashfs file for grml-medium]
+    |-- grml-small/
+    |   |-- filesystem.module    [module specifying which squashfs should be used for grml-medium]
+    |   `-- grml-small.squashfs  [squashfs file for grml-small]
+    `-- ...
 
 Grabbing the source
 ~~~~~~~~~~~~~~~~~~~
