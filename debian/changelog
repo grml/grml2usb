@@ -21,7 +21,7 @@ grml2usb (0.9.2) unstable; urgency=low
       grml's nowadays git repository URLs
     - drop mtools from depends
     - slightly improve long description
-    - add build-essential, asciidoc, xsltproc and docbook-xsl to Build-Depends
+    - add asciidoc, xsltproc and docbook-xsl to Build-Depends
 
  -- Michael Prokop <mika@grml.org>  Mon, 02 Mar 2009 16:40:55 +0100
 
