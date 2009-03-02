@@ -46,22 +46,22 @@ parser.add_option("--fat16", dest="fat16", action="store_true",
                   help="format specified partition with FAT16")
 parser.add_option("--force", dest="force", action="store_true",
                   help="force any actions requiring manual interaction")
-parser.add_option("--grub", dest="grub", action="store_true",
-                  help="install grub bootloader instead of syslinux")
 parser.add_option("--initrd", dest="initrd", action="store", type="string",
                   help="install specified initrd instead of the default [TODO]")
 parser.add_option("--kernel", dest="kernel", action="store", type="string",
                   help="install specified kernel instead of the default [TODO]")
-parser.add_option("--lilo", dest="lilo",  action="store", type="string",
+parser.add_option("--lilo-binary", dest="lilobin",  action="store", type="string",
                   help="lilo executable to be used for installing MBR")
 parser.add_option("--mbr-manager", dest="mbrmgr", action="store_true",
-                  help="enable boot manager menu in MBR")
+                  help="enable interactive boot manager menu in MBR")
 parser.add_option("--quiet", dest="quiet", action="store_true",
                   help="do not output anything but just errors on console")
 parser.add_option("--skip-addons", dest="skipaddons", action="store_true",
                   help="do not install /boot/addons/ files")
 parser.add_option("--skip-mbr", dest="skipmbr", action="store_true",
                   help="do not install a master boot record (MBR) on the device")
+parser.add_option("--syslinux", dest="syslinux", action="store_true",
+                  help="install syslinux bootloader instead of grub")
 parser.add_option("--syslinux-mbr", dest="syslinuxmbr", action="store_true",
                   help="install syslinux master boot record (MBR) instead of default")
 parser.add_option("--squashfs", dest="squashfs", action="store", type="string",
@@ -272,6 +272,11 @@ menuentry "FreeDOS" {
     initrd  /boot/addons/balder10.imz
 }
 
+menuentry "MirBSD" {
+    set root=(hd0,%(install_partition)s)
+    linux   /boot/addons/bsd4grml/ldbsd.com
+}
+
 menuentry "Boot OS of first partition on first disk" {
     set root=(hd0,1)
     chainloader +1
@@ -423,6 +428,20 @@ title %(grml_flavour)s  - Default boot (using 1024x768 framebuffer)
 kernel (hd0,%(install_partition)s)/boot/release/%(grml_flavour)s/linux26 apm=power-off lang=us vga=791 quiet boot=live nomce module=%(grml_flavour)s
 initrd (hd0,%(install_partition)s)/boot/release/%(grml_flavour)s/initrd.gz
 
+title Memory test (memtest86+)
+kernel (hd0,%(install_partition)s)/boot/addons/memtest
+
+title Grub - all in one image
+kernel (hd0,%(install_partition)s)/boot/addons/memdisk
+initrd (hd0,%(install_partition)s)/boot/addons/allinone.img
+
+title FreeDOS
+kernel (hd0,%(install_partition)s)/boot/addons/memdisk
+initrd (hd0,%(install_partition)s)/boot/addons/balder10.imz
+
+title MirBSD
+kernel (hd0,%(install_partition)s)/boot/addons/bsd4grml/ldbsd.com
+
 """ % {'grml_flavour': grml_flavour, 'local_datestamp': local_datestamp, 'bootoptions': bootoptions, 'install_partition': install_partition } )
 
 
@@ -492,6 +511,11 @@ LABEL dos
 MENU LABEL dos
 KERNEL /boot/addons/memdisk
 APPEND initrd=/boot/addons/balder10.imz
+
+# bsd
+LABEL bsd
+MENU LABEL bsd
+KERNEL /boot/addons/bsd4grml/ldbsd.com
 
 ## end of global configuration
 """ % {'grml_flavour': grml_flavour, 'local_datestamp': local_datestamp, 'bootoptions': bootoptions} )
@@ -601,18 +625,17 @@ def install_bootloader(device):
 
     @device: partition where bootloader should be installed to"""
 
-    # Install bootloader on the device (/dev/sda),
-    # not on the partition itself (/dev/sda1)?
-    #if partition[-1:].isdigit():
-    #    device = re.match(r'(.*?)\d*$', partition).group(1)
-    #else:
-    #    device = partition
-
-    if options.grub:
-        install_grub(device)
-    else:
+    # by default we use grub, so install syslinux only on request
+    if options.syslinux:
         try:
             install_syslinux(device)
+        except CriticalException, error:
+            logging.critical("Fatal: %s" % error)
+            cleanup()
+            sys.exit(1)
+    else:
+        try:
+            install_grub(device)
         except CriticalException, error:
             logging.critical("Fatal: %s" % error)
             cleanup()
@@ -748,8 +771,8 @@ def handle_syslinux_mbr(device):
         else:
             lilo = '/usr/share/grml2usb/lilo/lilo.static.i386'
     # finally prefer a specified lilo executable
-    if options.lilo:
-        lilo = options.lilo
+    if options.lilobin:
+        lilo = options.lilobin
 
     if not is_exe(lilo):
         raise Exception("lilo executable can not be execute")
@@ -974,6 +997,15 @@ def copy_addons(iso_mount, target):
         proc = subprocess.Popen(["install", "--mode=664", allinoneimg, addons + 'allinone.img'])
         proc.wait()
 
+    # bsd imag
+    bsdimg = search_file('bsd4grml', iso_mount)
+    if bsdimg is None:
+        logging.warn("Warning: bsd4grml not found - can not install it")
+    else:
+        logging.debug("cp -a %s %s" % (bsdimg, addons + '/'))
+        proc = subprocess.Popen(["cp", "-a", bsdimg, addons + '/'])
+        proc.wait()
+
     # freedos image
     balderimg = search_file('balder10.imz', iso_mount)
     if balderimg is None:
@@ -1132,7 +1164,7 @@ def handle_grub1_config(grml_flavour, install_partition, grub_target, bootopt):
         main_identifier = re.compile(".*main config generated at: %s.*" % re.escape(str(DATESTAMP)))
         if not re.match(main_identifier, string):
             grub1_config_file = open(grub1_cfg, 'w')
-            logging.info("Note: grml flavour %s is being installed as the default booting system." % grml_flavour)
+            # logging.info("Note: grml flavour %s is being installed as the default booting system." % grml_flavour)
             grub1_config_file.write(generate_main_grub1_config(grml_flavour, install_partition, bootopt))
             grub1_config_file.close()
     else:
@@ -1143,7 +1175,7 @@ def handle_grub1_config(grml_flavour, install_partition, grub_target, bootopt):
     grub_flavour_config = True
     if os.path.isfile(grub1_cfg):
         string = open(grub1_cfg).readlines()
-        logging.info("Note: you can boot flavour %s using '%s' on the commandline." % (grml_flavour, grml_flavour))
+        # logging.info("Note: you can boot flavour %s using '%s' on the commandline." % (grml_flavour, grml_flavour))
         flavour = re.compile("grml2usb for %s: %s" % (re.escape(grml_flavour), re.escape(str(DATESTAMP))))
         for line in string:
             if flavour.match(line):
@@ -1271,10 +1303,10 @@ def handle_syslinux_config(grml_flavour, target):
 def handle_bootloader_config(grml_flavour, device, target):
     """TODO"""
 
-    if options.grub:
-        handle_grub_config(grml_flavour, device, target)
-    else:
+    if options.syslinux:
         handle_syslinux_config(grml_flavour, target)
+    else:
+        handle_grub_config(grml_flavour, device, target)
 
 
 def handle_iso(iso, device):

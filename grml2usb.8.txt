@@ -23,6 +23,14 @@ boot on the bootbrompt then. Note that the *first* ISO specified on the grml2usb
 command line will become the default one (that's the one that will boot when
 just pressing enter on the bootprompt or wait until the boot timeout matches).
 
+[IMPORTANT]
+By default a compatible master boot record (MBR) is installed on the device
+(being for example /dev/sdb when executing 'grml2usb grml.iso /dev/sdb1')
+and grub is being used as default bootloader. Avoid installation of the
+default MBR using the --skip-mbr option or if you encounter any problems
+with the default MBR consider using --syslinux-mbr instead. If bootloader
+grub doesn't work for you check out the --syslinux option.
+
 Options
 -------
 
@@ -42,7 +50,9 @@ Use specified bootoptions as default.
 
   *--bootloader-only*::
 
-Do *not* copy files but instead just install a bootloader.
+Do *not* copy files but instead just install a bootloader.  Note that the boot
+addons are copied to /boot/addons at this stage as well.  If you want to skip
+copying the boot addons consider using the --skip-addons option.
 
   *--copy-only*::
 
@@ -63,10 +73,6 @@ Format specified partition with FAT16.
 
 Force any (possible dangerous) actions requiring manual interaction (like --fat16).
 
-  *--grub*::
-
-Install grub bootloader instead of syslinux.
-
   *--help*::
 
 Display usage information and exit.
@@ -83,12 +89,20 @@ Install specified kernel instead of the default. You might want to specify
 option *--initrd* as well. (Be aware when using multiboot setup.)
 [Notice: not implemented yet.]
 
-  *--lilo=...*::
+  *--lilo-binary=...*::
 
-Use specified lilo executable for installing master boot record (MBR).  By
-default any system wide (from $PATH) lilo executable is taken.  If there can not
-be find any lilo executable the statically compiled version of the grml2usb
-Debian package (see /usr/share/grml2usb/lilo/lilo.static.[amd64|i386]) is taken.
+Use specified lilo executable for installing master boot record (MBR) when using
+the --syslinux-mbr option. By default any system wide (from $PATH) lilo
+executable is taken.  If there can not be find any lilo executable the
+statically compiled version of the grml2usb Debian package (see
+/usr/share/grml2usb/lilo/lilo.static.[amd64|i386]) is taken.
+
+  *--mbr-manager=...*::
+
+Install master boot record (MBR) with integrated boot manager, providing a
+simple selection for specifying the device for booting from. This options is
+available only when using the default MBR and won't work if using the
+--syslinux-mbr option.
 
   *--quiet*::
 
@@ -97,6 +111,25 @@ Do not output anything but just errors on console.
   *--skip-addons*::
 
 Do not install /boot/addons/ files (like dos, grub, memdisk,...).
+
+  *--skip-mbr*::
+
+Do not touch/install the master boot record (MBR).
+
+  *--syslinux*::
+
+Install syslinux bootloader instead of the default (being grub).
+
+  *--syslinux-mbr*::
+
+Install syslinux master boot record (MBR) instead of the default one.  By
+default a very compatible MBR is installed, if you can encounter any problems
+with it you can try using the syslinux MBR instead. If that works for you please
+<<X7,let us know>> so we can adjust our default MBR accordingly.
+
+[NOTE]
+When using the --syslinux-mbr option also lilo is executed so the according
+partitions are set active.
 
   *--squashfs=*::
 
@@ -124,20 +157,20 @@ Directory layout on usb device
 
   boot/ ->
     |-- addons/
-    |   |-- allinone.img
-    |   |-- balder10.imz
-    |   |-- chain.c32
-    |   |-- memdisk
-    |   `-- menu.c32
+    |   |-- allinone.img     [grub - all in one image]
+    |   |-- bsd4grml/        [MirBSD]
+    |   |-- balder10.imz     [FreeDOS]
+    |   |-- memdisk          [chainloading helper]
+    |   |-- memtest          [memtest86+]
     |-- release/
     |   |-- grml/
-    |   |   |-- linux26
-    |   |   |-- initrd.gz
+    |   |   |-- linux26      [Kernel]
+    |   |   |-- initrd.gz    [initramfs]
     |   |-- grml64
-    |   |   |-- linux26
-    |   |   |-- initrd.gz
+    |   |   |-- linux26      [Kernel]
+    |   |   |-- initrd.gz    [initramfs]
     |   |-- grml-medium
-    |   |   |-- linux26
+    |   |   |-- linux26      [...]
     |   |   |-- initrd.gz
     |   |-- grml64-medium
     |   |   |-- linux26
@@ -149,14 +182,16 @@ Directory layout on usb device
     |       |-- linux26
     |       |-- initrd.gz
     |-- grub/
-    |   |-- menu.lst
-    |   |-- splash.xpm.gz
-    |   `-- stage2_eltorito
+    |   |-- grml.png         [splash screen for grub2]
+    |   |-- grub.cfg         [configuration file for grub2]
+    |   |-- menu.lst         [configuration file for grub1]
+    |   |-- splash.xpm.gz    [splash screen for grub1]
+    |   `-- stage2_eltorito  [stage 2 loader for grub1]
     `-- syslinux/
-        |-- boot.msg
-        |-- f1
-        |-- f2
-        |-- f3
+        |-- boot.msg         [boot splash for syslinux]
+        |-- f1               [screen when pressing f1]
+        |-- f2               [screen when pressing f2]
+        |-- f3               [...]
         |-- f4
         |-- f5
         |-- f6
@@ -164,17 +199,17 @@ Directory layout on usb device
         |-- f8
         |-- f9
         |-- f10
-        |-- logo.16
-        `-- syslinux.cfg
+        |-- logo.16          [graphical part of boot splash]
+        `-- syslinux.cfg     [configuration file for syslinux]
 
   grml/
-    |-- grml2usb.txt
-    |-- grml-cheatcodes.txt
-    |-- grml-version.txt
-    |-- LICENSE.txt
-    |-- md5sums
-    |-- README.txt
-    `-- web/
+    |-- grml2usb.txt         [not yet implemented]
+    |-- grml-cheatcodes.txt  [list of bootoptions for grml]
+    |-- grml-version.txt     [file containing information about grml-version]
+    |-- LICENSE.txt          [license information]
+    |-- md5sums              [md5sums of original ISO]
+    |-- README.txt           [informational text]
+    `-- web/                 [browser related files]
         |-- index.html
         |-- style.css
         `-- images/
@@ -184,11 +219,11 @@ Directory layout on usb device
             `-- logo.png
 
   live/
-    |-- filesystem.module
-    |-- grml.squashfs
-    |-- grml-medium.module
-    |-- grml-medium.squashfs
-    |-- grml-small.module
+    |-- filesystem.module      [file specifying which squashfs should be used by default]
+    |-- grml.squashfs          [squashfs file]
+    |-- grml-medium.module     [module specifying which squashfs should be used for grml-medium]
+    |-- grml-medium.squashfs   [squashfs file for grml-medium]
+    |-- grml-small.module      [...]
     |-- grml-small.squashfs
     |-- grml64.module
     |-- grml64.squashfs
@@ -230,6 +265,48 @@ Performance tracing
   # blktrace -d /dev/sdb -o - | blkparse -i -
   # grml2usb grml_2008.11.iso /dev/sdb1
 
+[[X6]]
+Troubleshooting and Pitfalls when booting
+-----------------------------------------
+
+Here is a list of common error messages from BIOS/bootloader when trying to boot
+from USB.
+
+///////////////////////////////////////////////////////////
+TODO: better list type for the error message / reason part?
+See http://www.methods.co.nz/asciidoc/userguide.html
+///////////////////////////////////////////////////////////
+
+[horizontal]
+*Error message*:: ran out of input data. System halted
+
+*Reason*:: Everything OK, except for the filesystem used on your usb device. So
+instead of fat16 you are using for example fat32. Fix: use the appropriate
+filesystem (fat16 for usb pens usually). The Bootsplash might be displayed, the
+kernel loads but you very soon get the error message.
+
+*Error message*:: Invalid operating system
+
+*Reason*:: the partition layout is not ok. Very probably there's no primary
+  partition (/dev/sdX{1..4}) or none has the flag 'bootable' set.
+
+*Error message*:: No operating system found.
+
+*Reason*:: you forgot to set the boot-flag on the partition. Or there really isn't
+any operating system at all. :)
+
+*Error message*:: kernel-panic: unable to mount root-fs...
+
+*Reason*:: Kernel boots but fails to find the root filesystem. The root=
+argument in your kernel commandline is pointing to the wrong device. Adjust
+root=..., consider using root=UUID=....
+
+*Error message*::  Could not find kernel image: ...
+
+*Reason*:: either a broken isolinux/syslinux version or a broken BIOS. Check out
+whether the vendor provides a BIOS update or if using bootloader grub instead of
+isolinux/syslinux fixes the problem.
+
 Frequently Asked Questions (FAQ)
 --------------------------------
 
@@ -248,18 +325,32 @@ faster, you don't need to burn a new CD when a new ISO version arrives (just
 install the new ISO using grml2usb) and you can carry additional files on a
 writable medium with yourself.
 
+Why is there a menu.lst and a grub.cfg inside /boot/grub/?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+grml2usb supports grub version 1 (grub1) as well as grub version 2 (grub2).
+Whereas grub1 uses menu.lst the new version grub2 needs grub.cfg.
+Providing both files allows grml2usb to install grub on the target device
+no matter which grub version is available on the host where grml2usb is
+executed on.
+
 Why do I have to use a FAT16 filesystem?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You have to use a FAT16 filesystem if you consider using syslinux (being the
-default). Syslinux currently does not support any other filesystems. If you want
-to use another filesystem (like ext2/3) consider using the --grub option
-instead.
+You have to use a FAT16 filesystem only if you consider using syslinux, Syslinux
+(currently) does not support any other filesystems. If you want to use another
+filesystem (like ext2/3) just don't use syslinux (drop the --syslinux option)
+but use the default bootloader (grub) instead.
 
 I think I've got a really cool idea!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Please <<X7,report it to the author>>. Or even better: send us a patch.
+Please <<X7,report it to the author>>. Or even better: send us a patch. :)
+
+I've problems with booting from USB.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Check out <<X6,Troubleshooting and Pitfalls when booting>>.
 
 I've found a bug!
 ~~~~~~~~~~~~~~~~~
@@ -287,10 +378,10 @@ is reached).
 Install specified ISO on device /dev/sdb1 and format partition /dev/sdb1 with
 FAT16 filesystem.
 
-  # grml2usb --grub /home/grml/grml_2008.11.iso /dev/sdb1
+  # grml2usb --syslinux /home/grml/grml_2008.11.iso /dev/sdb1
 
-Install specified ISO on device /dev/sdb1 and use Grub as bootloader
-(instead of syslinux being the default).
+Install specified ISO on device /dev/sdb1 and use syslinux as bootloader
+(instead of grub being the default).
 
   # grml2usb --kernel=/boot/vmlinuz-2.6.28-grml --initrd=/boot/initrd.img-2.6.28-grml \
              /home/grml/grml_2008.11.iso /dev/sdb1

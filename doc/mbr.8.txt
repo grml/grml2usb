@@ -90,44 +90,6 @@ Write new, clean MBR:
 
   lilo -M /dev/sdz -s /dev/null
 
-Troubleshooting and Pitfalls when booting
------------------------------------------
-
-///////////////////////////////////////////////////////////
-TODO: better list type for the error message / reason part?
-See http://www.methods.co.nz/asciidoc/userguide.html
-///////////////////////////////////////////////////////////
-
-[horizontal]
-*Error message*:: ran out of input data. System halted
-
-*Reason*:: Everything OK, except for the filesystem used on your usb device. So
-instead of fat16 you use for example fat32. Fix: use the appropriate filesystem
-(fat16 for usb pens usually). The Bootsplash might be displayed, the kernel
-loads but you very soon get the error message.
-
-*Error message*:: Invalid operating system
-
-*Reason*:: the partition layout is not ok. Very probably there’s no primary
-  partition or none has the flag ‘bootable’ set.
-
-*Error message*:: No operating system found.
-
-*Reason*:: you forgot to set the boot-flag on the partition. Or there really isn't
-any operating system at all.
-
-*Error message*:: kernel-panic: unable to mount root-fs...
-
-*Reason*:: Kernel boots but fails to find the root filesystem. root= argument in
-your kernel commandline is pointing to the wrong device. Adjust root=...,
-consider using root=UUID=....
-
-*Error message*::  Could not find kernel image: ...
-
-*Reason*:: either a broken isolinux/syslinux version or a broken BIOS. Check out
-whether the vendor provides a BIOS update or if using bootloader grub instead of
-isolinux/syslinux fixes the problem.
-
 USB modes
 ---------
 

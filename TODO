@@ -1,12 +1,12 @@
 TODOs
 -----
 
-* implement missing options (--grub, --kernel, --initrd, --squashfs, --uninstall)
-* validate partition schema/layout: is the partition schema ok and the bootable flag set? (--validate?)
-* provide --create-partition option?
-* provide --verify to check md5sums of files on usb device
-* implement logic for storing information about copied files (register every file in a set()?)
-* the last line in bootsplash (boot.msg) should mention all installed grml flavours
+* implement missing options (--kernel, --initrd, --squashfs, --uninstall)
+* provide --create-partition[s] option
+* provide --verify to check md5sums/sha1sums of files on usb device
+* validate partition schema/layout: is the partition schema ok and the bootable flag set? (--validate)
+* implement logic for storing information about copied files (register every file in a set())
+* the last line in bootsplash (boot.msg) of syslinux should mention all installed grml flavours
   (attention, the line should become too long :))
 * code improvements:
   - improve error handling wherever possible :) => especially disk full, any other known test cases?
