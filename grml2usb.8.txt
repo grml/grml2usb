@@ -331,6 +331,13 @@ Providing both files allows grml2usb to install grub on the target device
 no matter which grub version is available on the host where grml2usb is
 executed on.
 
+grub-install fails with 'The file ../boot/grub/stage1 not read correctly"?!
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Check whether the partition has the right partition type. For example do NOT use
+FAT16 (partition type 6) when using a ext3 filesystem on the partition but
+instead use the correct partition type ('83' - Linux) then.
+
 Why do I have to use a FAT16 filesystem?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
