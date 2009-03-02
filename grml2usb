@@ -841,7 +841,7 @@ def mount(source, target, mount_options):
     proc = subprocess.Popen(["mount"] + list(mount_options) + [source, target])
     proc.wait()
     if proc.returncode != 0:
-        raise CriticalException("Error executing mount")
+        raise CriticalException("Error executing mount (no filesystem on the partition?)")
     else:
         logging.debug("register_mountpoint(%s)" % target)
         register_mountpoint(target)
