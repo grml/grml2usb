@@ -881,7 +881,7 @@ def check_for_fat(partition):
             raise CriticalException("Failed to read device %s"
                                     " (wrong UID/permissions or device not present?)" % partition)
 
-        if filesystem != "vfat":
+        if options.syslinux and filesystem != "vfat":
             raise CriticalException("Partition %s does not contain a FAT16 filesystem. (Use --fat16 or run mkfs.vfat %s)" % (partition, partition))
 
     except OSError:
