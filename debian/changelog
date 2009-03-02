@@ -1,4 +1,4 @@
-grml2usb (0.9.2) UNRELEASED; urgency=low
+grml2usb (0.9.2) unstable; urgency=low
 
   * Rewrote grml2usb from scratch (in python). New features:
     - you no longer need to setup the device via /etc/fstab, just
