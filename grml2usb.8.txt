@@ -123,13 +123,11 @@ Install syslinux bootloader instead of the default (being grub).
   *--syslinux-mbr*::
 
 Install syslinux master boot record (MBR) instead of the default one.  By
-default a very compatible MBR is installed, if you can encounter any problems
+default a very compatible MBR is installed, if you encounter any problems
 with it you can try using the syslinux MBR instead. If that works for you please
 <<X7,let us know>> so we can adjust our default MBR accordingly.
-
-[NOTE]
-When using the --syslinux-mbr option also lilo is executed so the according
-partitions are set active.
+Note: When using the --syslinux-mbr option lilo is executed before the MBR
+is installed so the according partitions are set active.
 
   *--squashfs=*::
 
