@@ -25,7 +25,7 @@ just pressing enter on the bootprompt or wait until the boot timeout matches).
 
 [IMPORTANT]
 By default a compatible master boot record (MBR) is installed on the device
-(being for example /dev/sdb when executing 'grml2usb grml.iso /dev/sdb1')
+(being for example /dev/sdx when executing 'grml2usb grml.iso /dev/sdx1')
 and grub is being used as default bootloader. Avoid installation of the
 default MBR using the --skip-mbr option or if you encounter any problems
 with the default MBR consider using --syslinux-mbr instead. If bootloader
@@ -40,10 +40,10 @@ TODO:
 as well as the path to the currently running live-system (being /live/image).
 /////////////////////////////////////////////////////////////////////////////
 
-The device either might be a device name like /dev/sda1 or a directory. When
+The device either might be a device name like /dev/sdx1 or a directory. When
 specifying a device name the device is mounted automatically. When specifying a
-directory it won't be touched but instead grml2usb is assuming that you did set
-up a bootloader on your own and a bootloader won't be installed automatically.
+directory grml2usb is assuming that you did set up a bootloader on your own (or
+don't need one) and a bootloader won't be installed automatically.
 
 The following options are supported:
 
@@ -268,8 +268,8 @@ Finally create a filesystem and execute grml2usb as needed:
 Performance tracing
 ~~~~~~~~~~~~~~~~~~~
 
-  # blktrace -d /dev/sdb -o - | blkparse -i -
-  # grml2usb grml_2008.11.iso /dev/sdb1
+  # blktrace -d /dev/sdx -o - | blkparse -i -
+  # grml2usb grml_2008.11.iso /dev/sdx1
 
 [[X6]]
 Troubleshooting and Pitfalls when booting
@@ -377,45 +377,45 @@ of your grml2usb commandline (consider using the "--verbose" option).
 Usage examples
 --------------
 
-  # grml2usb /home/grml/grml_2008.11.iso /dev/sdb1
+  # grml2usb /home/grml/grml_2008.11.iso /dev/sdx1
 
-Install specified ISO on device /dev/sdb1.
+Install specified ISO on device /dev/sdx1.
 
-  # grml2usb /home/grml/grml_2008.11.iso /home/grml/grml_small_2008.11.iso /dev/sdb1
+  # grml2usb /home/grml/grml_2008.11.iso /home/grml/grml_small_2008.11.iso /dev/sdx1
 
-Install specified ISOs on device /dev/sdb1 for multibooting ISOs.
+Install specified ISOs on device /dev/sdx1 for multibooting ISOs.
 Note: boot "grml" as usual, for booting grml-small use "grml-small on the
 bootprompt, for grml64 use "grml64" and so on... The *first* specified ISO is
 the one being the default (when just pressing enter or waiting until the timeout
 is reached).
 
-  # grml2usb --fat16 /home/grml/grml_2008.11.iso /dev/sdb1
+  # grml2usb --fat16 /home/grml/grml_2008.11.iso /dev/sdx1
 
-Install specified ISO on device /dev/sdb1 and format partition /dev/sdb1 with
+Install specified ISO on device /dev/sdx1 and format partition /dev/sdx1 with
 FAT16 filesystem.
 
-  # grml2usb --syslinux /home/grml/grml_2008.11.iso /dev/sdb1
+  # grml2usb --syslinux /home/grml/grml_2008.11.iso /dev/sdx1
 
-Install specified ISO on device /dev/sdb1 and use syslinux as bootloader
+Install specified ISO on device /dev/sdx1 and use syslinux as bootloader
 (instead of grub being the default).
 
 /////////////////////////////////////////////////////////////////
   # grml2usb --kernel=/boot/vmlinuz-2.6.28-grml --initrd=/boot/initrd.img-2.6.28-grml \
-             /home/grml/grml_2008.11.iso /dev/sdb1
+             /home/grml/grml_2008.11.iso /dev/sdx1
 
-Install specified ISO on device /dev/sdb1 but use given kernel and initrd
+Install specified ISO on device /dev/sdx1 but use given kernel and initrd
 instead of the ones provided by the ISO.
 
   # grml2usb --squashfs=/grml/grml-live/grml_cd/live/grml.squashfs \
-             /home/grml/grml_2008.11.iso /dev/sdb1
+             /home/grml/grml_2008.11.iso /dev/sdx1
 /////////////////////////////////////////////////////////////////
 
-Install specified ISO on device /dev/sdb1 but use given squashfs
+Install specified ISO on device /dev/sdx1 but use given squashfs
 file instead of the one provided by the ISO.
 
-  # grml2usb --bootoptions="lang=de ssh=mysecret" grml_2008.11.iso /dev/sdb1
+  # grml2usb --bootoptions="lang=de ssh=mysecret" grml_2008.11.iso /dev/sdx1
 
-Install specified ISO on device /dev/sdb1 and use "lang=de ssh=mysecret" as
+Install specified ISO on device /dev/sdx1 and use "lang=de ssh=mysecret" as
 default bootoptions.
 
 Online Ressources
