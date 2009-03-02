@@ -214,7 +214,7 @@ def mkfs_fat16(device):
     proc = subprocess.Popen(["mkfs.vfat", "-F", "16", device])
     proc.wait()
     if proc.returncode != 0:
-        raise Exception("error executing mkfs.vfat")
+        raise CriticalException("error executing mkfs.vfat")
 
 
 def generate_main_grub2_config(grml_flavour, install_partition, bootoptions):
@@ -233,13 +233,20 @@ set timeout=5
 
 insmod fat
 
-insmod png
-if background_image (hd0, %(install_partition)s)/boot/grub/grml.png ; then
+if font (hd0,%(install_partition)s)/boot/grub/ascii.pff ; then
+   insmod png
+   set gfxmode=640x480
+   insmod gfxterm
+   insmod vbe
+   terminal gfxterm
+fi
+
+if background_image (hd0,%(install_partition)s)/boot/grub/grml.png ; then
   set color_normal=black/black
-  set color_highlight=magenta/black
+  set color_highlight=red/black
 else
-  set menu_color_normal=cyan/blue
-  set menu_color_highlight=white/blue
+  set menu_color_normal=white/black
+  set menu_color_highlight=black/yellow
 fi
 
 menuentry "%(grml_flavour)s (default)" {
@@ -265,7 +272,7 @@ menuentry "FreeDOS" {
     initrd  /boot/addons/balder10.imz
 }
 
-menuentry "Boot Operating System on first partition of first disk" {
+menuentry "Boot OS of first partition on first disk" {
     set root=(hd0,1)
     chainloader +1
 }
@@ -972,6 +979,20 @@ def copy_bootloader_files(iso_mount, target):
                                 grub_target + 'splash.xpm.gz'])
         proc.wait()
 
+    # grml splash in grub
+    if os.path.isfile("/usr/share/grml2usb/grub/grml.png"):
+        logging.debug("cp /usr/share/grml2usb/grub/grml.png to %s" % grub_target + 'grml.png')
+        proc = subprocess.Popen(["install", "--mode=664", '/usr/share/grml2usb/grub/grml.png',
+                                grub_target + 'grml.png'])
+        proc.wait()
+
+    # font file for graphical bootsplash in grub
+    if os.path.isfile("/usr/share/grub/ascii.pff"):
+        logging.debug("cp /usr/share/grub/ascii.pff to %s" % grub_target + 'ascii.pff')
+        proc = subprocess.Popen(["install", "--mode=664", '/usr/share/grub/ascii.pff',
+                                grub_target + 'ascii.pff'])
+        proc.wait()
+
     if not os.path.isfile("/usr/share/grml2usb/grub/stage2_eltorito"):
         logging.critical("Error: /usr/share/grml2usb/grub/stage2_eltorito can not be read.")
         raise
@@ -1278,10 +1299,14 @@ def handle_vfat(device):
             sys.exit(1)
 
         # make sure the user is aware of what he is doing
-        f = raw_input("Are you sure you want to format the device with a fat16 filesystem? y/N ")
+        f = raw_input("Are you sure you want to format the specified partition with fat16? y/N ")
         if f == "y" or f == "Y":
             logging.info("Note: you can skip this question using the option --force")
-            mkfs_fat16(device)
+            try:
+                mkfs_fat16(device)
+            except CriticalException, error:
+                logging.critical("Execution failed: %s", error)
+                sys.exit(1)
         else:
             sys.exit(1)
 
