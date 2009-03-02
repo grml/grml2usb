@@ -11,7 +11,7 @@ Vcs-Browser: http://git.grml.org/?p=grml2usb.git
 
 Package: grml2usb
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, syslinux, python
+Depends: ${shlibs:Depends}, ${misc:Depends}, syslinux | grub2 | grub, python
 Description: install grml system / ISO to usb device
  This script installs a grml ISO to an USB device to be able to boot from it.
  Make sure you have at least one grml ISO or a running grml system (/live/image)
