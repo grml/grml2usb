@@ -1,4 +1,4 @@
-/* $MirOS: src/sys/arch/i386/stand/mbr/mbr.S,v 1.12 2009/01/31 23:39:55 tg Exp $ */
+/* $MirOS: src/sys/arch/i386/stand/mbr/mbr.S,v 1.13 2009/03/04 10:50:28 tg Exp $ */
 
 /*-
  * Copyright (c) 2009
@@ -23,6 +23,9 @@
  *	$ gcc -D_ASM_SOURCE -DBOOTMANAGER -D__BOOT_VER=\"0AA6\" -c mbr.S
  *	$ ld -nostdlib -Ttext 0x0600 -N -Bstatic -e _start -o mbrmgr.elf mbr.o
  *	$ objcopy -O binary mbrmgr.elf mbrmgr
+ *	$ gcc -D_ASM_SOURCE -DBOOT_QUIET -D__BOOT_VER=\"0AA6\" -c mbr.S
+ *	$ ld -nostdlib -Ttext 0x0600 -N -Bstatic -e _start -o mbrldr.elf mbr.o
+ *	$ objcopy -O binary mbrldr.elf mbrldr
  */
 
 	.intel_syntax noprefix
@@ -91,6 +94,8 @@ Lmain:	sti
 	mov	di,offset Lem03
 	mov	al,ds:[Lptab + 0x34]
 	call	LpBY
+#endif
+#if !defined(BOOT_QUIET) || defined(BOOTMANAGER)
 	mov	si,offset Lemsg
 	call	Lotxt
 #endif

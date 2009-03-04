@@ -2,8 +2,9 @@ grml2usb (0.9.3) UNRELEASED; urgency=low
 
   * Add zsh completion for grml2usb.
   * Drop some leftover 'lang=us' references.
+  * Update mbr.S (thanks, Thorsten Glaser).
 
- -- Michael Prokop <mika@grml.org>  Wed, 04 Mar 2009 12:28:02 +0100
+ -- Michael Prokop <mika@grml.org>  Wed, 04 Mar 2009 12:28:54 +0100
 
 grml2usb (0.9.2) unstable; urgency=low
 
