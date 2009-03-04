@@ -104,12 +104,15 @@ executable is taken.  If there can not be find any lilo executable the
 statically compiled version of the grml2usb Debian package (see
 /usr/share/grml2usb/lilo/lilo.static.[amd64|i386]) is taken.
 
-  *--mbr-manager=...*::
+  *--mbr-menu*::
 
-Install master boot record (MBR) with integrated boot manager, providing a
-simple selection for specifying the device for booting from. This options is
-available only when using the default MBR and won't work if using the
---syslinux-mbr option.
+Install master boot record (MBR) with integrated boot menu: interactively choose
+the partition to boot from, with a timeout to load the default partition, or
+boot from floppy. When NOT using the --mbr-menu option a MBR with LBA and large
+disc support but without an integrated boot menu is installed (so it's not
+visible at all but instead directly jumps to the bootloader - being grub or
+syslinux). Note: This options is available only when using the default MBR and
+won't have any effect if you're using the --syslinux-mbr option.
 
   *--quiet*::
 
@@ -129,12 +132,12 @@ Install syslinux bootloader instead of the default (being grub).
 
   *--syslinux-mbr*::
 
-Install syslinux master boot record (MBR) instead of the default one.  By
-default a very compatible MBR is installed, if you encounter any problems
-with it you can try using the syslinux MBR instead. If that works for you please
-<<X7,let us know>> so we can adjust our default MBR accordingly.
-Note: When using the --syslinux-mbr option lilo is executed before the MBR
-is installed so the according partitions are set active.
+Install syslinux' master boot record (MBR, which is booting from the partition
+with the "active" flag set) instead of the default one.  If you encounter any
+problems with the default MBR you can try using the syslinux MBR instead. If
+that works for you please <<X7,let us know>> so we can adjust our default MBR
+accordingly.  Note: When using the --syslinux-mbr option lilo is executed before
+the MBR is installed so the according partitions are set active.
 
 //////////////////////////////////////////////////////////////////////////
   *--squashfs=*::

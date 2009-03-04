@@ -53,8 +53,8 @@ parser.add_option("--force", dest="force", action="store_true",
 #                  help="install specified kernel instead of the default [TODO - not implemented yet]")
 parser.add_option("--lilo-binary", dest="lilobin",  action="store", type="string",
                   help="lilo executable to be used for installing MBR")
-parser.add_option("--mbr-manager", dest="mbrmgr", action="store_true",
-                  help="enable interactive boot manager menu in MBR")
+parser.add_option("--mbr-menu", dest="mbrmenu", action="store_true",
+                  help="enable interactive boot menu in MBR")
 parser.add_option("--quiet", dest="quiet", action="store_true",
                   help="do not output anything but just errors on console")
 parser.add_option("--skip-addons", dest="skipaddons", action="store_true",
@@ -703,21 +703,26 @@ def install_syslinux_mbr(device):
 def install_mir_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     """install 'mbr' master boot record (MBR) on a device
 
-    Retrieve the partition table from "device", install an MBR from
-    the "mbrtemplate" file, set the "partition" (0..3) active, and
-    install the result back to "device".
+    Retrieve the partition table from "device", install an MBR from the
+    "mbrtemplate" file, set the "partition" (0..3) active, and install the
+    result back to "device".
 
     @mbrtemplate: default MBR file
 
-    @device: name of a file assumed to be a hard disc (or USB stick) image,
-    or something like "/dev/sdb"
+    @device: name of a file assumed to be a hard disc (or USB stick) image, or
+    something like "/dev/sdb"
+
     @partition: must be a number between 0 and 3, inclusive
 
-    @mbrtemplate: must be a valid MBR file of at least 440 (or 439
-    if ismirbsdmbr) bytes.
+    @mbrtemplate: must be a valid MBR file of at least 440 (or 439 if
+    ismirbsdmbr) bytes.
 
-    @ismirbsdmbr: if set the partitions' active flags are not changed.
-    Instead, the MBR's default value is set accordingly."""
+    @ismirbsdmbr: if true then ignore the active flag, set the mirbsdmbr
+    specific flag to 0/1/2/3 and set the MBR's default value accordingly. If
+    false then leave the mirbsdmbr specific flag set to FFh, set all
+    active flags to 0 and set the active flag of the partition to 80h.  Note:
+    behaviour of mirbsdmbr: if flag = 0/1/2/3 then use it, otherwise search for
+    the active flag."""
 
     logging.info("Installing default MBR")
 
@@ -1477,10 +1482,10 @@ def handle_mbr(device):
             if options.syslinuxmbr:
                 handle_syslinux_mbr(mbr_device)
             else:
-                if options.mbrmgr:
+                if options.mbrmenu:
                     install_mir_mbr('/usr/share/grml2usb/mbr/mbrmgr', mbr_device, partition_number, True)
                 else:
-                    install_mir_mbr('/usr/share/grml2usb/mbr/mbrldr', mbr_device, partition_number, True)
+                    install_mir_mbr('/usr/share/grml2usb/mbr/mbrldr', mbr_device, partition_number, False)
         except IOError, error:
             logging.critical("Execution failed: %s", error)
             sys.exit(1)
