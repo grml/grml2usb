@@ -3,6 +3,7 @@ TODOs
 
 * support installation of new ISO[s] additionally to already existing grml ISOs on the usb device
   -> add "old"/already existing images automatically to bootloader configuration [thx gebi]
+* support installation of "dupes", meaning grml2usb grml_2008.11.iso grml_2009.03.iso
 * write bootloader configuration snippets to boot/releases/<release>/{grub.cfg,syslinux.cfg,...}
   -> this could simplify live dramatically especially when supporting "already existing" images [thx gebi]
 * provide simple output being between default and --quiet [thx gebi], like:
