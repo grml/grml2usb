@@ -413,7 +413,7 @@ FAT16 filesystem.
 Install specified ISO on device /dev/sdx1 and use syslinux as bootloader
 (instead of grub being the default).
 
-/////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
   # grml2usb --kernel=/boot/vmlinuz-2.6.28-grml --initrd=/boot/initrd.img-2.6.28-grml \
              /home/grml/grml_2008.11.iso /dev/sdx1
 
@@ -422,10 +422,10 @@ instead of the ones provided by the ISO.
 
   # grml2usb --squashfs=/grml/grml-live/grml_cd/live/grml.squashfs \
              /home/grml/grml_2008.11.iso /dev/sdx1
-/////////////////////////////////////////////////////////////////
 
 Install specified ISO on device /dev/sdx1 but use given squashfs
 file instead of the one provided by the ISO.
+///////////////////////////////////////////////////////////////////////////////////////
 
   # grml2usb --bootoptions="lang=de ssh=mysecret" grml_2008.11.iso /dev/sdx1
 
