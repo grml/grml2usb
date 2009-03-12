@@ -1104,6 +1104,7 @@ def copy_bootloader_files(iso_mount, target):
 
     if not os.path.isfile("/usr/share/grml2usb/grub/splash.xpm.gz"):
         logging.critical("Error: /usr/share/grml2usb/grub/splash.xpm.gz can not be read.")
+        logging.critical("Please make sure you've the grml2usb Debian package installed!")
         raise
     else:
         logging.debug("cp /usr/share/grml2usb/grub/splash.xpm.gz %s" % grub_target + 'splash.xpm.gz')
