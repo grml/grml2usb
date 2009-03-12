@@ -319,6 +319,13 @@ isolinux/syslinux fixes the problem.
 Frequently Asked Questions (FAQ)
 --------------------------------
 
+Where can I get the grml2usb?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+grml2usb is available via link:http://deb.grml.org/[the grml-testing Debian
+repository]. Please make sure you've the Debian package installed, just having
+the grml2usb script available is definitely *NOT* enough!
+
 What's the difference between grml2hd and grml2usb?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -360,6 +367,13 @@ The following message:
 
 ... is "normal". grub-install sends those messages to stderr. To avoid hiding any
 possible real error messages grml2usb doesn't ignore those messages.
+
+I'm getting something like "Error: /usr/share/grml2usb/grub/splash.xpm.gz can not be read"!?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Looks like you've just the grml2usb script available. Please make sure you've
+the grml2usb Debian package installed. It's available via
+link:http://deb.grml.org/[the grml-testing Debian repository].
 
 Why do I have to use a FAT16 filesystem?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
