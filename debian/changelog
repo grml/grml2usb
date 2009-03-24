@@ -15,8 +15,11 @@ grml2usb (0.9.3) UNRELEASED; urgency=low
     (Thanks to Ralf Gross for the report and relevant information.)
   * Also add specified bootoptions to default entry in configuration
     file of grub version 1. (Thanks to Ralf Gross for the bugreport.)
+  * Make sure that options "--quiet" and "--verbose" aren't accepted
+    at the same time in the command line. Thanks for bugreport and
+    code example, Karl Voit!
 
- -- Michael Prokop <mika@grml.org>  Tue, 24 Mar 2009 17:45:45 +0100
+ -- Michael Prokop <mika@grml.org>  Tue, 24 Mar 2009 22:32:05 +0100
 
 grml2usb (0.9.2) unstable; urgency=low
 

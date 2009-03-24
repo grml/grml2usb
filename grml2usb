@@ -1562,6 +1562,9 @@ def handle_compat_warning(device):
 def handle_logging():
     """Log handling and configuration"""
 
+    if options.verbose and options.quiet:
+        parser.error("please use either verbose (--verbose) or quiet (--quiet) option")
+
     if options.verbose:
         FORMAT = "Debug: %(asctime)-15s %(message)s"
         logging.basicConfig(level=logging.DEBUG, format=FORMAT)
