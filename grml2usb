@@ -894,13 +894,18 @@ def check_for_usbdevice(device):
     """
 
     usbdevice = re.match(r'/dev/(.*?)\d*$', device).group(1)
-    usbdevice = os.path.realpath('/sys/class/block/' + usbdevice + '/removable')
-    if os.path.isfile(usbdevice):
-        is_usb = open(usbdevice).readline()
-        if is_usb == "1":
+    # newer systems:
+    usbdev = os.path.realpath('/sys/class/block/' + usbdevice + '/removable')
+    if not os.path.isfile(usbdev):
+       # Ubuntu with kernel 2.6.24 for example:
+       usbdev = os.path.realpath('/sys/block/' + usbdevice + '/removable')
+
+    if os.path.isfile(usbdev):
+        is_usb = open(usbdev).readline()
+        if is_usb.find("1"):
             return 0
-        else:
-            return 1
+
+    return 1
 
 
 def check_for_fat(partition):
