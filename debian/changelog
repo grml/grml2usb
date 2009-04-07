@@ -1,6 +1,5 @@
-grml2usb (0.9.3) UNRELEASED; urgency=low
+grml2usb (0.9.3) unstable; urgency=low
 
-  * Add zsh completion for grml2usb.
   * Drop some leftover 'lang=us' references.
   * Update mbr.S (thanks, Thorsten Glaser).
   * Rename --mbr-manager into --mbr-menu (people seem to be confused
