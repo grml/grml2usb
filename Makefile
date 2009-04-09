@@ -5,7 +5,7 @@ doc: doc_man doc_html
 doc_html: html-stamp
 
 html-stamp: grml2usb.8.txt
-	asciidoc -b xhtml11 -a icons grml2usb.8.txt
+	asciidoc -b xhtml11 -a icons -a toc -a numbered grml2usb.8.txt
 	touch html-stamp
 
 doc_man: man-stamp
@@ -30,6 +30,9 @@ online: all
 
 tarball: all
 	./tarball.sh
+
+tarball-online: all
+	scp grml2usb.tgz grml2usb.tgz.md5.asc grml:/var/www/grml/grml2usb/
 
 clean:
 	rm -rf grml2usb.8.html grml2usb.8.xml grml2usb.8 html-stamp man-stamp grml2usb.tar.gz

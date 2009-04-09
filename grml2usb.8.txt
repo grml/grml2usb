@@ -319,12 +319,19 @@ isolinux/syslinux fixes the problem.
 Frequently Asked Questions (FAQ)
 --------------------------------
 
-Where can I get the grml2usb?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Where can I get grml2usb?
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-grml2usb is available via link:http://deb.grml.org/[the grml-testing Debian
-repository]. Please make sure you've the Debian package installed, just having
-the grml2usb script available is definitely *NOT* enough!
+grml2usb is available as Debian package via link:http://deb.grml.org/[the
+grml-testing Debian repository]. Please make sure you really have the Debian
+package installed as having just the grml2usb script available is definitely
+*NOT* enough!
+
+If you do NOT have a Debian based system but still want to be able to use
+grml2usb you can use the provided
+link:http://grml.org/grml2usb/grml2usb.tgz[http://grml.org/grml2usb/grml2usb.tgz]
+(link:http://grml.org/grml2usb/grml2usb.tgz.md5.asc[gpg signed md5 hash]).
+Download and extract the tarball and execute the provided script 'install.sh'.
 
 What's the difference between grml2hd and grml2usb?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -378,7 +385,7 @@ link:http://deb.grml.org/[the grml-testing Debian repository].
 Why do I have to use a FAT16 filesystem?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You have to use a FAT16 filesystem only if you consider using syslinux, Syslinux
+You have to use a FAT16 filesystem only if you consider using syslinux. Syslinux
 (currently) does not support any other filesystems. If you want to use another
 filesystem (like ext2/3) just don't use syslinux (drop the \--syslinux option)
 but use the default bootloader (grub) instead.
