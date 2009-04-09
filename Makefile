@@ -28,8 +28,11 @@ online: all
 	scp images/icons/*          grml:/var/www/grml/grml2usb/images/icons/
 	scp images/screenshot.png   grml:/var/www/grml/grml2usb/images/
 
+tarball: all
+	./tarball.sh
+
 clean:
-	rm -rf grml2usb.8.html grml2usb.8.xml grml2usb.8 html-stamp man-stamp
+	rm -rf grml2usb.8.html grml2usb.8.xml grml2usb.8 html-stamp man-stamp grml2usb.tar.gz
 
 codecheck:
 	pylint --include-ids=y --max-line-length=120 grml2usb
