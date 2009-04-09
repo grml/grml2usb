@@ -1606,6 +1606,8 @@ def main():
     # make sure we have the appropriate permissions
     check_uid_root()
 
+    logging.info("Executing grml2usb version %s", PROG_VERSION)
+
     if options.dryrun:
         logging.info("Running in simulation mode as requested via option dry-run.")
 
