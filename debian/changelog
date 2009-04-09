@@ -1,3 +1,10 @@
+grml2usb (0.9.5) UNRELEASED; urgency=low
+
+  * Fix dashes of options in manpage (thanks for the bugreport,
+    Thorsten Glaser).
+
+ -- Michael Prokop <mika@grml.org>  Thu, 09 Apr 2009 14:35:30 +0200
+
 grml2usb (0.9.4) unstable; urgency=low
 
   * Bugfix: move kernel commandline from initrd to kernel option in
