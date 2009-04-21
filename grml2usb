@@ -869,7 +869,7 @@ def unmount(target, unmount_options):
     # make sure we unmount only already mounted targets
     target_unmount = False
     mounts = open('/proc/mounts').readlines()
-    mountstring = re.compile(".*%s.*" % re.escape(target))
+    mountstring = re.compile(".*%s.*" % re.escape(os.path.realpath(target)))
     for line in mounts:
         if re.match(mountstring, line):
             target_unmount = True
