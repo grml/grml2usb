@@ -6,6 +6,7 @@ TODOs
 * support installation of "dupes", meaning grml2usb grml_2008.11.iso grml_2009.03.iso
 * write bootloader configuration snippets to boot/releases/<release>/{grub.cfg,syslinux.cfg,...}
   -> this could simplify live dramatically especially when supporting "already existing" images [thx gebi]
+* support integration of Debian ISOs (like netboot)
 * provide simple output being between default and --quiet [thx gebi], like:
   # grml2usb iso1 iso2 /dev/sda1
   installing:
