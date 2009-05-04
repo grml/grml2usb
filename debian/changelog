@@ -6,8 +6,12 @@ grml2usb (0.9.5) UNRELEASED; urgency=low
   * Apply fix by Peter Daum <gator@cs.tu-berlin.de>, making sure
     to use the normalized path for unmounting. Thanks!
   * Use multiboot for booting MirOS BSD when using grub2.
+  * Catch exception if copying files fails.
+  * Exit if installing grub fails.
+  * Integrate hdt (Hardware Detection Tool) in bootsplash when
+    using syslinux.
 
- -- Michael Prokop <mika@grml.org>  Mon, 04 May 2009 19:51:44 +0200
+ -- Michael Prokop <mika@grml.org>  Mon, 04 May 2009 22:22:14 +0200
 
 grml2usb (0.9.4) unstable; urgency=low
 
