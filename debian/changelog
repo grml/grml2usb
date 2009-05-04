@@ -5,8 +5,9 @@ grml2usb (0.9.5) UNRELEASED; urgency=low
   * Display program version during execution.
   * Apply fix by Peter Daum <gator@cs.tu-berlin.de>, making sure
     to use the normalized path for unmounting. Thanks!
+  * Use multiboot for booting MirOS BSD when using grub2.
 
- -- Michael Prokop <mika@grml.org>  Tue, 21 Apr 2009 10:31:18 +0200
+ -- Michael Prokop <mika@grml.org>  Mon, 04 May 2009 19:51:44 +0200
 
 grml2usb (0.9.4) unstable; urgency=low
 

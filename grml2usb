@@ -283,9 +283,9 @@ menuentry "FreeDOS" {
     initrd  /boot/addons/balder10.imz
 }
 
-menuentry "MirBSD" {
+menuentry "MirOS BSD" {
     set root=(hd0,%(install_partition)s)
-    linux   /boot/addons/bsd4grml/ldbsd.com
+    multiboot   /boot/addons/bsd4grml/ldbsd.com
 }
 
 menuentry "Boot OS of first partition on first disk" {
@@ -453,7 +453,7 @@ title FreeDOS
 kernel (hd0,%(install_partition)s)/boot/addons/memdisk
 initrd (hd0,%(install_partition)s)/boot/addons/balder10.imz
 
-title MirBSD
+title MirOS BSD
 kernel (hd0,%(install_partition)s)/boot/addons/bsd4grml/ldbsd.com
 
 """ % {'grml_flavour': grml_flavour, 'local_datestamp': local_datestamp,
