@@ -532,6 +532,11 @@ LABEL bsd
 MENU LABEL bsd
 KERNEL /boot/addons/bsd4grml/ldbsd.com
 
+# hardware detection tool
+MENU LABEL hdt
+KERNEL /boot/addons/hdt.c32
+APPEND pciids=/boot/addons/pci.ids
+
 ## end of global configuration
 """ % {'grml_flavour': grml_flavour, 'local_datestamp': local_datestamp, 'bootoptions': bootoptions} )
 
@@ -1041,7 +1046,7 @@ def copy_addons(iso_mount, target):
     # grub all-in-one image
     allinoneimg = search_file('allinone.img', iso_mount)
     if allinoneimg is None:
-        logging.warn("Warning: allinone.img not found (that's fine if you don't need it")
+        logging.warn("Warning: allinone.img not found (that's fine if you don't need it)")
     else:
         logging.debug("cp %s %s" % (allinoneimg, addons + '/allinone.img'))
         proc = subprocess.Popen(["cp", allinoneimg, addons + 'allinone.img'])
@@ -1050,7 +1055,7 @@ def copy_addons(iso_mount, target):
     # bsd imag
     bsdimg = search_file('bsd4grml', iso_mount)
     if bsdimg is None:
-        logging.warn("Warning: bsd4grml not found (that's fine if you don't need it")
+        logging.warn("Warning: bsd4grml not found (that's fine if you don't need it)")
     else:
         logging.debug("cp -a %s %s" % (bsdimg, addons + '/'))
         proc = subprocess.Popen(["cp", "-a", bsdimg, addons + '/'])
@@ -1059,16 +1064,32 @@ def copy_addons(iso_mount, target):
     # freedos image
     balderimg = search_file('balder10.imz', iso_mount)
     if balderimg is None:
-        logging.warn("Warning: balder10.imz not found (that's fine if you don't need it")
+        logging.warn("Warning: balder10.imz not found (that's fine if you don't need it)")
     else:
         logging.debug("cp %s %s" % (balderimg, addons + '/balder10.imz'))
         proc = subprocess.Popen(["cp", balderimg, addons + 'balder10.imz'])
         proc.wait()
 
+    # install hdt and pci.ids only when using syslinux (grub doesn't support it)
+    if options.syslinux:
+        # hdt (hardware detection tool) image
+        hdtimg = search_file('hdt.c32', iso_mount)
+        if hdtimg:
+            logging.debug("cp %s %s" % (hdtimg, addons + '/hdt.c32'))
+            proc = subprocess.Popen(["cp", hdtimg, addons + '/hdt.c32'])
+            proc.wait()
+    
+        # pci.ids file
+        picids = search_file('pci.ids', iso_mount)
+        if picids:
+            logging.debug("cp %s %s" % (picids, addons + '/pci.ids'))
+            proc = subprocess.Popen(["cp", picids, addons + '/pci.ids'])
+            proc.wait()
+
     # memdisk image
     memdiskimg = search_file('memdisk', iso_mount)
     if memdiskimg is None:
-        logging.warn("Warning: memdisk not found (that's fine if you don't need it")
+        logging.warn("Warning: memdisk not found (that's fine if you don't need it)")
     else:
         logging.debug("cp %s %s" % (memdiskimg, addons + '/memdisk'))
         proc = subprocess.Popen(["cp", memdiskimg, addons + 'memdisk'])
@@ -1077,7 +1098,7 @@ def copy_addons(iso_mount, target):
     # memtest86+ image
     memtestimg = search_file('memtest', iso_mount)
     if memtestimg is None:
-        logging.warn("Warning: memtest not found (that's fine if you don't need it")
+        logging.warn("Warning: memtest not found (that's fine if you don't need it)")
     else:
         logging.debug("cp %s %s" % (memtestimg, addons + '/memtest'))
         proc = subprocess.Popen(["cp", memtestimg, addons + 'memtest'])
