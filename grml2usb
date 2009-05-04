@@ -611,7 +611,10 @@ def install_grub(device):
                 "--root-directory=%s" % device_mountpoint, device], stdout=file(os.devnull, "r+"))
             proc.wait()
             if proc.returncode != 0:
-                raise Exception("error executing grub-install")
+                # raise Exception("error executing grub-install")
+                logging.critical("Fatal: error executing grub-install (please check FAQ)" % error)
+                cleanup()
+                sys.exit(1)
         except CriticalException, error:
             logging.critical("Fatal: %s" % error)
             cleanup()
