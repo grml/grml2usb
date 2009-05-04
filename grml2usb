@@ -959,6 +959,7 @@ def copy_system_files(grml_flavour, iso_mount, target):
     squashfs = search_file(grml_flavour + '.squashfs', iso_mount)
     if squashfs is None:
         logging.critical("Fatal: squashfs file not found")
+        raise CriticalException("error locating squashfs file")
     else:
         squashfs_target = target + '/live/' + grml_flavour + '/'
         execute(mkdir, squashfs_target)
@@ -1173,8 +1174,12 @@ def install_iso_files(grml_flavour, iso_mount, device, target):
         return 0
     elif not options.bootloaderonly:
         logging.info("Copying files. This might take a while....")
-        copy_system_files(grml_flavour, iso_mount, target)
-        copy_grml_files(iso_mount, target)
+        try:
+            copy_system_files(grml_flavour, iso_mount, target)
+            copy_grml_files(iso_mount, target)
+        except CriticalException, error:
+            logging.critical("Execution failed: %s", error)
+            sys.exit(1)
 
     if not options.skipaddons:
         if grml_flavour.endswith('-small'):
