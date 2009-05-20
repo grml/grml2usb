@@ -34,11 +34,8 @@ grub doesn't work for you check out the --syslinux option.
 Options
 -------
 
-The ISO[s] is the path to one or multiple grml-ISOs.
-/////////////////////////////////////////////////////////////////////////////
-TODO:
-as well as the path to the currently running live-system (being /live/image).
-/////////////////////////////////////////////////////////////////////////////
+The ISO[s] should be the path to one or multiple grml-ISOs and/or the path to
+the currently running live-system (being /live/image).
 
 The device either might be a device name like /dev/sdx1 or a directory. When
 specifying a device name the device is mounted automatically. When specifying a
@@ -266,13 +263,13 @@ or:
 Finally create a filesystem and execute grml2usb as needed:
 
   # mkfs.vfat /dev/loop1
-  # grml2usb --bootloader-only /grml/isos/grml-small_2008.11.iso /dev/loop1
+  # grml2usb --bootloader-only /grml/isos/grml-small_2009.05.iso /dev/loop1
 
 Performance tracing
 ~~~~~~~~~~~~~~~~~~~
 
   # blktrace -d /dev/sdx -o - | blkparse -i -
-  # grml2usb grml_2008.11.iso /dev/sdx1
+  # grml2usb grml_2009.05.iso /dev/sdx1
 
 [[X6]]
 Troubleshooting and Pitfalls when booting
@@ -319,6 +316,7 @@ isolinux/syslinux fixes the problem.
 Frequently Asked Questions (FAQ)
 --------------------------------
 
+[[X5]]
 Where can I get grml2usb?
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -342,11 +340,11 @@ harddisk immediately.  grml2usb copies just the compressed chroot filesystem
 (being the squashfs file), some further informational files and a bootloader to
 your device. This way you don't need as much space as with a harddisk
 installation (just a USB device with >=ISO size) and when rebooting the system
-your changes will be lost (even though a persistent root feature is
-work-in-progress). Think of using a better CD version: booting is (usually)
-faster, you don't need to burn a new CD when a new ISO version arrives (just
-install the new ISO using grml2usb) and you can carry additional files on a
-writable medium with yourself.
+your changes will be lost (unless you are using the persistency feature, see
+link:http://wiki.grml.org/doku.php?id=persistency[http://wiki.grml.org/doku.php?id=persistency]).
+Think of using a better CD version: booting is (usually) faster, you don't need
+to burn a new CD when a new ISO version arrives (just install the new ISO using
+grml2usb) and you can carry additional files on a writable medium with yourself.
 
 Why is there a menu.lst and a grub.cfg inside /boot/grub/?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -375,12 +373,33 @@ The following message:
 ... is "normal". grub-install sends those messages to stderr. To avoid hiding any
 possible real error messages grml2usb doesn't ignore those messages.
 
+grub-install complains about /boot/grub/device.map?!
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following message:
+
+  grub-probe: error: Cannot open `/boot/grub/device.map'
+
+... is "normal" (at least with grub1). This isn't a problem, because the
+device.map file will be generated on the target device anyway.
+
+grub-install complains about a unary operator?!
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following message:
+
+  '/usr/sbin/grub-install: line 374: [: =: unary operator expected'
+
+... is "normal". Just ignore it.
+
 I'm getting something like "Error: /usr/share/grml2usb/grub/splash.xpm.gz can not be read"!?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Looks like you've just the grml2usb script available. Please make sure you've
-the grml2usb Debian package installed. It's available via
-link:http://deb.grml.org/[the grml-testing Debian repository].
+Looks like you've only the grml2usb script itself available. Please make sure
+you've the grml2usb Debian package installed. The most resent stable version is
+available via link:http://deb.grml.org/[the grml-testing Debian repository].  If
+you do not have a Debian system please see section <<X5,Where can I get
+grml2usb?>> in this FAQ.
 
 Why do I have to use a FAT16 filesystem?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -412,11 +431,11 @@ of your grml2usb commandline (consider using the "\--verbose" option).
 Usage examples
 --------------
 
-  # grml2usb /home/grml/grml_2008.11.iso /dev/sdx1
+  # grml2usb /home/grml/grml_2009.05.iso /dev/sdx1
 
 Install specified ISO on device /dev/sdx1.
 
-  # grml2usb /home/grml/grml_2008.11.iso /home/grml/grml_small_2008.11.iso /dev/sdx1
+  # grml2usb /home/grml/grml_2009.05.iso /home/grml/grml_small_2009.05.iso /dev/sdx1
 
 Install specified ISOs on device /dev/sdx1 for multibooting ISOs.
 Note: boot "grml" as usual, for booting grml-small use "grml-small on the
@@ -424,31 +443,40 @@ bootprompt, for grml64 use "grml64" and so on... The *first* specified ISO is
 the one being the default (when just pressing enter or waiting until the timeout
 is reached).
 
-  # grml2usb --fat16 /home/grml/grml_2008.11.iso /dev/sdx1
+  # grml2usb /live/image /dev/sdx1
+
+Install currently running grml live system on device /dev/sdx1.
+
+  # grml2usb /live/image /home/grml/grml_2009.05.iso /dev/sdx1
+
+Install currently running grml live system and the specified
+ISO on device /dev/sdx1 for multibooting.
+
+  # grml2usb --fat16 /home/grml/grml_2009.05.iso /dev/sdx1
 
 Install specified ISO on device /dev/sdx1 and format partition /dev/sdx1 with
 FAT16 filesystem.
 
-  # grml2usb --syslinux /home/grml/grml_2008.11.iso /dev/sdx1
+  # grml2usb --syslinux /home/grml/grml_2009.05.iso /dev/sdx1
 
 Install specified ISO on device /dev/sdx1 and use syslinux as bootloader
 (instead of grub being the default).
 
 ///////////////////////////////////////////////////////////////////////////////////////
   # grml2usb --kernel=/boot/vmlinuz-2.6.28-grml --initrd=/boot/initrd.img-2.6.28-grml \
-             /home/grml/grml_2008.11.iso /dev/sdx1
+             /home/grml/grml_2009.05.iso /dev/sdx1
 
 Install specified ISO on device /dev/sdx1 but use given kernel and initrd
 instead of the ones provided by the ISO.
 
   # grml2usb --squashfs=/grml/grml-live/grml_cd/live/grml.squashfs \
-             /home/grml/grml_2008.11.iso /dev/sdx1
+             /home/grml/grml_2009.05.iso /dev/sdx1
 
 Install specified ISO on device /dev/sdx1 but use given squashfs
 file instead of the one provided by the ISO.
 ///////////////////////////////////////////////////////////////////////////////////////
 
-  # grml2usb --bootoptions="lang=de ssh=mysecret" grml_2008.11.iso /dev/sdx1
+  # grml2usb --bootoptions="lang=de ssh=mysecret" grml_2009.05.iso /dev/sdx1
 
 Install specified ISO on device /dev/sdx1 and use "lang=de ssh=mysecret" as
 default bootoptions.

@@ -18,7 +18,7 @@ from inspect import isroutine, isclass
 import datetime, logging, os, re, subprocess, sys, tempfile, time
 
 # global variables
-PROG_VERSION = "0.9.5"
+PROG_VERSION = "0.9.6"
 MOUNTED = set()  # register mountpoints
 TMPFILES = set() # register tmpfiles
 DATESTAMP = time.mktime(datetime.datetime.now().timetuple()) # unique identifier for syslinux.cfg
@@ -1425,6 +1425,47 @@ def handle_bootloader_config(grml_flavour, device, target):
             logging.critical("Fatal: %s" % error)
             sys.exit(1)
 
+def handle_dir(live_image, device):
+    """Main logic for copying files of the currently running grml system.
+
+    @live_image: directory where currently running live system resides (usually /live/image)
+    @device: partition where the specified ISO should be installed to"""
+
+    logging.info("Using %s as install base" % live_image)
+
+    if os.path.isdir(device):
+        logging.info("Specified target is a directory, not mounting therefor.")
+        device_mountpoint = device
+        remove_device_mountpoint = False
+    else:
+        device_mountpoint = tempfile.mkdtemp(prefix="grml2usb")
+        register_tmpfile(device_mountpoint)
+        remove_device_mountpoint = True
+        try:
+            mount(device, device_mountpoint, "")
+        except CriticalException, error:
+            logging.critical("Fatal: %s" % error)
+            cleanup()
+            sys.exit(1)
+
+    try:
+        grml_flavour = identify_grml_flavour(live_image)
+        logging.info("Identified grml flavour \"%s\"." % grml_flavour)
+        install_iso_files(grml_flavour, live_image, device, device_mountpoint)
+    except TypeError:
+        logging.critical("Fatal: a critical error happend during execution (not a grml ISO?), giving up")
+        sys.exit(1)
+    finally:
+        if remove_device_mountpoint:
+            try:
+                unmount(device_mountpoint, "")
+                if os.path.isdir(device_mountpoint):
+                    os.rmdir(device_mountpoint)
+                    unregister_tmpfile(device_mountpoint)
+            except CriticalException, error:
+                logging.critical("Fatal: %s" % error)
+                cleanup()
+
 
 def handle_iso(iso, device):
     """Main logic for mounting ISOs and copying files.
@@ -1433,10 +1474,6 @@ def handle_iso(iso, device):
     @device: partition where the specified ISO should be installed to"""
 
     logging.info("Using ISO %s" % iso)
-
-    if os.path.isdir(iso):
-        logging.critical("TODO: /live/image handling not yet implemented - sorry")
-        sys.exit(1)
 
     iso_mountpoint = tempfile.mkdtemp(prefix="grml2usb")
     register_tmpfile(iso_mountpoint)
@@ -1662,7 +1699,10 @@ def main():
 
     # main operation (like installing files)
     for iso in isos:
-        handle_iso(iso, device)
+        if os.path.isdir(iso):
+            handle_dir(iso, device)
+        else:
+            handle_iso(iso, device)
 
     # install mbr
     if not os.path.isdir(device):
