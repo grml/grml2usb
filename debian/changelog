@@ -2,8 +2,9 @@ grml2usb (0.9.6) unstable; urgency=low
 
   * Support installation of the currently running grml live
     system ("grml2usb /live/image /dev/sdx1").
+  * Add "persistent" entry to grub/syslinux menu. [Closes: issue669]
 
- -- Michael Prokop <mika@grml.org>  Wed, 20 May 2009 19:22:59 +0200
+ -- Michael Prokop <mika@grml.org>  Wed, 20 May 2009 19:32:02 +0200
 
 grml2usb (0.9.5) unstable; urgency=low
 
