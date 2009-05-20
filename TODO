@@ -13,7 +13,6 @@ TODOs
     iso1.... OK
     iso2.... FAIL (error)
   done.
-* support installation of live running grml system (/live/image as grml-iso)
 * provide default entry of all installed ISOs on the top of the bootscreen (in grub's config)
 * implement --kernel option to install specific linux26 file
 * implement --initrd option to install specific initrd file
