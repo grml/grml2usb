@@ -19,7 +19,7 @@ Introduction
 grml2usb installs grml on a given partition of your usb device and makes it
 bootable. It provides multi-iso support, meaning you can specify several grml
 ISOs on the command line at once and select the grml flavour you would like to
-boot on the bootbrompt then. Note that the *first* ISO specified on the grml2usb
+boot on the bootprompt then. Note that the *first* ISO specified on the grml2usb
 command line will become the default one (that's the one that will boot when
 just pressing enter on the bootprompt or wait until the boot timeout matches).
 
