@@ -1,8 +1,11 @@
-grml2usb (0.9.7) UNRELEASED; urgency=low
+grml2usb (0.9.7) unstable; urgency=low
 
   * Fix typo in manpage of grml2usb (thanks to Wernfried Haas).
+  * Fix bootoption toram: it should be toram=$FLAVOUR.squashfs instead
+    of toram=$FLAVOUR. Thanks to Wernfried Haas and Frank Prochnow
+    for the bugreport and debugging! [Closes: issue680]
 
- -- Michael Prokop <mika@grml.org>  Tue, 02 Jun 2009 00:37:35 +0200
+ -- Michael Prokop <mika@grml.org>  Tue, 02 Jun 2009 23:32:13 +0200
 
 grml2usb (0.9.6) unstable; urgency=low
 

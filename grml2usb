@@ -324,7 +324,7 @@ menuentry "%(grml_flavour)s-persistent" {
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s2ram" {
     set root=(hd0,%(install_partition)s)
-    linux  /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ toram=%(grml_flavour)s %(bootoptions)s
+    linux  /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ toram=%(grml_flavour)s.squashfs %(bootoptions)s
     initrd /boot/release/%(grml_flavour)s/initrd.gz
 }
 
@@ -396,7 +396,7 @@ initrd (hd0,%(install_partition)s)/boot/release/%(grml_flavour)s/initrd.gz
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 title %(grml_flavour)s2ram
-kernel (hd0,%(install_partition)s)/boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ toram=%(grml_flavour)s %(bootoptions)s
+kernel (hd0,%(install_partition)s)/boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ toram=%(grml_flavour)s.squashfs %(bootoptions)s
 initrd (hd0,%(install_partition)s)/boot/release/%(grml_flavour)s/initrd.gz
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
@@ -576,7 +576,7 @@ APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live n
 # flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 LABEL  %(grml_flavour)s2ram
 KERNEL /boot/release/%(grml_flavour)s/linux26
-APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ toram=%(grml_flavour)s %(bootoptions)s
+APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ toram=%(grml_flavour)s.squashfs %(bootoptions)s
 
 # flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 LABEL  %(grml_flavour)s-debug
