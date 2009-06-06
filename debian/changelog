@@ -1,4 +1,4 @@
-grml2usb (0.9.8) unstable; urgency=low
+grml2usb (0.9.8) UNRELEASED; urgency=low
 
   * Support installation on /dev/loop*-devices.
   * Generate configuration for syslinux and grub by default, no
@@ -9,8 +9,13 @@ grml2usb (0.9.8) unstable; urgency=low
   * Make sure grub-install is available before executing it.
   * Display information about default grml flavour and the other
     available grml flavours at the end of the grml2usb run.
+  * Use /sbin/blkid (e2fsprogs) instead of vol_id as vol_id is going to be
+    removed from udev. Thanks for the patch to Andras Korn!
+  * Use rsync instead of cp. Thanks for the patch to Andras Korn!
+    [Closes: issue683]
+  * Use 'forensic' and 'readonly' in the forensic bootoption itself.
 
- -- Michael Prokop <mika@grml.org>  Sun, 07 Jun 2009 01:15:59 +0200
+ -- Michael Prokop <mika@grml.org>  Sun, 07 Jun 2009 01:29:33 +0200
 
 grml2usb (0.9.7) unstable; urgency=low
 
@@ -148,7 +153,7 @@ grml2usb (0.7.6) unstable; urgency=low
 
 grml2usb (0.7.5) unstable; urgency=low
 
-  * supporting directories and direct blockdevices as source for the iso. 
+  * supporting directories and direct blockdevices as source for the iso.
 
  -- Michael Gebetsroither <gebi@grml.org>  Tue, 03 Apr 2007 23:28:19 +0200
 

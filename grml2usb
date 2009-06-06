@@ -365,7 +365,7 @@ menuentry "%(grml_flavour)s-failsafe" {
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s-forensic" {
     set root=(hd0,%(install_partition)s)
-    linux /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ nofstab noraid nolvm noautoconfig noswap raid=noautodetect %(bootoptions)s
+    linux /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ nofstab noraid nolvm noautoconfig noswap raid=noautodetect forensic readonly %(bootoptions)s
     initrd /boot/release/%(grml_flavour)s/initrd.gz
 }
 
@@ -427,7 +427,7 @@ initrd (hd0,%(install_partition)s)/boot/release/%(grml_flavour)s/initrd.gz
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 title %(grml_flavour)s-forensic
-kernel (hd0,%(install_partition)s)/boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ nofstab noraid nolvm noautoconfig noswap raid=noautodetect %(bootoptions)s
+kernel (hd0,%(install_partition)s)/boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ nofstab noraid nolvm noautoconfig noswap raid=noautodetect forensic readonly %(bootoptions)s
 initrd (hd0,%(install_partition)s)/boot/release/%(grml_flavour)s/initrd.gz
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
@@ -607,7 +607,7 @@ APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live n
 # flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 LABEL  %(grml_flavour)s-forensic
 KERNEL /boot/release/%(grml_flavour)s/linux26
-APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ nofstab noraid nolvm noautoconfig noswap raid=noautodetect %(bootoptions)s
+APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ nofstab noraid nolvm noautoconfig noswap raid=noautodetect forensic readonly %(bootoptions)s
 
 # flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 LABEL  %(grml_flavour)s-serial
@@ -950,7 +950,7 @@ def check_for_fat(partition):
     @partition: device name of partition"""
 
     try:
-        udev_info = subprocess.Popen(["/lib/udev/vol_id", "-t", partition],
+        udev_info = subprocess.Popen(["/sbin/blkid", "-s", "TYPE", "-o", "value", partition],
                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         filesystem = udev_info.communicate()[0].rstrip()
 
@@ -962,7 +962,7 @@ def check_for_fat(partition):
             raise CriticalException("Partition %s does not contain a FAT16 filesystem. (Use --fat16 or run mkfs.vfat %s)" % (partition, partition))
 
     except OSError:
-        raise CriticalException("Sorry, /lib/udev/vol_id not available.")
+        raise CriticalException("Sorry, /sbin/blkid not available (install e2fsprogs?)")
 
 
 def mkdir(directory):
@@ -991,16 +991,16 @@ def copy_system_files(grml_flavour, iso_mount, target):
     else:
         squashfs_target = target + '/live/' + grml_flavour + '/'
         execute(mkdir, squashfs_target)
-        logging.debug("cp %s %s" % (squashfs, squashfs_target + grml_flavour + '.squashfs'))
-        proc = subprocess.Popen(["cp", squashfs, squashfs_target + grml_flavour + ".squashfs"])
+        logging.debug("rsync -aHS %s %s" % (squashfs, squashfs_target + grml_flavour + '.squashfs'))
+        proc = subprocess.Popen(["rsync", "-aHS", squashfs, squashfs_target + grml_flavour + ".squashfs"])
         proc.wait()
 
     filesystem_module = search_file('filesystem.module', iso_mount)
     if filesystem_module is None:
         logging.critical("Fatal: filesystem.module not found")
     else:
-        logging.debug("cp %s %s" % (filesystem_module, squashfs_target + 'filesystem.module'))
-        proc = subprocess.Popen(["cp", filesystem_module, squashfs_target + 'filesystem.module'])
+        logging.debug("rsync -aHS %s %s" % (filesystem_module, squashfs_target + 'filesystem.module'))
+        proc = subprocess.Popen(["rsync", "-aHS", filesystem_module, squashfs_target + 'filesystem.module'])
         proc.wait()
 
     release_target = target + '/boot/release/' + grml_flavour
@@ -1010,16 +1010,16 @@ def copy_system_files(grml_flavour, iso_mount, target):
     if kernel is None:
         logging.critical("Fatal kernel not found")
     else:
-        logging.debug("cp %s %s" % (kernel, release_target + '/linux26'))
-        proc = subprocess.Popen(["cp", kernel, release_target + '/linux26'])
+        logging.debug("rsync -aHS %s %s" % (kernel, release_target + '/linux26'))
+        proc = subprocess.Popen(["rsync", "-aHS", kernel, release_target + '/linux26'])
         proc.wait()
 
     initrd = search_file('initrd.gz', iso_mount)
     if initrd is None:
         logging.critical("Fatal: initrd not found")
     else:
-        logging.debug("cp %s %s" % (initrd, release_target + '/initrd.gz'))
-        proc = subprocess.Popen(["cp", initrd, release_target + '/initrd.gz'])
+        logging.debug("rsync -aHS %s %s" % (initrd, release_target + '/initrd.gz'))
+        proc = subprocess.Popen(["rsync", "-aHS", initrd, release_target + '/initrd.gz'])
         proc.wait()
 
 
@@ -1037,8 +1037,8 @@ def copy_grml_files(iso_mount, target):
         if grml_file is None:
             logging.warn("Warning: myfile %s could not be found - can not install it", myfile)
         else:
-            logging.debug("cp %s %s" % (grml_file, grml_target + grml_file))
-            proc = subprocess.Popen(["cp", grml_file, grml_target + myfile])
+            logging.debug("rsync -aHS %s %s" % (grml_file, grml_target + grml_file))
+            proc = subprocess.Popen(["rsync", "-aHS", grml_file, grml_target + myfile])
             proc.wait()
 
     grml_web_target = grml_target + '/web/'
@@ -1049,8 +1049,8 @@ def copy_grml_files(iso_mount, target):
         if grml_file is None:
             logging.warn("Warning: myfile %s could not be found - can not install it")
         else:
-            logging.debug("cp %s %s" % (grml_file, grml_web_target + grml_file))
-            proc = subprocess.Popen(["cp", grml_file, grml_web_target + myfile])
+            logging.debug("rsync -aHS %s %s" % (grml_file, grml_web_target + grml_file))
+            proc = subprocess.Popen(["rsync", "-aHS", grml_file, grml_web_target + myfile])
             proc.wait()
 
     grml_webimg_target = grml_web_target + '/images/'
@@ -1061,8 +1061,8 @@ def copy_grml_files(iso_mount, target):
         if grml_file is None:
             logging.warn("Warning: myfile %s could not be found - can not install it")
         else:
-            logging.debug("cp %s %s" % (grml_file, grml_webimg_target + grml_file))
-            proc = subprocess.Popen(["cp", grml_file, grml_webimg_target + myfile])
+            logging.debug("rsync -aHS %s %s" % (grml_file, grml_webimg_target + grml_file))
+            proc = subprocess.Popen(["rsync", "-aHS", grml_file, grml_webimg_target + myfile])
             proc.wait()
 
 
@@ -1080,8 +1080,8 @@ def copy_addons(iso_mount, target):
     if allinoneimg is None:
         logging.warn("Warning: allinone.img not found (that's fine if you don't need it)")
     else:
-        logging.debug("cp %s %s" % (allinoneimg, addons + '/allinone.img'))
-        proc = subprocess.Popen(["cp", allinoneimg, addons + 'allinone.img'])
+        logging.debug("rsync -aHS %s %s" % (allinoneimg, addons + '/allinone.img'))
+        proc = subprocess.Popen(["rsync", "-aHS", allinoneimg, addons + 'allinone.img'])
         proc.wait()
 
     # bsd imag
@@ -1089,8 +1089,8 @@ def copy_addons(iso_mount, target):
     if bsdimg is None:
         logging.warn("Warning: bsd4grml not found (that's fine if you don't need it)")
     else:
-        logging.debug("cp -a %s %s" % (bsdimg, addons + '/'))
-        proc = subprocess.Popen(["cp", "-a", bsdimg, addons + '/'])
+        logging.debug("rsync -aHS %s %s" % (bsdimg, addons + '/'))
+        proc = subprocess.Popen(["rsync", "-aHS", bsdimg, addons + '/'])
         proc.wait()
 
     # freedos image
@@ -1098,8 +1098,8 @@ def copy_addons(iso_mount, target):
     if balderimg is None:
         logging.warn("Warning: balder10.imz not found (that's fine if you don't need it)")
     else:
-        logging.debug("cp %s %s" % (balderimg, addons + '/balder10.imz'))
-        proc = subprocess.Popen(["cp", balderimg, addons + 'balder10.imz'])
+        logging.debug("rsync -aHS %s %s" % (balderimg, addons + '/balder10.imz'))
+        proc = subprocess.Popen(["rsync", "-aHS", balderimg, addons + 'balder10.imz'])
         proc.wait()
 
     # install hdt and pci.ids only when using syslinux (grub doesn't support it)
@@ -1107,15 +1107,15 @@ def copy_addons(iso_mount, target):
         # hdt (hardware detection tool) image
         hdtimg = search_file('hdt.c32', iso_mount)
         if hdtimg:
-            logging.debug("cp %s %s" % (hdtimg, addons + '/hdt.c32'))
-            proc = subprocess.Popen(["cp", hdtimg, addons + '/hdt.c32'])
+            logging.debug("rsync -aHS %s %s" % (hdtimg, addons + '/hdt.c32'))
+            proc = subprocess.Popen(["rsync -aHS", hdtimg, addons + '/hdt.c32'])
             proc.wait()
 
         # pci.ids file
         picids = search_file('pci.ids', iso_mount)
         if picids:
-            logging.debug("cp %s %s" % (picids, addons + '/pci.ids'))
-            proc = subprocess.Popen(["cp", picids, addons + '/pci.ids'])
+            logging.debug("rsync -aHS %s %s" % (picids, addons + '/pci.ids'))
+            proc = subprocess.Popen(["rsync -aHS", picids, addons + '/pci.ids'])
             proc.wait()
 
     # memdisk image
@@ -1123,8 +1123,8 @@ def copy_addons(iso_mount, target):
     if memdiskimg is None:
         logging.warn("Warning: memdisk not found (that's fine if you don't need it)")
     else:
-        logging.debug("cp %s %s" % (memdiskimg, addons + '/memdisk'))
-        proc = subprocess.Popen(["cp", memdiskimg, addons + 'memdisk'])
+        logging.debug("rsync -aHS %s %s" % (memdiskimg, addons + '/memdisk'))
+        proc = subprocess.Popen(["rsync", "-aHS", memdiskimg, addons + 'memdisk'])
         proc.wait()
 
     # memtest86+ image
@@ -1132,8 +1132,8 @@ def copy_addons(iso_mount, target):
     if memtestimg is None:
         logging.warn("Warning: memtest not found (that's fine if you don't need it)")
     else:
-        logging.debug("cp %s %s" % (memtestimg, addons + '/memtest'))
-        proc = subprocess.Popen(["cp", memtestimg, addons + 'memtest'])
+        logging.debug("rsync -aHS %s %s" % (memtestimg, addons + '/memtest'))
+        proc = subprocess.Popen(["rsync", "-aHS", memtestimg, addons + 'memtest'])
         proc.wait()
 
 
@@ -1147,14 +1147,14 @@ def copy_bootloader_files(iso_mount, target):
     execute(mkdir, syslinux_target)
 
     logo = search_file('logo.16', iso_mount)
-    logging.debug("cp %s %s" % (logo, syslinux_target + 'logo.16'))
-    proc = subprocess.Popen(["cp", logo, syslinux_target + 'logo.16'])
+    logging.debug("rsync -aHS %s %s" % (logo, syslinux_target + 'logo.16'))
+    proc = subprocess.Popen(["rsync", "-aHS", logo, syslinux_target + 'logo.16'])
     proc.wait()
 
     for ffile in 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10':
         bootsplash = search_file(ffile, iso_mount)
-        logging.debug("cp %s %s" % (bootsplash, syslinux_target + ffile))
-        proc = subprocess.Popen(["cp", bootsplash, syslinux_target + ffile])
+        logging.debug("rsync -aHS %s %s" % (bootsplash, syslinux_target + ffile))
+        proc = subprocess.Popen(["rsync", "-aHS", bootsplash, syslinux_target + ffile])
         proc.wait()
 
     grub_target = target + '/boot/grub/'
@@ -1165,22 +1165,22 @@ def copy_bootloader_files(iso_mount, target):
         logging.critical("Please make sure you've the grml2usb Debian package installed!")
         raise
     else:
-        logging.debug("cp /usr/share/grml2usb/grub/splash.xpm.gz %s" % grub_target + 'splash.xpm.gz')
-        proc = subprocess.Popen(["cp", '/usr/share/grml2usb/grub/splash.xpm.gz',
+        logging.debug("rsync -aHS /usr/share/grml2usb/grub/splash.xpm.gz %s" % grub_target + 'splash.xpm.gz')
+        proc = subprocess.Popen(["rsync", "-aHS", '/usr/share/grml2usb/grub/splash.xpm.gz',
                                 grub_target + 'splash.xpm.gz'])
         proc.wait()
 
     # grml splash in grub
     if os.path.isfile("/usr/share/grml2usb/grub/grml.png"):
-        logging.debug("cp /usr/share/grml2usb/grub/grml.png to %s" % grub_target + 'grml.png')
-        proc = subprocess.Popen(["cp", '/usr/share/grml2usb/grub/grml.png',
+        logging.debug("rsync -aHS /usr/share/grml2usb/grub/grml.png to %s" % grub_target + 'grml.png')
+        proc = subprocess.Popen(["rsync", "-aHS", '/usr/share/grml2usb/grub/grml.png',
                                 grub_target + 'grml.png'])
         proc.wait()
 
     # font file for graphical bootsplash in grub
     if os.path.isfile("/usr/share/grub/ascii.pff"):
-        logging.debug("cp /usr/share/grub/ascii.pff to %s" % grub_target + 'ascii.pff')
-        proc = subprocess.Popen(["cp", '/usr/share/grub/ascii.pff',
+        logging.debug("rsync -aHS /usr/share/grub/ascii.pff to %s" % grub_target + 'ascii.pff')
+        proc = subprocess.Popen(["rsync", "-aHS", '/usr/share/grub/ascii.pff',
                                 grub_target + 'ascii.pff'])
         proc.wait()
 
@@ -1737,6 +1737,10 @@ def main():
             if os.path.exists(device):
                 logging.critical("Fatal: installation on raw device not supported. (BIOS won't support it.)")
                 sys.exit(1)
+
+    if not which("rsync"):
+        logging.critical("Fatal: rsync not available, can not continue - sorry.")
+        sys.exit(1)
 
     # provide upgrade path
     handle_compat_warning(device)
