@@ -18,10 +18,12 @@ from inspect import isroutine, isclass
 import datetime, logging, os, re, subprocess, sys, tempfile, time
 
 # global variables
-PROG_VERSION = "0.9.7"
+PROG_VERSION = "0.9.8"
 MOUNTED = set()  # register mountpoints
 TMPFILES = set() # register tmpfiles
 DATESTAMP = time.mktime(datetime.datetime.now().timetuple()) # unique identifier for syslinux.cfg
+GRML_FLAVOURS = set() # which flavours are being installed?
+global GRML_DEFAULT
 
 # cmdline parsing
 USAGE = "Usage: %prog [options] <[ISO[s] | /live/image]> </dev/sdX#>\n\
@@ -59,8 +61,12 @@ parser.add_option("--quiet", dest="quiet", action="store_true",
                   help="do not output anything but just errors on console")
 parser.add_option("--skip-addons", dest="skipaddons", action="store_true",
                   help="do not install /boot/addons/ files")
+parser.add_option("--skip-grub-config", dest="skipgrubconfig", action="store_true",
+                  help="skip generation of grub configuration files")
 parser.add_option("--skip-mbr", dest="skipmbr", action="store_true",
                   help="do not install a master boot record (MBR) on the device")
+parser.add_option("--skip-syslinux-config", dest="skipsyslinuxconfig", action="store_true",
+                  help="skip generation of syslinux configuration files")
 parser.add_option("--syslinux", dest="syslinux", action="store_true",
                   help="install syslinux bootloader instead of grub")
 parser.add_option("--syslinux-mbr", dest="syslinuxmbr", action="store_true",
@@ -629,7 +635,7 @@ def install_grub(device):
             proc.wait()
             if proc.returncode != 0:
                 # raise Exception("error executing grub-install")
-                logging.critical("Fatal: error executing grub-install (please check the grml2usb FAQ)" % error)
+                logging.critical("Fatal: error executing grub-install (please check the grml2usb FAQ)")
                 cleanup()
                 sys.exit(1)
         except CriticalException, error:
@@ -675,12 +681,17 @@ def install_bootloader(device):
             cleanup()
             sys.exit(1)
     else:
-        try:
-            install_grub(device)
-        except CriticalException, error:
-            logging.critical("Fatal: %s" % error)
+        if not which("grub-install"):
+            logging.critical("Fatal: grub-install not available (please install the grub package or use the --syslinux option)")
             cleanup()
             sys.exit(1)
+        else:
+            try:
+                install_grub(device)
+            except CriticalException, error:
+                logging.critical("Fatal: %s" % error)
+                cleanup()
+                sys.exit(1)
 
 
 def execute_lilo(lilo, device):
@@ -922,8 +933,8 @@ def check_for_usbdevice(device):
     # newer systems:
     usbdev = os.path.realpath('/sys/class/block/' + usbdevice + '/removable')
     if not os.path.isfile(usbdev):
-       # Ubuntu with kernel 2.6.24 for example:
-       usbdev = os.path.realpath('/sys/block/' + usbdevice + '/removable')
+        # Ubuntu with kernel 2.6.24 for example:
+        usbdev = os.path.realpath('/sys/block/' + usbdevice + '/removable')
 
     if os.path.isfile(usbdev):
         is_usb = open(usbdev).readline()
@@ -1099,7 +1110,7 @@ def copy_addons(iso_mount, target):
             logging.debug("cp %s %s" % (hdtimg, addons + '/hdt.c32'))
             proc = subprocess.Popen(["cp", hdtimg, addons + '/hdt.c32'])
             proc.wait()
-    
+
         # pci.ids file
         picids = search_file('pci.ids', iso_mount)
         if picids:
@@ -1300,6 +1311,8 @@ def handle_grub2_config(grml_flavour, install_partition, grub_target, bootopt):
     grub2_cfg = grub_target + 'grub.cfg'
     logging.debug("Creating grub2 configuration file (grub.lst)")
 
+    global GRML_DEFAULT
+
     # install main configuration only *once*, no matter how many ISOs we have:
     grub_flavour_is_default = False
     if os.path.isfile(grub2_cfg):
@@ -1307,13 +1320,13 @@ def handle_grub2_config(grml_flavour, install_partition, grub_target, bootopt):
         main_identifier = re.compile(".*main config generated at: %s.*" % re.escape(str(DATESTAMP)))
         if not re.match(main_identifier, string):
             grub2_config_file = open(grub2_cfg, 'w')
-            logging.info("Note: grml flavour %s is being installed as the default booting system." % grml_flavour)
+            GRML_DEFAULT = grml_flavour
             grub_flavour_is_default = True
             grub2_config_file.write(generate_main_grub2_config(grml_flavour, install_partition, bootopt))
             grub2_config_file.close()
     else:
         grub2_config_file = open(grub2_cfg, 'w')
-        logging.info("Note: grml flavour %s is being installed as the default booting system." % grml_flavour)
+        GRML_DEFAULT = grml_flavour
         grub_flavour_is_default = True
         grub2_config_file.write(generate_main_grub2_config(grml_flavour, install_partition, bootopt))
         grub2_config_file.close()
@@ -1331,7 +1344,7 @@ def handle_grub2_config(grml_flavour, install_partition, grub_target, bootopt):
         grub2_config_file = open(grub2_cfg, 'a')
         # display only if the grml flavour isn't the default
         if not grub_flavour_is_default:
-            logging.info("Note: you can boot flavour %s using '%s' on the commandline." % (grml_flavour, grml_flavour))
+            GRML_FLAVOURS.add(grml_flavour)
         grub2_config_file.write(generate_flavour_specific_grub2_config(grml_flavour, install_partition, bootopt))
         grub2_config_file.close()
 
@@ -1379,11 +1392,13 @@ def handle_syslinux_config(grml_flavour, target):
     else:
         bootopt = options.bootoptions
 
-    logging.info("Generating syslinux configuration")
+    logging.debug("Generating syslinux configuration")
     syslinux_target = target + '/boot/syslinux/'
     # should be present via  copy_bootloader_files(), but make sure it exits:
     execute(mkdir, syslinux_target)
     syslinux_cfg = syslinux_target + 'syslinux.cfg'
+
+    global GRML_DEFAULT
 
     # install main configuration only *once*, no matter how many ISOs we have:
     syslinux_flavour_is_default = False
@@ -1392,13 +1407,13 @@ def handle_syslinux_config(grml_flavour, target):
         main_identifier = re.compile(".*main config generated at: %s.*" % re.escape(str(DATESTAMP)))
         if not re.match(main_identifier, string):
             syslinux_config_file = open(syslinux_cfg, 'w')
-            logging.info("Note: grml flavour %s is being installed as the default booting system." % grml_flavour)
+            GRML_DEFAULT = grml_flavour
             syslinux_flavour_is_default = True
             syslinux_config_file.write(generate_main_syslinux_config(grml_flavour, bootopt))
             syslinux_config_file.close()
     else:
         syslinux_config_file = open(syslinux_cfg, 'w')
-        logging.info("Note: grml flavour %s is being installed as the default booting system." % grml_flavour)
+        GRML_DEFAULT = grml_flavour
         syslinux_flavour_is_default = True
         syslinux_config_file.write(generate_main_syslinux_config(grml_flavour, bootopt))
         syslinux_config_file.close()
@@ -1416,7 +1431,7 @@ def handle_syslinux_config(grml_flavour, target):
         syslinux_config_file = open(syslinux_cfg, 'a')
         # display only if the grml flavour isn't the default
         if not syslinux_flavour_is_default:
-            logging.info("Note: you can boot flavour %s using '%s' on the commandline." % (grml_flavour, grml_flavour))
+            GRML_FLAVOURS.add(grml_flavour)
         syslinux_config_file.write(generate_flavour_specific_syslinux_config(grml_flavour, bootopt))
         syslinux_config_file.close()
 
@@ -1433,8 +1448,17 @@ def handle_bootloader_config(grml_flavour, device, target):
     @device: device/partition where bootloader should be installed to
     @target: path of bootloader's configuration files"""
 
-    if options.syslinux:
-        handle_syslinux_config(grml_flavour, target)
+    if options.skipsyslinuxconfig:
+        logging.info("Skipping generation of syslinux configuration as requested.")
+    else:
+        try:
+            handle_syslinux_config(grml_flavour, target)
+        except CriticalException, error:
+            logging.critical("Fatal: %s" % error)
+            sys.exit(1)
+
+    if options.skipgrubconfig:
+        logging.info("Skipping generation of grub configuration as requested.")
     else:
         try:
             handle_grub_config(grml_flavour, device, target)
@@ -1556,31 +1580,37 @@ def handle_mbr(device):
         return 0
 
     # make sure we have syslinux available
-    if not options.skipmbr:
-        if not which("syslinux") and not options.copyonly:
-            logging.critical('Sorry, syslinux not available. Exiting.')
-            logging.critical('Please install syslinux or consider using the --grub option.')
-            sys.exit(1)
+    if not which("syslinux") and not options.copyonly:
+        logging.critical('Sorry, syslinux not available. Exiting.')
+        logging.critical('Please install syslinux or consider using the --grub option.')
+        sys.exit(1)
 
-    if not options.skipmbr:
-        if device[-1:].isdigit():
-            mbr_device = re.match(r'(.*?)\d*$', device).group(1)
-            partition_number = int(device[-1:]) - 1
+    if device[-1:].isdigit():
+        mbr_device = re.match(r'(.*?)\d*$', device).group(1)
+        partition_number = int(device[-1:]) - 1
+        skip_install_mir_mbr = False
 
-        try:
-            if options.syslinuxmbr:
-                handle_syslinux_mbr(mbr_device)
+    # if we get e.g. /dev/loop1 as device we don't want to put the MBR
+    # into /dev/loop of course, therefor use /dev/loop1 as mbr_device
+    if mbr_device == "/dev/loop":
+        mbr_device = device
+        logging.info("Detected loop device - using %s as MBR device therefore" % mbr_device)
+        skip_install_mir_mbr = True
+
+    try:
+        if options.syslinuxmbr:
+            handle_syslinux_mbr(mbr_device)
+        elif not skip_install_mir_mbr:
+            if options.mbrmenu:
+                install_mir_mbr('/usr/share/grml2usb/mbr/mbrmgr', mbr_device, partition_number, True)
             else:
-                if options.mbrmenu:
-                    install_mir_mbr('/usr/share/grml2usb/mbr/mbrmgr', mbr_device, partition_number, True)
-                else:
-                    install_mir_mbr('/usr/share/grml2usb/mbr/mbrldr', mbr_device, partition_number, False)
-        except IOError, error:
-            logging.critical("Execution failed: %s", error)
-            sys.exit(1)
-        except Exception, error:
-            logging.critical("Execution failed: %s", error)
-            sys.exit(1)
+                install_mir_mbr('/usr/share/grml2usb/mbr/mbrldr', mbr_device, partition_number, False)
+    except IOError, error:
+        logging.critical("Execution failed: %s", error)
+        sys.exit(1)
+    except Exception, error:
+        logging.critical("Execution failed: %s", error)
+        sys.exit(1)
 
 
 def handle_vfat(device):
@@ -1700,11 +1730,11 @@ def main():
 
     if not os.path.isdir(device):
         if device[-1:].isdigit():
-            if int(device[-1:]) > 4:
+            if int(device[-1:]) > 4 or device[-2:].isdigit():
                 logging.critical("Fatal: installation on partition number >4 not supported. (BIOS won't support it.)")
                 sys.exit(1)
         else:
-             if os.path.exists(device):
+            if os.path.exists(device):
                 logging.critical("Fatal: installation on raw device not supported. (BIOS won't support it.)")
                 sys.exit(1)
 
@@ -1723,9 +1753,15 @@ def main():
 
     # install mbr
     if not os.path.isdir(device):
-        handle_mbr(device)
+        if not options.skipmbr:
+            handle_mbr(device)
 
     handle_bootloader(device)
+
+    logging.info("Note: grml flavour %s was installed as the default booting system." % GRML_DEFAULT)
+
+    for flavour in GRML_FLAVOURS:
+        logging.info("Note: you can boot flavour %s using '%s' on the commandline." % (flavour, flavour))
 
     # finally be politely :)
     logging.info("Finished execution of grml2usb (%s). Have fun with your grml system." % PROG_VERSION)

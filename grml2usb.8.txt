@@ -119,9 +119,21 @@ Do not output anything but just errors on console.
 
 Do not install /boot/addons/ files (like dos, grub, memdisk,...).
 
+  *\--skip-grub-config*::
+
+Skip generation of grub configuration files. By default the configuration
+files for syslinux *and* grub will be written so you've a working configuration
+file no matter whether you're using grub or syslinux as bootloader.
+
   *\--skip-mbr*::
 
 Do not touch/install the master boot record (MBR).
+
+  *\--skip-syslinux-config*::
+
+Skip generation of syslinux configuration files. By default the configuration
+files for syslinux *and* grub will be written so you've a working configuration
+file no matter whether you're using grub or syslinux as bootloader.
 
   *\--syslinux*::
 
