@@ -1630,7 +1630,7 @@ def handle_vfat(device):
             logging.critical("Execution failed: %s", error)
             sys.exit(1)
 
-    if not check_for_usbdevice(device) and not os.path.isdir(device):
+    if not os.path.isdir(device) and not check_for_usbdevice(device):
         print "Warning: the specified device %s does not look like a removable usb device." % device
         f = raw_input("Do you really want to continue? y/N ")
         if f == "y" or f == "Y":
