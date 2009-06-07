@@ -1202,7 +1202,7 @@ def install_iso_files(grml_flavour, iso_mount, device, target):
     if not options.copyonly:
         copy_bootloader_files(iso_mount, target)
 
-        if not options.dryrun and not os.path.isdir(device):
+        if not options.dryrun:
             handle_bootloader_config(grml_flavour, device, target)
 
     # make sure we sync filesystems before returning
@@ -1344,11 +1344,13 @@ def handle_grub_config(grml_flavour, device, target):
     grub_target = target + '/boot/grub/'
     execute(mkdir, grub_target)
 
-    # we have to adjust root() inside grub configuration
-    if device[-1:].isdigit():
-        install_grub1_partition = int(device[-1:]) - 1
+    if os.path.isdir(device):
+        install_grub1_partition = None
     else:
-        raise CriticalException("error validating partition schema (raw device?)")
+        if device[-1:].isdigit():
+            install_grub1_partition = int(device[-1:]) - 1
+        else:
+            raise CriticalException("error validating partition schema (raw device?)")
 
     # do NOT write "None" in kernel cmdline
     if options.bootoptions is None:
@@ -1357,7 +1359,8 @@ def handle_grub_config(grml_flavour, device, target):
         bootopt = options.bootoptions
 
     # write menu.lst
-    handle_grub1_config(grml_flavour, install_grub1_partition, grub_target, bootopt)
+    if install_grub1_partition:
+        handle_grub1_config(grml_flavour, install_grub1_partition, grub_target, bootopt)
     # write grub.cfg
     handle_grub2_config(grml_flavour, grub_target, bootopt)
 
