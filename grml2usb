@@ -1108,14 +1108,14 @@ def copy_addons(iso_mount, target):
         hdtimg = search_file('hdt.c32', iso_mount)
         if hdtimg:
             logging.debug("rsync -aHS %s %s" % (hdtimg, addons + '/hdt.c32'))
-            proc = subprocess.Popen(["rsync -aHS", hdtimg, addons + '/hdt.c32'])
+            proc = subprocess.Popen(["rsync", "-aHS", hdtimg, addons + '/hdt.c32'])
             proc.wait()
 
         # pci.ids file
         picids = search_file('pci.ids', iso_mount)
         if picids:
             logging.debug("rsync -aHS %s %s" % (picids, addons + '/pci.ids'))
-            proc = subprocess.Popen(["rsync -aHS", picids, addons + '/pci.ids'])
+            proc = subprocess.Popen(["rsync", "-aHS", picids, addons + '/pci.ids'])
             proc.wait()
 
     # memdisk image
