@@ -14,8 +14,13 @@ grml2usb (0.9.8) UNRELEASED; urgency=low
   * Use rsync instead of cp. Thanks for the patch to Andras Korn!
     [Closes: issue683]
   * Use 'forensic' and 'readonly' in the forensic bootoption itself.
+  * Spelling fixes (thanks to Thorsten Glaser <tg@mirbsd.org>).
+  * Write GRUB2 config even if the target is a directory (thanks, Thorsten)
+  * All these “set root=” are not needed for GRUB2 (thanks, Thorsten)
+  * Add grml2iso for creating a bootable DVD (thanks again for help
+    and patches, Thorsten).
 
- -- Michael Prokop <mika@grml.org>  Sun, 07 Jun 2009 01:29:33 +0200
+ -- Michael Prokop <mika@grml.org>  Sun, 07 Jun 2009 23:09:26 +0200
 
 grml2usb (0.9.7) unstable; urgency=low
 
