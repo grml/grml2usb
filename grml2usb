@@ -867,7 +867,7 @@ def mount(source, target, mount_options):
             raise CriticalException("Error executing mount: %s already mounted - please unmount before invoking grml2usb" % source)
 
     if os.path.isdir(source):
-        logging.debug("Source %s is not a device, not mounting therefor." % source)
+        logging.debug("Source %s is not a device, therefore not mounting." % source)
         return 0
 
     logging.debug("mount %s %s %s" % (mount_options, source, target))
@@ -1195,7 +1195,7 @@ def install_iso_files(grml_flavour, iso_mount, device, target):
 
     if not options.skipaddons:
         if grml_flavour.endswith('-small'):
-            logging.info("Note: grml-small doesn't provide any addons, not installing them therefor.")
+            logging.info("Note: grml-small doesn't provide any addons, not installing them therefore.")
         else:
             copy_addons(iso_mount, target)
 
@@ -1460,7 +1460,7 @@ def handle_dir(live_image, device):
     logging.info("Using %s as install base" % live_image)
 
     if os.path.isdir(device):
-        logging.info("Specified target is a directory, not mounting therefor.")
+        logging.info("Specified target is a directory, therefore not mounting.")
         device_mountpoint = device
         remove_device_mountpoint = False
     else:
@@ -1517,7 +1517,7 @@ def handle_iso(iso, device):
         sys.exit(1)
 
     if os.path.isdir(device):
-        logging.info("Specified target is a directory, not mounting therefor.")
+        logging.info("Specified target is a directory, therefore not mounting.")
         device_mountpoint = device
         remove_device_mountpoint = False
         # skip_mbr = True
@@ -1576,7 +1576,7 @@ def handle_mbr(device):
         skip_install_mir_mbr = False
 
     # if we get e.g. /dev/loop1 as device we don't want to put the MBR
-    # into /dev/loop of course, therefor use /dev/loop1 as mbr_device
+    # into /dev/loop of course, therefore use /dev/loop1 as mbr_device
     if mbr_device == "/dev/loop":
         mbr_device = device
         logging.info("Detected loop device - using %s as MBR device therefore" % mbr_device)
