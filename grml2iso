@@ -6,7 +6,9 @@
 # Bug-Reports:   see http://grml.org/bugs/
 # License:       This file is licensed under the GPL v2 or any later version.
 ################################################################################
-# TODO: support isolinux as bootloader on the ISO
+# TODO:
+# * support isolinux as bootloader on the ISO
+# * support setting grml2usb options (e.g. --bootoptions=...)
 ################################################################################
 
 # define function getfilesize before "set -e" {{{
