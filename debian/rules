@@ -37,6 +37,7 @@ install: build
 
 	# Add here commands to install the package into debian/grml2usb.
 	install -m 755 grml2usb               debian/grml2usb/usr/sbin/grml2usb
+	install -m 755 grml2iso               debian/grml2usb/usr/sbin/grml2iso
 	install -m 644 mbr/mbrmgr             debian/grml2usb/usr/share/grml2usb/mbr/mbrmgr
 	install -m 644 mbr/mbrldr             debian/grml2usb/usr/share/grml2usb/mbr/mbrldr
 	cp -a          lilo/                  debian/grml2usb/usr/share/grml2usb/

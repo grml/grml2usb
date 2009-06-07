@@ -1,0 +1,111 @@
+#!/bin/bash
+################################################################################
+# Filename: grml2iso
+# Purpose:  create a multiboot ISO using grml2usb
+# Author:   Michael Prokop <mika@grml.org>,
+#           Thorsten Glaser <tg@mirbsd.org>
+################################################################################
+# TODO:
+# * generalise the script so we can provide it as part of the grml2usb suite
+# * improve error handling
+# * support isolinux as bootloader on the ISO
+################################################################################
+
+# define function getfilesize before "set -e"
+if stat --help >/dev/null 2>&1; then
+	getfilesize='stat -c %s'	# GNU stat
+else
+	getfilesize='stat -f %z'	# BSD stat
+fi
+
+usage() {
+  echo >&2 "Usage: $0 target.iso source1.iso [source2.iso ...]"
+  exit 1
+}
+
+set -e
+set -u
+
+# ********* PLEASE ADJUST! *******************************************
+# specify path to the grml2usb script you'd like to use
+GRML2USB='grml2usb'
+# work directory for creating the filesystem
+WRKDIR='/dev/shm/grml2iso.tmp'
+# ********* PLEASE ADJUST! *******************************************
+
+test $# -lt 2 && usage
+if test -e "$1"; then
+  echo >&2 Error: target file "'$1'" already exists.
+  usage
+fi
+ISOFILE=$1; shift
+
+# variables
+  ORIG_DIR="$(pwd)"
+  # note: grub-pc_1.96+20090603-1_i386.deb seems to be b0rken
+  GRUB_DEB="grub-pc_1.96+20080724-16_i386.deb"
+
+# normalise path (in mksh I’d just use the realpath builtin…)
+case $ISOFILE in
+/*) ;;
+*) ISOFILE=$ORIG_DIR/$ISOFILE ;;
+esac
+
+# create necessary stuff under WRKDIR
+  rm -rf "$WRKDIR/cddir" "$WRKDIR/grub_tmp"
+  mkdir -p "$WRKDIR/cddir" "$WRKDIR/grub_tmp"
+
+# execute grml2usb with all ISOs you'd like to install
+  $GRML2USB "$@" "$WRKDIR/cddir"
+
+# install grub2 files
+# as we don't want to rely on a grub2 installation on the
+# running system let's grab it from the net
+  cd "$WRKDIR"/grub_tmp/
+  wget http://ftp.de.debian.org/debian/pool/main/g/grub2/"$GRUB_DEB"
+  ar x "$GRUB_DEB"
+  tar xzf data.tar.gz
+  ./usr/bin/grub-mkimage -d usr/lib/grub/i386-pc \
+    -o "$WRKDIR"/cddir/boot/grub/core.img biosdisk iso9660
+
+  for a in usr/lib/grub/i386-pc/{*.mod,efiemu??.o,command.lst,moddep.lst,fs.lst,handler.lst,parttool.lst}; do
+    test -e $a && cp $a "$WRKDIR"/cddir/boot/grub/
+  done
+
+  cat usr/lib/grub/i386-pc/cdboot.img "$WRKDIR"/cddir/boot/grub/core.img \
+    > "$WRKDIR"/cddir/boot/grub/eltorito.img
+  cd "$WRKDIR/cddir"
+
+# finally generate the CD/DVD-iso
+  mkisofs -V 'grml-multiboot' -l -r -J -no-pad \
+    -no-emul-boot -boot-load-size 4 -boot-info-table \
+    -b boot/grub/eltorito.img -c boot/grub/eltorito.cat \
+    -o "$ISOFILE" .
+
+# pad the output ISO to multiples of 256 KiB for partition table support
+  siz=$($getfilesize "$ISOFILE")
+  cyls=$(echo "$siz / 512 / 32 / 16 + 1" | bc)	# C=$cyls H=16 S=32
+  ofs=$(echo "$cyls * 16 * 32 * 512 - 1" | bc)	# padding offset (size - 1)
+  dd if=/dev/zero bs=1 count=1 seek=$ofs of="$ISOFILE" 2>/dev/null
+
+# create a manifold-boot image with a partition table, if possible
+  if mksh -c true 2>/dev/null && \
+    test -e /usr/share/grml-live/scripts/bootgrub.mksh; then
+      echo "Creating a manifold-boot ISO image"
+      echo 1 63 | \
+        mksh /usr/share/grml-live/scripts/bootgrub.mksh -A -M 1 -p 0x83 -g $cyls:16:32 | \
+        cat - boot/grub/core.img | \
+        dd conv=notrunc of="$ISOFILE" conv=notrunc 2>/dev/null
+  else
+      echo "Cannot find mksh or bootgrub.mksh, not generating manifold-boot ISO image"
+  fi
+
+# cleanup
+  cd "$ORIG_DIR"
+  sync
+  rm -rf "$WRKDIR/cddir" "$WRKDIR/grub_tmp"
+
+# we are done :)
+  echo "Generated $ISOFILE"
+
+## EOF #########################################################################
