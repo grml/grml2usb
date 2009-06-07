@@ -1,0 +1,69 @@
+grml2iso(8)
+==========
+
+Name
+----
+grml2iso - create a multiboot grml ISO using grml2usb
+
+Synopsis
+--------
+grml2iso -o <target.iso> <ISO[s]>
+
+*******************************************************************************
+Important! The grml team does not take responsibility for loss of any data!
+*******************************************************************************
+
+Introduction
+------------
+
+grml2iso allows you to create a multiboot grml ISO. You can specify
+two or more grml ISOs and will get one single multiboot ISO as a result.
+grml2iso requires and uses grml2usb for this task and installs grub2
+as bootmanager on the multiboot ISO.
+
+Options
+-------
+
+grml2iso supports the environment variables GRML2USB and WRKDIR.
+GRML2USB specifies the path to the grml2usb script you'd like to use.
+WRKDIR specifies the work directory for creating the filesystem.
+The work directory needs at least as much free disk space as the sum
+of all specified ISOs.
+
+  *\--o <target.iso>*::
+
+This option is mandatory and specifies where the resulting multiboot grml ISO
+should be placed. Note that (to avoid any possible data loss) grml2iso will exit
+if the specified target.iso exists already.
+
+Usage examples
+--------------
+
+  # grml2iso -o /tmp/grml.iso grml_2009.05.iso grml64_2009.05.iso
+
+Create multiboot ISO /tmp/grml.iso with grml_2009.05.iso and grml64_2009.05.iso.
+
+  # GRML2USB=/srv/git/grml2usb grml2iso -o /srv/grml.iso /srv/grml/grml_2009.05.iso /srv/grml/grml64-medium_2009.05.iso
+
+Create multiboot ISO /srv/grml.iso with grml_2009.05.iso and
+grml64-medium_2009.05.iso using /srv/git/grml2usb as grml2usb script.
+
+  # WRKDIR=/mnt/test/grml-tmp grml2iso -o /mnt/test/grml.iso grml_2009.05.iso grml64_2009.05.iso
+
+Use /mnt/test/grml-tmp as working directory for creating the multiboot ISO
+/mnt/test/grml.iso with grml_2009.05.iso and grml64_2009.05.iso.
+
+Online Ressources
+-----------------
+
+Check out the link:http://grml.org/grml2usb/[grml2usb webpage] and the
+link:http://git.grml.org/?p=grml2usb.git[grml2usb git repository].
+
+Bugs
+----
+Please report feedback, bugreports and wishes <<X7,to the author>>.
+
+[[X7]]
+Authors
+-------
+Michael Prokop <mika@grml.org> and Thorsten Glaser <tg@mirbsd.org>

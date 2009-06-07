@@ -55,6 +55,9 @@ printf "Installing files:\n"
 printf "  - /usr/sbin/grml2usb\n"
 install -m 755 \${BASE}/grml2usb /usr/sbin/grml2usb
 
+printf "  - /usr/sbin/grml2iso\n"
+install -m 755 \${BASE}/grml2iso /usr/sbin/grml2iso
+
 [ -d /usr/share/grml2usb/grub ] || mkdir -p /usr/share/grml2usb/grub
 printf "  - /usr/share/grml2usb/grub/splash.xpm.gz\n"
 install -m 644 \${BASE}/splash.xpm.gz /usr/share/grml2usb/grub/splash.xpm.gz
@@ -94,6 +97,7 @@ fi
 
 for file in \\
   /usr/sbin/grml2usb \\
+  /usr/sbin/grml2iso \\
   /usr/share/grml2usb/grub/splash.xpm.gz \\
   /usr/share/grml2usb/grub/grml.png \\
   /usr/share/grml2usb/lilo/lilo.static.amd64 \\
@@ -113,11 +117,14 @@ fakeroot debian/rules build
 
 # manpage
 cp grml2usb.8.txt grml2usb-$VERSION/
+cp grml2iso.8.txt grml2usb-$VERSION/
 gzip -9 --to-stdout grml2usb-$VERSION/grml2usb.8.txt > grml2usb-$VERSION/grml2usb.8.gz
+gzip -9 --to-stdout grml2usb-$VERSION/grml2iso.8.txt > grml2usb-$VERSION/grml2iso.8.gz
 rm grml2usb-$VERSION/grml2usb.8.txt
+rm grml2usb-$VERSION/grml2iso.8.txt
 
 # binaries, grub, lilo
-cp grml2usb mbr/mbrldr mbr/mbrmgr grub/* lilo/lilo.static.* grml2usb-$VERSION/
+cp grml2usb grml2iso mbr/mbrldr mbr/mbrmgr grub/* lilo/lilo.static.* grml2usb-$VERSION/
 
 tar zcf grml2usb.tgz "${DIR}"
 
