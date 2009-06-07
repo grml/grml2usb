@@ -78,6 +78,7 @@
 # }}}
 
 # create necessary stuff under WRKDIR {{{
+  [ -d "$WRKDIR" ] && WRKDIR_EXISTED='true' || WRKDIR_EXISTED='false'
   rm -rf "$WRKDIR/cddir" "$WRKDIR/grub_tmp"
   mkdir -p "$WRKDIR/cddir" "$WRKDIR/grub_tmp"
 # }}}}
@@ -136,6 +137,7 @@
   cd "$ORIG_DIR"
   sync
   rm -rf "$WRKDIR/cddir" "$WRKDIR/grub_tmp"
+  [[ $WRKDIR_EXISTED = 'false' ]] && rmdir "$WRKDIR"
   echo "Generated $ISOFILE"
 # }}}
 
