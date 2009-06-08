@@ -67,8 +67,8 @@
 
 # variables {{{
   ORIG_DIR="$(pwd)"
-  # note: grub-pc_1.96+20090603-1_i386.deb seems to be b0rken
-  GRUB_DEB="grub-pc_1.96+20080724-16_i386.deb"
+  # note: grub-pc_1.96+20090603-1 seems to be b0rken
+  GRUB_VERSION="grub-pc_1.96+20080724-16"
 
 # normalise path
   case $ISOFILE in
@@ -90,6 +90,13 @@
 # install grub2 files {{{
 # as we don't want to rely on a grub2 installation on the
 # running system let's grab it from the net
+  if which dpkg >/dev/null 2>&1 ; then
+     ARCH="$(dpkg --print-architecture)"
+  else
+    [[ $(uname -m) == x86_64 ]] && ARCH=amd64 || ARCH=i386
+  fi
+  GRUB_DEB="${GRUB_VERSION}_${ARCH}.deb"
+
   cd "$WRKDIR"/grub_tmp/
   wget http://ftp.de.debian.org/debian/pool/main/g/grub2/"$GRUB_DEB"
   ar x "$GRUB_DEB"
