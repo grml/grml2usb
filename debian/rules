@@ -53,7 +53,7 @@ binary-indep: build install
 	dh_testroot
 	dh_installchangelogs
 	dh_installdocs TODO
-	dh_installman grml2usb.8
+	dh_installman grml2usb.8 grml2iso.8
 	dh_link
 	dh_strip
 	dh_compress
