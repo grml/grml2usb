@@ -462,6 +462,23 @@ The following message:
 
 This is "normal". Just ignore it.
 
+[[unknown-filesystem]]
+grub-install fails with grub-probe: error: unknown filesystem?!
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following message:
+
+  grub-probe: error: unknown filesystem
+  Auto-detection of a filesystem module failed.
+  Please specify the module with the option `--modules' explicitly.
+
+usually means that the device partition table says something else than the
+filesystem on the device. For example using FAT16 as filesystem type and
+using FAT32 as filesystem on the partition will not work. Either set filesystem
+type to FAT32 or format the partition using FAT16. It is essential that
+device partition table and filesystem use the same filesystem type.
+
+
 [[splash-xpm]]
 I'm getting something like "Error: /usr/share/grml2usb/grub/splash.xpm.gz can not be read"!?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

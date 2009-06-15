@@ -31,8 +31,9 @@ grml2usb (0.9.8) UNRELEASED; urgency=low
     - mention the dd approach
     - mention grml2iso
     - improve section link names for the online version
+    - add 'grub-probe: error: unknown filesystem'
 
- -- Michael Prokop <mika@grml.org>  Tue, 16 Jun 2009 00:27:30 +0200
+ -- Michael Prokop <mika@grml.org>  Tue, 16 Jun 2009 01:39:53 +0200
 
 grml2usb (0.9.7) unstable; urgency=low
 
