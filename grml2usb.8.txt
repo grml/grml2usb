@@ -13,6 +13,7 @@ grml2usb [ options ] <ISO[s]> <device>
 Important! The grml team does not take responsibility for loss of any data!
 *******************************************************************************
 
+[[introduction]]
 Introduction
 ------------
 
@@ -31,6 +32,7 @@ default MBR using the --skip-mbr option or if you encounter any problems
 with the default MBR consider using --syslinux-mbr instead. If bootloader
 grub doesn't work for you check out the --syslinux option.
 
+[[options]]
 Options
 -------
 
@@ -144,9 +146,9 @@ Install syslinux bootloader instead of the default (being grub).
 Install syslinux' master boot record (MBR, which is booting from the partition
 with the "active" flag set) instead of the default one.  If you encounter any
 problems with the default MBR you can try using the syslinux MBR instead. If
-that works for you please <<X7,let us know>> so we can adjust our default MBR
-accordingly.  Note: When using the --syslinux-mbr option lilo is executed before
-the MBR is installed so the according partitions are set active.
+that works for you please <<author,let us know>> so we can adjust our default
+MBR accordingly.  Note: When using the --syslinux-mbr option lilo is executed
+before the MBR is installed so the according partitions are set active.
 
 //////////////////////////////////////////////////////////////////////////
   *\--squashfs=*::
@@ -173,6 +175,7 @@ Enable verbose mode.
 Developers Corner
 -----------------
 
+[[directory-layout]]
 Directory layout on usb device
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -250,11 +253,13 @@ Directory layout on usb device
     |   `-- grml-small.squashfs  [squashfs file for grml-small]
     `-- ...
 
+[[source]]
 Grabbing the source
 ~~~~~~~~~~~~~~~~~~~
 
   % git clone git://git.grml.org/grml2usb.git
 
+[[debugging]]
 Developers Debugging Hints
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -277,13 +282,14 @@ Finally create a filesystem and execute grml2usb as needed:
   # mkfs.vfat /dev/loop1
   # grml2usb --bootloader-only /grml/isos/grml-small_2009.05.iso /dev/loop1
 
+[[performance-tracing]]
 Performance tracing
 ~~~~~~~~~~~~~~~~~~~
 
   # blktrace -d /dev/sdx -o - | blkparse -i -
   # grml2usb grml_2009.05.iso /dev/sdx1
 
-[[X6]]
+[[troubleshooting]]
 Troubleshooting and Pitfalls when booting
 -----------------------------------------
 
@@ -325,10 +331,11 @@ root=..., consider using root=UUID=....
 whether the vendor provides a BIOS update or if using bootloader grub instead of
 isolinux/syslinux fixes the problem.
 
+[[faq]]
 Frequently Asked Questions (FAQ)
 --------------------------------
 
-[[X5]]
+[[download]]
 Where can I get grml2usb?
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -343,6 +350,7 @@ link:http://grml.org/grml2usb/grml2usb.tgz[http://grml.org/grml2usb/grml2usb.tgz
 (link:http://grml.org/grml2usb/grml2usb.tgz.md5.asc[gpg signed md5 hash]).
 Download and extract the tarball and execute the provided script 'install.sh'.
 
+[[grml2hd-vs-grml2usb]]
 What's the difference between grml2hd and grml2usb?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -358,6 +366,52 @@ Think of using a better CD version: booting is (usually) faster, you don't need
 to burn a new CD when a new ISO version arrives (just install the new ISO using
 grml2usb) and you can carry additional files on a writable medium with yourself.
 
+[[dd]]
+Why can't I just dd the ISO to a USB device?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Well, you can. :)
+
+[IMPORTANT]
+Note that ANY existing data on your USB device will be destroyed when
+using the dd approach.
+
+Grab a recent grml ISO and use
+link:http://syslinux.zytor.com/wiki/index.php/Doc/isolinux#HYBRID_CD-ROM.2FHARD_DISK_MODE[isohybrid
+from the syslinux project]:
+
+  % isohybrid grml_2009.05.iso
+
+This allows you to dd the grml ISO to your USB device (use for example
+link:http://www.chrysocome.net/rawwrite[rawwrite] if you've just a Windows
+system available) running:
+
+  % dd if=grml_2009.05.iso of=/dev/sdX
+
+where /dev/sdX is your USB device.
+
+[TIP]
+Upcoming stable versions of grml will provide dd-able ISOs straight
+out-of-the-box (and current link:http://daily.grml.org/[daily snapshots] already
+do) using a so called manifold boot method.
+
+[[grml2usb-vs-dd]]
+What's the difference between grml2usb and just using dd?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+grml2usb does not remove any data from your USB device and does not alter the
+partition table at all. grml2usb provides multi-ISO support, support for adding
+default bootoptions and selecting the bootloader (grub vs. syslinux) without
+having to manually touch the ISO at all.
+
+[[grml2iso]]
+What's grml2iso?
+~~~~~~~~~~~~~~~~
+
+grml2iso is a script which uses grml2usb to generate a multiboot ISO out of
+several grml ISOs. See 'man grml2iso' for further details.
+
+[[menu-lst]]
 Why is there a menu.lst and a grub.cfg inside /boot/grub/?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -367,6 +421,7 @@ Providing both files allows grml2usb to install grub on the target device
 no matter which grub version is available on the host where grml2usb is
 executed on.
 
+[[stage1]]
 grub-install fails with 'The file ../boot/grub/stage1 not read correctly"?!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -374,6 +429,7 @@ Check whether the partition has the right partition type. For example do NOT use
 FAT16 (partition type 6) when using a ext3 filesystem on the partition but
 instead use the correct partition type ('83' - Linux) then.
 
+[[grub-install-xfs_freeze]]
 grub-install complains about /sbin/grub-install and/or xfs_freeze?!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -382,9 +438,10 @@ The following message:
   You shouldn't call /sbin/grub-install. Please call /usr/sbin/grub-install instead!
   xfs_freeze: specified file ["/tmp/tmpqaBK6z/boot/grub"] is not on an XFS filesystem
 
-... is "normal". grub-install sends those messages to stderr. To avoid hiding any
+This is "normal". grub-install sends those messages to stderr. To avoid hiding any
 possible real error messages grml2usb doesn't ignore those messages.
 
+[[device-map]]
 grub-install complains about /boot/grub/device.map?!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -392,9 +449,10 @@ The following message:
 
   grub-probe: error: Cannot open `/boot/grub/device.map'
 
-... is "normal" (at least with grub1). This isn't a problem, because the
+This is "normal" (at least with grub1). This isn't a problem, because the
 device.map file will be generated on the target device anyway.
 
+[[unary-operator]]
 grub-install complains about a unary operator?!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -402,17 +460,19 @@ The following message:
 
   '/usr/sbin/grub-install: line 374: [: =: unary operator expected'
 
-... is "normal". Just ignore it.
+This is "normal". Just ignore it.
 
+[[splash-xpm]]
 I'm getting something like "Error: /usr/share/grml2usb/grub/splash.xpm.gz can not be read"!?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Looks like you've only the grml2usb script itself available. Please make sure
 you've the grml2usb Debian package installed. The most resent stable version is
 available via link:http://deb.grml.org/[the grml-testing Debian repository].  If
-you do not have a Debian system please see section <<X5,Where can I get
+you do not have a Debian system please see section <<download,Where can I get
 grml2usb?>> in this FAQ.
 
+[[fat16]]
 Why do I have to use a FAT16 filesystem?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -421,25 +481,29 @@ You have to use a FAT16 filesystem only if you consider using syslinux. Syslinux
 filesystem (like ext2/3) just don't use syslinux (drop the \--syslinux option)
 but use the default bootloader (grub) instead.
 
+[[cool-idea]]
 I think I've got a really cool idea!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Great! Please check out
 link:http://git.grml.org/?p=grml2usb.git;a=blob;f=TODO;hb=HEAD[the TODO file].
-Feel free to <<X7,report your wishes to the author>>. Patches highly
+Feel free to <<author,report your wishes to the author>>. Patches highly
 appreciated.
 
+[[booting-from-usb]]
 I've problems with booting from USB.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Check out <<X6,Troubleshooting and Pitfalls when booting>>.
+Check out <<troubleshooting,Troubleshooting and Pitfalls when booting>>.
 
+[[found-a-bug]]
 I've found a bug!
 ~~~~~~~~~~~~~~~~~
 
-Please <<X7,report it to the author>>. Please provide usage examples and output
+Please <<author,report it to the author>>. Please provide usage examples and output
 of your grml2usb commandline (consider using the "\--verbose" option).
 
+[[usage-examples]]
 Usage examples
 --------------
 
@@ -493,17 +557,19 @@ file instead of the one provided by the ISO.
 Install specified ISO on device /dev/sdx1 and use "lang=de ssh=mysecret" as
 default bootoptions.
 
+[[ressources]]
 Online Ressources
 -----------------
 
 Check out the link:http://grml.org/grml2usb/[grml2usb webpage] and the
 link:http://git.grml.org/?p=grml2usb.git[grml2usb git repository].
 
+[[bugs]]
 Bugs
 ----
-Please report feedback, bugreports and wishes <<X7,to the author>>.
+Please report feedback, bugreports and wishes <<author,to the author>>.
 
-[[X7]]
+[[author]]
 Author
 ------
 Michael Prokop <mika@grml.org>
