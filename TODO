@@ -3,7 +3,7 @@ TODOs
 
 * support installation of new ISO[s] additionally to already existing grml ISOs on the usb device
   -> add "old"/already existing images automatically to bootloader configuration [thx gebi]
-* support installation of "dupes", meaning grml2usb grml_2008.11.iso grml_2009.03.iso
+* support installation of "dupes", meaning grml2usb grml_2008.11.iso grml_2009.05.iso
 * write bootloader configuration snippets to boot/releases/<release>/{grub.cfg,syslinux.cfg,...}
   -> this could simplify live dramatically especially when supporting "already existing" images [thx gebi]
 * support integration of Debian ISOs (like netboot)
@@ -27,6 +27,9 @@ TODOs
 * code improvements:
   - improve error handling wherever possible :) => especially disk full, any other known test cases?
   - use 'with open("...", "w") as f: ... f.write("...")'
+  - use class design (like used in https://fedorahosted.org/liveusb-creator/browser/liveusb)
+* check out what's *really* necessary if someone wants to use only the grml2usb python script
+* provide a Windows version (for example via PyQt4)
 * provide unit-testing (any ideas for useful/test-able scenarious?)
 * provide progress bar when copying files
 * provide graphical version; any volunteers? :)
