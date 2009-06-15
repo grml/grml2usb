@@ -705,6 +705,10 @@ def install_syslinux_mbr(device):
 
     @device: device where MBR of syslinux should be installed to"""
 
+    # make sure we have syslinux available
+    if not which("syslinux") and not options.copyonly:
+        raise Exception("syslinux not available (either install it or consider dropping the --syslinux option)")
+
     # lilo's mbr is broken, use the one from syslinux instead:
     if not os.path.isfile("/usr/lib/syslinux/mbr.bin"):
         raise Exception("/usr/lib/syslinux/mbr.bin can not be read")
@@ -1563,12 +1567,6 @@ def handle_mbr(device):
     if options.dryrun:
         logging.info("Would install MBR")
         return 0
-
-    # make sure we have syslinux available
-    if not which("syslinux") and not options.copyonly:
-        logging.critical('Sorry, syslinux not available. Exiting.')
-        logging.critical('Please install syslinux or consider using the --grub option.')
-        sys.exit(1)
 
     if device[-1:].isdigit():
         mbr_device = re.match(r'(.*?)\d*$', device).group(1)
