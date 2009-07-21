@@ -1,4 +1,4 @@
-grml2usb (0.9.8) UNRELEASED; urgency=low
+grml2usb (0.9.8) unstable; urgency=low
 
   * Support installation on /dev/loop*-devices.
   * Generate configuration for syslinux and grub by default, no
@@ -34,7 +34,7 @@ grml2usb (0.9.8) UNRELEASED; urgency=low
     - add 'grub-probe: error: unknown filesystem'
   * Support use with python version 2.4.
 
- -- Michael Prokop <mika@grml.org>  Tue, 16 Jun 2009 01:39:53 +0200
+ -- Michael Prokop <mika@grml.org>  Tue, 21 Jul 2009 17:59:03 +0200
 
 grml2usb (0.9.7) unstable; urgency=low
 
