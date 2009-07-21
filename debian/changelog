@@ -33,8 +33,10 @@ grml2usb (0.9.8) unstable; urgency=low
     - improve section link names for the online version
     - add 'grub-probe: error: unknown filesystem'
   * Support use with python version 2.4.
+  * Bump Standard Version to 3.8.2 (no further changes).
+  * Depend on debhelper >=5 (using compat version 5).
 
- -- Michael Prokop <mika@grml.org>  Tue, 21 Jul 2009 17:59:03 +0200
+ -- Michael Prokop <mika@grml.org>  Tue, 21 Jul 2009 18:01:50 +0200
 
 grml2usb (0.9.7) unstable; urgency=low
 
