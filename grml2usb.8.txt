@@ -460,7 +460,8 @@ The following message:
 
   '/usr/sbin/grub-install: line 374: [: =: unary operator expected'
 
-This is "normal". Just ignore it.
+This is "normal". Just ignore it. (It usually doesn't appear
+on the second invocation on the same device.)
 
 [[unknown-filesystem]]
 grub-install fails with grub-probe: error: unknown filesystem?!
@@ -478,6 +479,28 @@ using FAT32 as filesystem on the partition will not work. Either set filesystem
 type to FAT32 or format the partition using FAT16. It is essential that
 device partition table and filesystem use the same filesystem type.
 
+[[mbr-vs-pbr]]
+grub-setup fails after Attempting to install GRUB to a partition instead of the MBR?!
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following message:
+
+  grub-setup: warn: Attempting to install GRUB to a partition instead of the MBR.  This is a BAD idea.
+  grub-setup: warn: Embedding is not possible.  GRUB can only be installed in this setup by using blocklists.  However, blocklists are UNRELIABLE and its use is discouraged.
+  grub-setup: error: Cannot read `/grub/core.img' correctly
+
+appears because recent grub2 versions introduced a regression which avoids that
+grub is being installed into a partition (instead of MBR). We (the grml2usb
+developers) are evaluating the current situation (thinking about installing grub
+into the MBR). To fix this issue in the meanwhile either manually execute
+(adjust '/dev/sdx' to your device of course):
+
+  mount /dev/sdx1 /mnt/test
+  grub-install --force --recheck --no-floppy --root-directory=/mnt/test /dev/sdx
+
+after execution of grml2usb failed (this will will install grub into the MBR of
+the specified device) or consider using the '--syslinux' option until this issue
+is resolved.  Sorry about that.
 
 [[splash-xpm]]
 I'm getting something like "Error: /usr/share/grml2usb/grub/splash.xpm.gz can not be read"!?

@@ -4,8 +4,10 @@ grml2usb (0.9.9) UNRELEASED; urgency=low
     the old ascii.pff isn't available anymore.
   * Use terminal_output if available, otherwise fallback to old
     older 'terminal'-command (thanks to Felix Zielcke for helping).
+  * Document the 'grub-setup fails after Attempting to install GRUB
+    to a partition instead of the MBR' issue.
 
- -- Michael Prokop <mika@grml.org>  Tue, 28 Jul 2009 18:52:04 +0200
+ -- Michael Prokop <mika@grml.org>  Tue, 28 Jul 2009 19:36:44 +0200
 
 grml2usb (0.9.8) unstable; urgency=low
 
