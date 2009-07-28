@@ -6,8 +6,15 @@ grml2usb (0.9.9) UNRELEASED; urgency=low
     older 'terminal'-command (thanks to Felix Zielcke for helping).
   * Document the 'grub-setup fails after Attempting to install GRUB
     to a partition instead of the MBR' issue.
+  * Use "set gfxpayload=1024x768x16,1024x768" instead of vga=791 in
+    grub2 configuration. This requires a recent version of the linux
+    loader as the new linux loader loads the kernel at 32bit entry point
+    and not at 16 bit anymore so it has to be translated for the Linux
+    kernel (as the kernel parses vga= in 16 bit code). In the long run
+    we don't seem to have another option, so let's change it.
+    Thanks to Felix Zielcke and Robert Millan for first hand information.
 
- -- Michael Prokop <mika@grml.org>  Tue, 28 Jul 2009 19:36:44 +0200
+ -- Michael Prokop <mika@grml.org>  Tue, 28 Jul 2009 23:58:57 +0200
 
 grml2usb (0.9.8) unstable; urgency=low
 

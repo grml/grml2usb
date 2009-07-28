@@ -270,7 +270,8 @@ else
 fi
 
 menuentry "%(grml_flavour)s (default)" {
-    linux   /boot/release/%(grml_flavour)s/linux26 apm=power-off vga=791 quiet boot=live nomce live-media-path=/live/%(grml_flavour)s/ %(bootoptions)s
+    set gfxpayload=1024x768x16,1024x768
+    linux   /boot/release/%(grml_flavour)s/linux26 apm=power-off quiet boot=live nomce live-media-path=/live/%(grml_flavour)s/ %(bootoptions)s
     initrd  /boot/release/%(grml_flavour)s/initrd.gz
 }
 
@@ -312,31 +313,36 @@ def generate_flavour_specific_grub2_config(grml_flavour, bootoptions):
     return("""\
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s" {
-    linux  /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ %(bootoptions)s
+    set gfxpayload=1024x768x16,1024x768
+    linux  /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ %(bootoptions)s
     initrd /boot/release/%(grml_flavour)s/initrd.gz
 }
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s-persistent" {
-    linux  /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce vga=791 quiet persistent live-media-path=/live/%(grml_flavour)s/ %(bootoptions)s
+    set gfxpayload=1024x768x16,1024x768
+    linux  /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce quiet persistent live-media-path=/live/%(grml_flavour)s/ %(bootoptions)s
     initrd /boot/release/%(grml_flavour)s/initrd.gz
 }
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s2ram" {
-    linux  /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ toram=%(grml_flavour)s.squashfs %(bootoptions)s
+    set gfxpayload=1024x768x16,1024x768
+    linux  /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ toram=%(grml_flavour)s.squashfs %(bootoptions)s
     initrd /boot/release/%(grml_flavour)s/initrd.gz
 }
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s-debug" {
-    linux /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ debug boot=live initcall_debug%(bootoptions)s
+    set gfxpayload=1024x768x16,1024x768
+    linux /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ debug boot=live initcall_debug%(bootoptions)s
     initrd /boot/release/%(grml_flavour)s/initrd.gz
 }
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s-x" {
-    linux  /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ startx=wm-ng %(bootoptions)s
+    set gfxpayload=1024x768x16,1024x768
+    linux  /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ startx=wm-ng %(bootoptions)s
     initrd /boot/release/%(grml_flavour)s/initrd.gz
 }
 
@@ -354,7 +360,8 @@ menuentry "%(grml_flavour)s-failsafe" {
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s-forensic" {
-    linux /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ nofstab noraid nolvm noautoconfig noswap raid=noautodetect forensic readonly %(bootoptions)s
+    set gfxpayload=1024x768x16,1024x768
+    linux /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ nofstab noraid nolvm noautoconfig noswap raid=noautodetect forensic readonly %(bootoptions)s
     initrd /boot/release/%(grml_flavour)s/initrd.gz
 }
 
