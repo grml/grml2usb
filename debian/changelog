@@ -1,3 +1,12 @@
+grml2usb (0.9.9) UNRELEASED; urgency=low
+
+  * Use ascii.pf2 as grub2 font, since grub2 (1.96+20090307-1)
+    the old ascii.pff isn't available anymore.
+  * Use terminal_output if available, otherwise fallback to old
+    older 'terminal'-command (thanks to Felix Zielcke for helping).
+
+ -- Michael Prokop <mika@grml.org>  Tue, 28 Jul 2009 18:52:04 +0200
+
 grml2usb (0.9.8) unstable; urgency=low
 
   * Support installation on /dev/loop*-devices.

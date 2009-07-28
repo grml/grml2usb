@@ -18,7 +18,7 @@ from inspect import isroutine, isclass
 import datetime, logging, os, re, subprocess, sys, tempfile, time
 
 # global variables
-PROG_VERSION = "0.9.8"
+PROG_VERSION = "0.9.9"
 MOUNTED = set()  # register mountpoints
 TMPFILES = set() # register tmpfiles
 DATESTAMP = time.mktime(datetime.datetime.now().timetuple()) # unique identifier for syslinux.cfg
@@ -249,12 +249,16 @@ set timeout=5
 
 insmod fat
 
-if font /boot/grub/ascii.pff ; then
+if loadfont /boot/grub/ascii.pf2 ; then
    insmod png
    set gfxmode=640x480
    insmod gfxterm
    insmod vbe
-   terminal gfxterm
+   if terminal_output.gfxterm ; then true ; else
+    # For backward compatibility with versions of terminal.mod that don't
+    # understand terminal_output
+    terminal gfxterm
+   fi
 fi
 
 if background_image /boot/grub/grml.png ; then
@@ -1167,10 +1171,10 @@ def copy_bootloader_files(iso_mount, target):
         proc.wait()
 
     # font file for graphical bootsplash in grub
-    if os.path.isfile("/usr/share/grub/ascii.pff"):
-        logging.debug("rsync -rlptDH --inplace /usr/share/grub/ascii.pff to %s" % grub_target + 'ascii.pff')
-        proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", '/usr/share/grub/ascii.pff',
-                                grub_target + 'ascii.pff'])
+    if os.path.isfile("/usr/share/grub/ascii.pf2"):
+        logging.debug("rsync -rlptDH --inplace /usr/share/grub/ascii.pf2 to %s" % grub_target + 'ascii.pf2')
+        proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", '/usr/share/grub/ascii.pf2',
+                                grub_target + 'ascii.pf2'])
         proc.wait()
 
 
