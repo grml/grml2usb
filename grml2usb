@@ -276,7 +276,7 @@ menuentry "%(grml_flavour)s (default)" {
 }
 
 menuentry "Memory test (memtest86+)" {
-    linux   /boot/addons/memtest
+    linux16   /boot/addons/memtest
 }
 
 menuentry "Grub - all in one image" {
