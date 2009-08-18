@@ -13,7 +13,7 @@ grml2usb (0.9.9) UNRELEASED; urgency=low
     kernel (as the kernel parses vga= in 16 bit code). In the long run
     we don't seem to have another option, so let's change it.
     Thanks to Felix Zielcke and Robert Millan for first hand information.
-  * Increate timeout from 5 to 10 seconds in grub2 configuration.
+  * Increase timeout from 5 to 10 seconds in grub2 configuration.
   * Load memtest86+ binary via 'linux16' in grub2 (otherwise it fails).
   * Drop the serial boot entry from grub2 (I assume users with usb
     pens don't need that option).
