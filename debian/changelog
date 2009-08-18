@@ -20,8 +20,9 @@ grml2usb (0.9.9) UNRELEASED; urgency=low
   * Change the way MirOS bsd4grml is loaded (use the fallback method
     as default).
   * Improve descriptions of grml's grub2 entries.
+  * Bump Standards-Version to 3.8.3 (no further changes).
 
- -- Michael Prokop <mika@grml.org>  Tue, 18 Aug 2009 12:22:06 +0200
+ -- Michael Prokop <mika@grml.org>  Tue, 18 Aug 2009 12:26:58 +0200
 
 grml2usb (0.9.8) unstable; urgency=low
 
