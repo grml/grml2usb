@@ -15,8 +15,13 @@ grml2usb (0.9.9) UNRELEASED; urgency=low
     Thanks to Felix Zielcke and Robert Millan for first hand information.
   * Increate timeout from 5 to 10 seconds in grub2 configuration.
   * Load memtest86+ binary via 'linux16' in grub2 (otherwise it fails).
+  * Drop the serial boot entry from grub2 (I assume users with usb
+    pens don't need that option).
+  * Change the way MirOS bsd4grml is loaded (use the fallback method
+    as default).
+  * Improve descriptions of grml's grub2 entries.
 
- -- Michael Prokop <mika@grml.org>  Tue, 18 Aug 2009 11:15:40 +0200
+ -- Michael Prokop <mika@grml.org>  Tue, 18 Aug 2009 12:22:06 +0200
 
 grml2usb (0.9.8) unstable; urgency=low
 

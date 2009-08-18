@@ -279,18 +279,26 @@ menuentry "Memory test (memtest86+)" {
     linux16   /boot/addons/memtest
 }
 
-menuentry "Grub - all in one image" {
+menuentry "Boot Grub (all in one image)" {
     linux   /boot/addons/memdisk
     initrd  /boot/addons/allinone.img
 }
 
-menuentry "FreeDOS" {
+menuentry "Boot FreeDOS" {
     linux   /boot/addons/memdisk
     initrd  /boot/addons/balder10.imz
 }
 
-menuentry "MirOS BSD" {
-    multiboot   /boot/addons/bsd4grml/ldbsd.com
+menuentry "Boot MirOS bsd4grml" {
+    multiboot /boot/addons/bsd4grml/ldbsd.com
+    module    /boot/addons/bsd4grml/bsd.rd
+    module    /boot/addons/bsd4grml/boot.1
+    module    /boot/addons/bsd4grml/boot.2
+    module    /boot/addons/bsd4grml/boot.3
+    module    /boot/addons/bsd4grml/boot.4
+    module    /boot/addons/bsd4grml/boot.5
+    module    /boot/addons/bsd4grml/boot.6
+    module    /boot/addons/bsd4grml/boot.cfg
 }
 
 menuentry "Boot OS of first partition on first disk" {
@@ -312,62 +320,56 @@ def generate_flavour_specific_grub2_config(grml_flavour, bootoptions):
 
     return("""\
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
-menuentry "%(grml_flavour)s" {
+menuentry "%(grml_flavour)s            - boot in default mode" {
     set gfxpayload=1024x768x16,1024x768
     linux  /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ %(bootoptions)s
     initrd /boot/release/%(grml_flavour)s/initrd.gz
 }
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
-menuentry "%(grml_flavour)s-persistent" {
+menuentry "%(grml_flavour)s-persistent - enable persistency feature" {
     set gfxpayload=1024x768x16,1024x768
     linux  /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce quiet persistent live-media-path=/live/%(grml_flavour)s/ %(bootoptions)s
     initrd /boot/release/%(grml_flavour)s/initrd.gz
 }
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
-menuentry "%(grml_flavour)s2ram" {
+menuentry "%(grml_flavour)s2ram        - copy compressed grml file to RAM" {
     set gfxpayload=1024x768x16,1024x768
     linux  /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ toram=%(grml_flavour)s.squashfs %(bootoptions)s
     initrd /boot/release/%(grml_flavour)s/initrd.gz
 }
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
-menuentry "%(grml_flavour)s-debug" {
+menuentry "%(grml_flavour)s-debug      - enable debugging options" {
     set gfxpayload=1024x768x16,1024x768
     linux /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ debug boot=live initcall_debug%(bootoptions)s
     initrd /boot/release/%(grml_flavour)s/initrd.gz
 }
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
-menuentry "%(grml_flavour)s-x" {
+menuentry "%(grml_flavour)s-x          - start X Window System" {
     set gfxpayload=1024x768x16,1024x768
     linux  /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ startx=wm-ng %(bootoptions)s
     initrd /boot/release/%(grml_flavour)s/initrd.gz
 }
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
-menuentry "%(grml_flavour)s-nofb" {
+menuentry "%(grml_flavour)s-nofb       - disable framebuffer" {
     linux  /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal video=ofonly %(bootoptions)s
     initrd /boot/release/%(grml_flavour)s/initrd.gz
 }
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
-menuentry "%(grml_flavour)s-failsafe" {
+menuentry "%(grml_flavour)s-failsafe   - disable hardware detection" {
     linux /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal boot=live noautoconfig atapicd noapic noacpi acpi=off nomodules nofirewire noudev nousb nohotplug noapm nopcmcia nosmp maxcpus=0 noscsi noagp nodma ide=nodma noswap nofstab nosound nogpm nosyslog nodhcp nocpu nodisc nomodem xmodule=vesa noraid nolvm noresume selinux=0 edd=off %(bootoptions)s
     initrd /boot/release/%(grml_flavour)s/initrd.gz
 }
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
-menuentry "%(grml_flavour)s-forensic" {
+menuentry "%(grml_flavour)s-forensic   - do not touch harddisks during hw recognition" {
     set gfxpayload=1024x768x16,1024x768
     linux /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ nofstab noraid nolvm noautoconfig noswap raid=noautodetect forensic readonly %(bootoptions)s
-    initrd /boot/release/%(grml_flavour)s/initrd.gz
-}
-
-## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
-menuentry "%(grml_flavour)s-serial" {
-    linux /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal video=vesafb:off console=tty1 console=ttyS0,9600n8 %(bootoptions)s
     initrd /boot/release/%(grml_flavour)s/initrd.gz
 }
 
