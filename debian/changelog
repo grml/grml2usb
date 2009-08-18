@@ -13,8 +13,9 @@ grml2usb (0.9.9) UNRELEASED; urgency=low
     kernel (as the kernel parses vga= in 16 bit code). In the long run
     we don't seem to have another option, so let's change it.
     Thanks to Felix Zielcke and Robert Millan for first hand information.
+  * Increate timeout from 5 to 10 seconds in grub2 configuration.
 
- -- Michael Prokop <mika@grml.org>  Tue, 28 Jul 2009 23:58:57 +0200
+ -- Michael Prokop <mika@grml.org>  Tue, 18 Aug 2009 11:14:59 +0200
 
 grml2usb (0.9.8) unstable; urgency=low
 
