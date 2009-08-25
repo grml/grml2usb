@@ -1377,8 +1377,7 @@ def handle_grub_config(grml_flavour, device, target):
         bootopt = options.bootoptions
 
     # write menu.lst
-    if install_grub1_partition:
-        handle_grub1_config(grml_flavour, install_grub1_partition, grub_target, bootopt)
+    handle_grub1_config(grml_flavour, install_grub1_partition, grub_target, bootopt)
     # write grub.cfg
     handle_grub2_config(grml_flavour, grub_target, bootopt)
 

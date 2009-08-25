@@ -21,8 +21,10 @@ grml2usb (0.9.9) UNRELEASED; urgency=low
     as default).
   * Improve descriptions of grml's grub2 entries.
   * Bump Standards-Version to 3.8.3 (no further changes).
+  * Fix creation and installation of grub1's configuration file (menu.lst).
+    Thanks to Mario 'BitKoenig' Holbe.
 
- -- Michael Prokop <mika@grml.org>  Tue, 18 Aug 2009 12:26:58 +0200
+ -- Michael Prokop <mika@grml.org>  Tue, 25 Aug 2009 23:28:11 +0200
 
 grml2usb (0.9.8) unstable; urgency=low
 
