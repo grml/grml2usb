@@ -1,4 +1,4 @@
-grml2usb (0.9.9) UNRELEASED; urgency=low
+grml2usb (0.9.9) unstable; urgency=low
 
   * Use ascii.pf2 as grub2 font, since grub2 (1.96+20090307-1)
     the old ascii.pff isn't available anymore.
@@ -24,7 +24,7 @@ grml2usb (0.9.9) UNRELEASED; urgency=low
   * Fix creation and installation of grub1's configuration file (menu.lst).
     Thanks to Mario 'BitKoenig' Holbe.
 
- -- Michael Prokop <mika@grml.org>  Tue, 25 Aug 2009 23:28:11 +0200
+ -- Michael Prokop <mika@grml.org>  Tue, 25 Aug 2009 23:53:51 +0200
 
 grml2usb (0.9.8) unstable; urgency=low
 
