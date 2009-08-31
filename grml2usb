@@ -15,10 +15,10 @@ This script installs a grml system (either a running system or ISO[s]) to a USB 
 # from __future__ import with_statement
 from optparse import OptionParser
 from inspect import isroutine, isclass
-import datetime, logging, os, re, subprocess, sys, tempfile, time
+import datetime, logging, os, re, subprocess, sys, tempfile, time, os.path
 
 # global variables
-PROG_VERSION = "0.9.9"
+PROG_VERSION = "0.9.10"
 MOUNTED = set()  # register mountpoints
 TMPFILES = set() # register tmpfiles
 DATESTAMP = time.mktime(datetime.datetime.now().timetuple()) # unique identifier for syslinux.cfg
@@ -80,6 +80,10 @@ parser.add_option("--verbose", dest="verbose", action="store_true",
 parser.add_option("-v", "--version", dest="version", action="store_true",
                   help="display version and exit")
 (options, args) = parser.parse_args()
+
+GRML2USB_BASE = '/usr/share/grml2usb'
+if not os.path.isdir(GRML2USB_BASE):
+    GRML2USB_BASE = os.path.dirname(os.path.realpath(__file__))
 
 
 class CriticalException(Exception):
@@ -837,9 +841,9 @@ def handle_syslinux_mbr(device):
         # otherwise fall back to our static version
         from platform import architecture
         if architecture()[0] == '64bit':
-            lilo = '/usr/share/grml2usb/lilo/lilo.static.amd64'
+            lilo = GRML2USB_BASE + '/lilo/lilo.static.amd64'
         else:
-            lilo = '/usr/share/grml2usb/lilo/lilo.static.i386'
+            lilo = GRML2USB_BASE + '/lilo/lilo.static.i386'
     # finally prefer a specified lilo executable
     if options.lilobin:
         lilo = options.lilobin
@@ -1162,20 +1166,20 @@ def copy_bootloader_files(iso_mount, target):
     grub_target = target + '/boot/grub/'
     execute(mkdir, grub_target)
 
-    if not os.path.isfile("/usr/share/grml2usb/grub/splash.xpm.gz"):
-        logging.critical("Error: /usr/share/grml2usb/grub/splash.xpm.gz can not be read.")
+    if not os.path.isfile(GRML2USB_BASE + "/grub/splash.xpm.gz"):
+        logging.critical("Error: %s/grub/splash.xpm.gz can not be read." % (GRML2USB_BASE, ))
         logging.critical("Please make sure you've the grml2usb Debian package installed!")
         raise
     else:
-        logging.debug("rsync -rlptDH --inplace /usr/share/grml2usb/grub/splash.xpm.gz %s" % grub_target + 'splash.xpm.gz')
-        proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", '/usr/share/grml2usb/grub/splash.xpm.gz',
+        logging.debug("rsync -rlptDH --inplace %s/grub/splash.xpm.gz %s%s" % (GRML2USB_BASE, grub_target, 'splash.xpm.gz'))
+        proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", GRML2USB_BASE + '/grub/splash.xpm.gz',
                                 grub_target + 'splash.xpm.gz'])
         proc.wait()
 
     # grml splash in grub
-    if os.path.isfile("/usr/share/grml2usb/grub/grml.png"):
-        logging.debug("rsync -rlptDH --inplace /usr/share/grml2usb/grub/grml.png to %s" % grub_target + 'grml.png')
-        proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", '/usr/share/grml2usb/grub/grml.png',
+    if os.path.isfile(GRML2USB_BASE + "/grub/grml.png"):
+        logging.debug("rsync -rlptDH --inplace %s/grub/grml.png to %s%s" % (GRML2USB_BASE, grub_target, 'grml.png'))
+        proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", GRML2USB_BASE + '/grub/grml.png',
                                 grub_target + 'grml.png'])
         proc.wait()
 
@@ -1600,9 +1604,9 @@ def handle_mbr(device):
             handle_syslinux_mbr(mbr_device)
         elif not skip_install_mir_mbr:
             if options.mbrmenu:
-                install_mir_mbr('/usr/share/grml2usb/mbr/mbrmgr', mbr_device, partition_number, True)
+                install_mir_mbr(GRML2USB_BASE + '/mbr/mbrmgr', mbr_device, partition_number, True)
             else:
-                install_mir_mbr('/usr/share/grml2usb/mbr/mbrldr', mbr_device, partition_number, False)
+                install_mir_mbr(GRML2USB_BASE + '/mbr/mbrldr', mbr_device, partition_number, False)
     except IOError, error:
         logging.critical("Execution failed: %s", error)
         sys.exit(1)

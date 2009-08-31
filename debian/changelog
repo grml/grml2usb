@@ -1,3 +1,11 @@
+grml2usb (0.9.10) UNRELEASED; urgency=low
+
+  * Support the directory where the grml2usb script resides as base
+    directory so /usr/share/grml2usb isn't necessarily needed.
+    Thanks for the patch to Alexander 'Leo' Bergolth <leo@strike.wu.ac.at>!
+
+ -- Michael Prokop <mika@grml.org>  Mon, 31 Aug 2009 17:38:06 +0200
+
 grml2usb (0.9.9) unstable; urgency=low
 
   * Use ascii.pf2 as grub2 font, since grub2 (1.96+20090307-1)
