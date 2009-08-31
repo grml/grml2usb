@@ -340,15 +340,25 @@ Where can I get grml2usb?
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 grml2usb is available as Debian package via link:http://deb.grml.org/[the
-grml-testing Debian repository]. Please make sure you really have the Debian
-package installed as having just the grml2usb script available is definitely
-*NOT* enough!
+grml-testing Debian repository].
 
-If you do NOT have a Debian based system but still want to be able to use
-grml2usb you can use the provided
+If you do not want to (or can't) use the grml2usb Debian package you can either
+use the grml2usb git tree running:
+
+  git clone git://git.grml.org/grml2usb.git
+  cd grml2usb
+  make -C mbr
+  sudo ./grml2usb ...
+
+or download the provided
 link:http://grml.org/grml2usb/grml2usb.tgz[http://grml.org/grml2usb/grml2usb.tgz]
 (link:http://grml.org/grml2usb/grml2usb.tgz.md5.asc[gpg signed md5 hash]).
 Download and extract the tarball and execute the provided script 'install.sh'.
+
+[NOTE]
+It is *NOT* enough to have just the grml2usb script itself without the according
+files provided either via the Debian package, the git tree or the file
+grml2usb.tgz.
 
 [[grml2hd-vs-grml2usb]]
 What's the difference between grml2hd and grml2usb?
