@@ -3,8 +3,12 @@ grml2usb (0.9.10) UNRELEASED; urgency=low
   * Support the directory where the grml2usb script resides as base
     directory so /usr/share/grml2usb isn't necessarily needed.
     Thanks for the patch to Alexander 'Leo' Bergolth <leo@strike.wu.ac.at>!
+  * Make sure grub.conf isn't a symlink but a plain file instead,
+    otherwise it will break on FAT16 filesystems. This works around
+    grub-install of (at least) Fedora 10.
+    Thanks for the patch to Alexander 'Leo' Bergolth <leo@strike.wu.ac.at>!
 
- -- Michael Prokop <mika@grml.org>  Mon, 31 Aug 2009 17:38:06 +0200
+ -- Michael Prokop <mika@grml.org>  Mon, 31 Aug 2009 17:54:59 +0200
 
 grml2usb (0.9.9) unstable; urgency=low
 

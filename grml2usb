@@ -1304,6 +1304,14 @@ def handle_grub1_config(grml_flavour, install_partition, grub_target, bootopt):
         grub1_config_file.write(generate_flavour_specific_grub1_config(grml_flavour, install_partition, bootopt))
         grub1_config_file.close()
 
+    # make sure grub.conf isn't a symlink but a plain file instead,
+    # otherwise it will break on FAT16 filesystems
+    # this works around grub-install of (at least) Fedora 10
+    if os.path.isfile(grub1_cfg):
+        grubconf = grub_target + 'grub.conf'
+        if not os.path.islink(grubconf):
+            import shutil
+            shutil.copyfile(grub1_cfg, grub_target + 'grub.conf')
 
 def handle_grub2_config(grml_flavour, grub_target, bootopt):
     """Main handler for generating grub2 configuration
