@@ -28,7 +28,6 @@ TODOs
 * the last line in bootsplash (boot.msg) of syslinux should mention all installed grml flavours
   (attention, the line should NOT become too long :))
 * code improvements:
-  - improve error handling wherever possible :) => especially disk full, any other known test cases?
   - use 'with open("...", "w") as f: ... f.write("...")'
   - use class design (like used in https://fedorahosted.org/liveusb-creator/browser/liveusb)
 * provide a Windows version (for example via PyQt4)

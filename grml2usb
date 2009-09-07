@@ -18,7 +18,7 @@ from inspect import isroutine, isclass
 import datetime, logging, os, re, subprocess, sys, tempfile, time, os.path
 
 # global variables
-PROG_VERSION = "0.9.10"
+PROG_VERSION = "0.9.11"
 MOUNTED = set()  # register mountpoints
 TMPFILES = set() # register tmpfiles
 DATESTAMP = time.mktime(datetime.datetime.now().timetuple()) # unique identifier for syslinux.cfg
@@ -51,10 +51,6 @@ parser.add_option("--force", dest="force", action="store_true",
                   help="force any actions requiring manual interaction")
 parser.add_option("--grub-mbr", dest="grubmbr", action="store_true",
                   help="install grub into MBR instead of (default) PBR")
-#parser.add_option("--initrd", dest="initrd", action="store", type="string",
-#                  help="install specified initrd instead of the default [TODO - not implemented yet]")
-#parser.add_option("--kernel", dest="kernel", action="store", type="string",
-#                  help="install specified kernel instead of the default [TODO - not implemented yet]")
 parser.add_option("--lilo-binary", dest="lilobin",  action="store", type="string",
                   help="lilo executable to be used for installing MBR")
 parser.add_option("--mbr-menu", dest="mbrmenu", action="store_true",
@@ -73,15 +69,12 @@ parser.add_option("--syslinux", dest="syslinux", action="store_true",
                   help="install syslinux bootloader instead of grub")
 parser.add_option("--syslinux-mbr", dest="syslinuxmbr", action="store_true",
                   help="install syslinux master boot record (MBR) instead of default")
-#parser.add_option("--squashfs", dest="squashfs", action="store", type="string",
-#                  help="install specified squashfs file instead of the default [TODO - not implemented yet]")
-#parser.add_option("--uninstall", dest="uninstall", action="store_true",
-#                  help="remove grml ISO files from specified device [TODO - not implemented yet]")
 parser.add_option("--verbose", dest="verbose", action="store_true",
                   help="enable verbose mode")
 parser.add_option("-v", "--version", dest="version", action="store_true",
                   help="display version and exit")
 (options, args) = parser.parse_args()
+
 
 GRML2USB_BASE = '/usr/share/grml2usb'
 if not os.path.isdir(GRML2USB_BASE):
@@ -644,7 +637,8 @@ def install_grub(device):
                 else:
                     grub_device = device
 
-                logging.debug("grub-install --recheck --no-floppy --root-directory=%s %s", device_mountpoint, grub_device)
+                logging.debug("grub-install --recheck --no-floppy --root-directory=%s %s",
+                    device_mountpoint, grub_device)
                 proc = subprocess.Popen(["grub-install", "--recheck", "--no-floppy",
                     "--root-directory=%s" % device_mountpoint, grub_device], stdout=file(os.devnull, "r+"))
                 proc.wait()
@@ -997,6 +991,25 @@ def mkdir(directory):
             pass
 
 
+def exec_rsync(source, target):
+    """Simple wrapper around rsync to install files
+
+    @source: source file/directory
+    @target: target file/directory"""
+    logging.debug(source, target)
+    proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", source, target])
+    proc.wait()
+    if proc.returncode == 12:
+        logging.critical("Fatal: No space left on device")
+        cleanup()
+        sys.exit(1)
+
+    if proc.returncode != 0:
+        logging.critical("Fatal: could not install %s" % source)
+        cleanup()
+        sys.exit(1)
+
+
 def copy_system_files(grml_flavour, iso_mount, target):
     """copy grml's main files (like squashfs, kernel and initrd) to a given target
 
@@ -1011,17 +1024,13 @@ def copy_system_files(grml_flavour, iso_mount, target):
     else:
         squashfs_target = target + '/live/' + grml_flavour + '/'
         execute(mkdir, squashfs_target)
-        logging.debug("rsync -rlptDH --inplace %s %s" % (squashfs, squashfs_target + grml_flavour + '.squashfs'))
-        proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", squashfs, squashfs_target + grml_flavour + ".squashfs"])
-        proc.wait()
+    exec_rsync(squashfs, squashfs_target + grml_flavour + '.squashfs')
 
     filesystem_module = search_file('filesystem.module', iso_mount)
     if filesystem_module is None:
         logging.critical("Fatal: filesystem.module not found")
     else:
-        logging.debug("rsync -rlptDH --inplace %s %s" % (filesystem_module, squashfs_target + 'filesystem.module'))
-        proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", filesystem_module, squashfs_target + 'filesystem.module'])
-        proc.wait()
+        exec_rsync(filesystem_module, squashfs_target + 'filesystem.module')
 
     release_target = target + '/boot/release/' + grml_flavour
     execute(mkdir, release_target)
@@ -1030,17 +1039,13 @@ def copy_system_files(grml_flavour, iso_mount, target):
     if kernel is None:
         logging.critical("Fatal kernel not found")
     else:
-        logging.debug("rsync -rlptDH --inplace %s %s" % (kernel, release_target + '/linux26'))
-        proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", kernel, release_target + '/linux26'])
-        proc.wait()
+        exec_rsync(kernel, release_target + '/linux26')
 
     initrd = search_file('initrd.gz', iso_mount)
     if initrd is None:
         logging.critical("Fatal: initrd not found")
     else:
-        logging.debug("rsync -rlptDH --inplace %s %s" % (initrd, release_target + '/initrd.gz'))
-        proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", initrd, release_target + '/initrd.gz'])
-        proc.wait()
+        exec_rsync(initrd, release_target + '/initrd.gz')
 
 
 def copy_grml_files(iso_mount, target):
@@ -1057,9 +1062,7 @@ def copy_grml_files(iso_mount, target):
         if grml_file is None:
             logging.warn("Warning: myfile %s could not be found - can not install it", myfile)
         else:
-            logging.debug("rsync -rlptDH --inplace %s %s" % (grml_file, grml_target + grml_file))
-            proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", grml_file, grml_target + myfile])
-            proc.wait()
+            exec_rsync(grml_file, grml_target + myfile)
 
     grml_web_target = grml_target + '/web/'
     execute(mkdir, grml_web_target)
@@ -1069,9 +1072,7 @@ def copy_grml_files(iso_mount, target):
         if grml_file is None:
             logging.warn("Warning: myfile %s could not be found - can not install it")
         else:
-            logging.debug("rsync -rlptDH --inplace %s %s" % (grml_file, grml_web_target + grml_file))
-            proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", grml_file, grml_web_target + myfile])
-            proc.wait()
+            exec_rsync(grml_file, grml_web_target + myfile)
 
     grml_webimg_target = grml_web_target + '/images/'
     execute(mkdir, grml_webimg_target)
@@ -1081,9 +1082,7 @@ def copy_grml_files(iso_mount, target):
         if grml_file is None:
             logging.warn("Warning: myfile %s could not be found - can not install it")
         else:
-            logging.debug("rsync -rlptDH --inplace %s %s" % (grml_file, grml_webimg_target + grml_file))
-            proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", grml_file, grml_webimg_target + myfile])
-            proc.wait()
+            exec_rsync(grml_file, grml_webimg_target + myfile)
 
 
 def copy_addons(iso_mount, target):
@@ -1100,61 +1099,47 @@ def copy_addons(iso_mount, target):
     if allinoneimg is None:
         logging.warn("Warning: allinone.img not found (that's fine if you don't need it)")
     else:
-        logging.debug("rsync -rlptDH --inplace %s %s" % (allinoneimg, addons + '/allinone.img'))
-        proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", allinoneimg, addons + 'allinone.img'])
-        proc.wait()
+        exec_rsync(allinoneimg, addons + 'allinone.img')
 
     # bsd imag
     bsdimg = search_file('bsd4grml', iso_mount)
     if bsdimg is None:
         logging.warn("Warning: bsd4grml not found (that's fine if you don't need it)")
     else:
-        logging.debug("rsync -rlptDH --inplace %s %s" % (bsdimg, addons + '/'))
-        proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", bsdimg, addons + '/'])
-        proc.wait()
+        exec_rsync(bsdimg, addons + '/')
 
     # freedos image
     balderimg = search_file('balder10.imz', iso_mount)
     if balderimg is None:
         logging.warn("Warning: balder10.imz not found (that's fine if you don't need it)")
     else:
-        logging.debug("rsync -rlptDH --inplace %s %s" % (balderimg, addons + '/balder10.imz'))
-        proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", balderimg, addons + 'balder10.imz'])
-        proc.wait()
+        exec_rsync(balderimg, addons + 'balder10.imz')
 
     # install hdt and pci.ids only when using syslinux (grub doesn't support it)
     if options.syslinux:
         # hdt (hardware detection tool) image
         hdtimg = search_file('hdt.c32', iso_mount)
         if hdtimg:
-            logging.debug("rsync -rlptDH --inplace %s %s" % (hdtimg, addons + '/hdt.c32'))
-            proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", hdtimg, addons + '/hdt.c32'])
-            proc.wait()
+            exec_rsync(hdtimg, addons + '/hdt.c32')
 
         # pci.ids file
         picids = search_file('pci.ids', iso_mount)
         if picids:
-            logging.debug("rsync -rlptDH --inplace %s %s" % (picids, addons + '/pci.ids'))
-            proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", picids, addons + '/pci.ids'])
-            proc.wait()
+            exec_rsync(picids, addons + '/pci.ids')
 
     # memdisk image
     memdiskimg = search_file('memdisk', iso_mount)
     if memdiskimg is None:
         logging.warn("Warning: memdisk not found (that's fine if you don't need it)")
     else:
-        logging.debug("rsync -rlptDH --inplace %s %s" % (memdiskimg, addons + '/memdisk'))
-        proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", memdiskimg, addons + 'memdisk'])
-        proc.wait()
+        exec_rsync(memdiskimg, addons + 'memdisk')
 
     # memtest86+ image
     memtestimg = search_file('memtest', iso_mount)
     if memtestimg is None:
         logging.warn("Warning: memtest not found (that's fine if you don't need it)")
     else:
-        logging.debug("rsync -rlptDH --inplace %s %s" % (memtestimg, addons + '/memtest'))
-        proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", memtestimg, addons + 'memtest'])
-        proc.wait()
+        exec_rsync(memtestimg, addons + 'memtest')
 
 
 def copy_bootloader_files(iso_mount, target):
@@ -1167,15 +1152,11 @@ def copy_bootloader_files(iso_mount, target):
     execute(mkdir, syslinux_target)
 
     logo = search_file('logo.16', iso_mount)
-    logging.debug("rsync -rlptDH --inplace %s %s" % (logo, syslinux_target + 'logo.16'))
-    proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", logo, syslinux_target + 'logo.16'])
-    proc.wait()
+    exec_rsync(logo, syslinux_target + 'logo.16')
 
     for ffile in 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10':
         bootsplash = search_file(ffile, iso_mount)
-        logging.debug("rsync -rlptDH --inplace %s %s" % (bootsplash, syslinux_target + ffile))
-        proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", bootsplash, syslinux_target + ffile])
-        proc.wait()
+        exec_rsync(bootsplash, syslinux_target + ffile)
 
     grub_target = target + '/boot/grub/'
     execute(mkdir, grub_target)
@@ -1185,25 +1166,15 @@ def copy_bootloader_files(iso_mount, target):
         logging.critical("Please make sure you've the grml2usb Debian package installed!")
         raise
     else:
-        logging.debug("rsync -rlptDH --inplace %s/grub/splash.xpm.gz %s%s" % (GRML2USB_BASE, grub_target, 'splash.xpm.gz'))
-        proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", GRML2USB_BASE + '/grub/splash.xpm.gz',
-                                grub_target + 'splash.xpm.gz'])
-        proc.wait()
+        exec_rsync(GRML2USB_BASE + '/grub/splash.xpm.gz', grub_target + 'splash.xpm.gz')
 
     # grml splash in grub
     if os.path.isfile(GRML2USB_BASE + "/grub/grml.png"):
-        logging.debug("rsync -rlptDH --inplace %s/grub/grml.png to %s%s" % (GRML2USB_BASE, grub_target, 'grml.png'))
-        proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", GRML2USB_BASE + '/grub/grml.png',
-                                grub_target + 'grml.png'])
-        proc.wait()
+        exec_rsync(GRML2USB_BASE + '/grub/grml.png', grub_target + 'grml.png')
 
     # font file for graphical bootsplash in grub
     if os.path.isfile("/usr/share/grub/ascii.pf2"):
-        logging.debug("rsync -rlptDH --inplace /usr/share/grub/ascii.pf2 to %s" % grub_target + 'ascii.pf2')
-        proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", '/usr/share/grub/ascii.pf2',
-                                grub_target + 'ascii.pf2'])
-        proc.wait()
-
+        exec_rsync('/usr/share/grub/ascii.pf2', grub_target + 'ascii.pf2')
 
 def install_iso_files(grml_flavour, iso_mount, device, target):
     """Copy files from ISO to given target

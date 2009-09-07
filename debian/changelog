@@ -1,3 +1,10 @@
+grml2usb (0.9.11) unstable; urgency=low
+
+  * Improve handling the 'No space left on device' situation through
+    using an according rsync handler function.
+
+ -- Michael Prokop <mika@grml.org>  Mon, 07 Sep 2009 23:05:30 +0200
+
 grml2usb (0.9.10) unstable; urgency=low
 
   * Support the directory where the grml2usb script resides as base
