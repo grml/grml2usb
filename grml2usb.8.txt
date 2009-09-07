@@ -26,11 +26,12 @@ just pressing enter on the bootprompt or wait until the boot timeout matches).
 
 [IMPORTANT]
 By default a compatible master boot record (MBR) is installed on the device
-(being for example /dev/sdX when executing 'grml2usb grml.iso /dev/sdX1')
-and grub is being used as default bootloader. Avoid installation of the
-default MBR using the --skip-mbr option or if you encounter any problems
-with the default MBR consider using --syslinux-mbr instead. If bootloader
-grub doesn't work for you check out the --syslinux option.
+(being for example /dev/sdX when executing 'grml2usb grml.iso /dev/sdX1') and
+grub is being used as default bootloader. Avoid installation of the default MBR
+using the '--skip-mbr' option or if you encounter any problems with the default
+MBR consider using '--syslinux-mbr' instead. If bootloader grub doesn't work for
+you check out <<faq,the FAQ section of this document>> or consider using the
+'--syslinux' option.
 
 [[options]]
 Options
