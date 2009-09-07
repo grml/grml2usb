@@ -1,4 +1,4 @@
-grml2usb (0.9.10) UNRELEASED; urgency=low
+grml2usb (0.9.10) unstable; urgency=low
 
   * Support the directory where the grml2usb script resides as base
     directory so /usr/share/grml2usb isn't necessarily needed.
@@ -13,7 +13,7 @@ grml2usb (0.9.10) UNRELEASED; urgency=low
     Johannes Endres and Reiko Kaps for the bugreport.
   * Replace hint to '--grub' with 'grub'.
 
- -- Michael Prokop <mika@grml.org>  Mon, 07 Sep 2009 16:32:33 +0200
+ -- Michael Prokop <mika@grml.org>  Mon, 07 Sep 2009 16:51:57 +0200
 
 grml2usb (0.9.9) unstable; urgency=low
 
