@@ -637,7 +637,7 @@ def install_grub(device):
                 proc.wait()
                 if proc.returncode != 0:
                     # raise Exception("error executing grub-install")
-                    logging.critical("Fatal: error executing grub-install (please check the grml2usb FAQ)")
+                    logging.critical("Fatal: error executing grub-install (please check the grml2usb FAQ or use --syslinux)")
                     cleanup()
                     sys.exit(1)
             except CriticalException, error:
