@@ -49,6 +49,8 @@ parser.add_option("--fat16", dest="fat16", action="store_true",
                   help="format specified partition with FAT16")
 parser.add_option("--force", dest="force", action="store_true",
                   help="force any actions requiring manual interaction")
+parser.add_option("--grub-mbr", dest="grubmbr", action="store_true",
+                  help="install grub into MBR instead of (default) PBR")
 #parser.add_option("--initrd", dest="initrd", action="store", type="string",
 #                  help="install specified initrd instead of the default [TODO - not implemented yet]")
 #parser.add_option("--kernel", dest="kernel", action="store", type="string",
@@ -630,13 +632,26 @@ def install_grub(device):
         try:
             try:
                 mount(device, device_mountpoint, "")
-                logging.debug("grub-install --recheck --no-floppy --root-directory=%s %s", device_mountpoint, device)
+
+                # If using --grub-mbr then make sure we install grub in MBR instead of PBR
+                # Thanks to grub2. NOT.
+                if options.grubmbr:
+                    logging.debug("Using option --grub-mbr ...")
+                    if device[-1:].isdigit():
+                        grub_device = re.match(r'(.*?)\d*$', device).group(1)
+                    else:
+                        grub_device = device
+                else:
+                    grub_device = device
+
+                logging.debug("grub-install --recheck --no-floppy --root-directory=%s %s", device_mountpoint, grub_device)
                 proc = subprocess.Popen(["grub-install", "--recheck", "--no-floppy",
-                    "--root-directory=%s" % device_mountpoint, device], stdout=file(os.devnull, "r+"))
+                    "--root-directory=%s" % device_mountpoint, grub_device], stdout=file(os.devnull, "r+"))
                 proc.wait()
                 if proc.returncode != 0:
                     # raise Exception("error executing grub-install")
                     logging.critical("Fatal: error executing grub-install (please check the grml2usb FAQ or use --syslinux)")
+                    logging.critical("Note:  if using grub2 consider using the --grub-mbr option because grub2's PBR feature is broken.")
                     cleanup()
                     sys.exit(1)
             except CriticalException, error:

@@ -12,8 +12,10 @@ grml2usb (0.9.10) unstable; urgency=low
   * Fix usage of --force in combination with --fat16. Thanks to
     Johannes Endres and Reiko Kaps for the bugreport.
   * Replace hint to '--grub' with 'grub'.
+  * New option --grub-mbr which allows installation of grub in MBR instead
+    of installation into a partition (PBR) which is necessary when using grub2.
 
- -- Michael Prokop <mika@grml.org>  Mon, 07 Sep 2009 16:51:57 +0200
+ -- Michael Prokop <mika@grml.org>  Mon, 07 Sep 2009 17:12:54 +0200
 
 grml2usb (0.9.9) unstable; urgency=low
 

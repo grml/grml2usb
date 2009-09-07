@@ -26,7 +26,7 @@ just pressing enter on the bootprompt or wait until the boot timeout matches).
 
 [IMPORTANT]
 By default a compatible master boot record (MBR) is installed on the device
-(being for example /dev/sdx when executing 'grml2usb grml.iso /dev/sdx1')
+(being for example /dev/sdX when executing 'grml2usb grml.iso /dev/sdX1')
 and grub is being used as default bootloader. Avoid installation of the
 default MBR using the --skip-mbr option or if you encounter any problems
 with the default MBR consider using --syslinux-mbr instead. If bootloader
@@ -39,7 +39,7 @@ Options
 The ISO[s] should be the path to one or multiple grml-ISOs and/or the path to
 the currently running live-system (being /live/image).
 
-The device either might be a device name like /dev/sdx1 or a directory. When
+The device either might be a device name like /dev/sdX1 or a directory. When
 specifying a device name the device is mounted automatically. When specifying a
 directory grml2usb is assuming that you did set up a bootloader on your own (or
 don't need one) and a bootloader won't be installed automatically.
@@ -74,6 +74,13 @@ Format specified partition with FAT16.
   *\--force*::
 
 Force any (possible dangerous) actions requiring manual interaction (like --fat16).
+
+  *\--grub-mbr*::
+
+Install grub into MBR (Master Boot Record) instead of PBR (Partition Boot
+Record).  This option sadly had to be introduced because grub2 can not be
+installed to partitions (PBR) instead of MBR anymore. Check out <<mbr-vs-pbr,the
+'mbr-vs-pbr' section in the FAQ of this document>> for further details.
 
   *\--help*::
 
@@ -139,7 +146,7 @@ file no matter whether you're using grub or syslinux as bootloader.
 
   *\--syslinux*::
 
-Install syslinux bootloader instead of the default (being grub).
+Install syslinux bootloader instead of the default one (being grub).
 
   *\--syslinux-mbr*::
 
@@ -147,7 +154,7 @@ Install syslinux' master boot record (MBR, which is booting from the partition
 with the "active" flag set) instead of the default one.  If you encounter any
 problems with the default MBR you can try using the syslinux MBR instead. If
 that works for you please <<author,let us know>> so we can adjust our default
-MBR accordingly.  Note: When using the --syslinux-mbr option lilo is executed
+MBR accordingly. Note: When using the --syslinux-mbr option lilo is executed
 before the MBR is installed so the according partitions are set active.
 
 //////////////////////////////////////////////////////////////////////////
@@ -286,8 +293,8 @@ Finally create a filesystem and execute grml2usb as needed:
 Performance tracing
 ~~~~~~~~~~~~~~~~~~~
 
-  # blktrace -d /dev/sdx -o - | blkparse -i -
-  # grml2usb grml_2009.05.iso /dev/sdx1
+  # blktrace -d /dev/sdX -o - | blkparse -i -
+  # grml2usb grml_2009.05.iso /dev/sdX1
 
 [[troubleshooting]]
 Troubleshooting and Pitfalls when booting
@@ -499,18 +506,21 @@ The following message:
   grub-setup: warn: Embedding is not possible.  GRUB can only be installed in this setup by using blocklists.  However, blocklists are UNRELIABLE and its use is discouraged.
   grub-setup: error: Cannot read `/grub/core.img' correctly
 
-appears because recent grub2 versions introduced a regression which avoids that
-grub is being installed into a partition (instead of MBR). We (the grml2usb
-developers) are evaluating the current situation (thinking about installing grub
-into the MBR). To fix this issue in the meanwhile either manually execute
-(adjust '/dev/sdx' to your device of course):
+appears because recent grub2 versions sadly introduced a regression which avoids
+that grub is being installed into a partition (PBR, Partition Boot Record)
+instead of MBR (Master Boot Record).
 
-  mount /dev/sdx1 /mnt/test
-  grub-install --force --recheck --no-floppy --root-directory=/mnt/test /dev/sdx
+To work around this issue you can install grub into the MBR (Master Boot Record)
+using the '--grub-mbr' option of grml2usb or switch to syslinux as bootmanager
+(using the '--syslinux' option).
 
-after execution of grml2usb failed (this will will install grub into the MBR of
-the specified device) or consider using the '--syslinux' option until this issue
-is resolved.  Sorry about that.
+To fix this issue manually you can also execute (adjust '/dev/sdX' to your
+device of course):
+
+  mount /dev/sdX1 /mnt/test
+  grub-install --force --recheck --no-floppy --root-directory=/mnt/test /dev/sdX
+
+Sorry about that.
 
 [[splash-xpm]]
 I'm getting something like "Error: /usr/share/grml2usb/grub/splash.xpm.gz can not be read"!?
@@ -557,54 +567,54 @@ of your grml2usb commandline (consider using the "\--verbose" option).
 Usage examples
 --------------
 
-  # grml2usb /home/grml/grml_2009.05.iso /dev/sdx1
+  # grml2usb /home/grml/grml_2009.05.iso /dev/sdX1
 
-Install specified ISO on device /dev/sdx1.
+Install specified ISO on device /dev/sdX1.
 
-  # grml2usb /home/grml/grml_2009.05.iso /home/grml/grml_small_2009.05.iso /dev/sdx1
+  # grml2usb /home/grml/grml_2009.05.iso /home/grml/grml_small_2009.05.iso /dev/sdX1
 
-Install specified ISOs on device /dev/sdx1 for multibooting ISOs.
+Install specified ISOs on device /dev/sdX1 for multibooting ISOs.
 Note: boot "grml" as usual, for booting grml-small use "grml-small on the
 bootprompt, for grml64 use "grml64" and so on... The *first* specified ISO is
 the one being the default (when just pressing enter or waiting until the timeout
 is reached).
 
-  # grml2usb /live/image /dev/sdx1
+  # grml2usb /live/image /dev/sdX1
 
-Install currently running grml live system on device /dev/sdx1.
+Install currently running grml live system on device /dev/sdX1.
 
-  # grml2usb /live/image /home/grml/grml_2009.05.iso /dev/sdx1
+  # grml2usb /live/image /home/grml/grml_2009.05.iso /dev/sdX1
 
 Install currently running grml live system and the specified
-ISO on device /dev/sdx1 for multibooting.
+ISO on device /dev/sdX1 for multibooting.
 
-  # grml2usb --fat16 /home/grml/grml_2009.05.iso /dev/sdx1
+  # grml2usb --fat16 /home/grml/grml_2009.05.iso /dev/sdX1
 
-Install specified ISO on device /dev/sdx1 and format partition /dev/sdx1 with
+Install specified ISO on device /dev/sdX1 and format partition /dev/sdX1 with
 FAT16 filesystem.
 
-  # grml2usb --syslinux /home/grml/grml_2009.05.iso /dev/sdx1
+  # grml2usb --syslinux /home/grml/grml_2009.05.iso /dev/sdX1
 
-Install specified ISO on device /dev/sdx1 and use syslinux as bootloader
+Install specified ISO on device /dev/sdX1 and use syslinux as bootloader
 (instead of grub being the default).
 
 ///////////////////////////////////////////////////////////////////////////////////////
   # grml2usb --kernel=/boot/vmlinuz-2.6.28-grml --initrd=/boot/initrd.img-2.6.28-grml \
-             /home/grml/grml_2009.05.iso /dev/sdx1
+             /home/grml/grml_2009.05.iso /dev/sdX1
 
-Install specified ISO on device /dev/sdx1 but use given kernel and initrd
+Install specified ISO on device /dev/sdX1 but use given kernel and initrd
 instead of the ones provided by the ISO.
 
   # grml2usb --squashfs=/grml/grml-live/grml_cd/live/grml.squashfs \
-             /home/grml/grml_2009.05.iso /dev/sdx1
+             /home/grml/grml_2009.05.iso /dev/sdX1
 
-Install specified ISO on device /dev/sdx1 but use given squashfs
+Install specified ISO on device /dev/sdX1 but use given squashfs
 file instead of the one provided by the ISO.
 ///////////////////////////////////////////////////////////////////////////////////////
 
-  # grml2usb --bootoptions="lang=de ssh=mysecret" grml_2009.05.iso /dev/sdx1
+  # grml2usb --bootoptions="lang=de ssh=mysecret" grml_2009.05.iso /dev/sdX1
 
-Install specified ISO on device /dev/sdx1 and use "lang=de ssh=mysecret" as
+Install specified ISO on device /dev/sdX1 and use "lang=de ssh=mysecret" as
 default bootoptions.
 
 [[ressources]]
