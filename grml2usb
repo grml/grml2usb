@@ -366,7 +366,7 @@ menuentry "%(grml_flavour)s-nofb       - disable framebuffer" {
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s-failsafe   - disable hardware detection" {
-    linux /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal boot=live noautoconfig atapicd noapic noacpi acpi=off nomodules nofirewire noudev nousb nohotplug noapm nopcmcia nosmp maxcpus=0 noscsi noagp nodma ide=nodma noswap nofstab nosound nogpm nosyslog nodhcp nocpu nodisc nomodem xmodule=vesa noraid nolvm noresume selinux=0 edd=off %(bootoptions)s
+    linux /boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal boot=live noautoconfig atapicd noapic noacpi acpi=off nomodules nofirewire noudev nousb nohotplug noapm nopcmcia nosmp maxcpus=0 noscsi noagp nodma ide=nodma noswap nofstab nosound nogpm nosyslog nodhcp nocpu nodisc nomodem xmodule=vesa noraid nolvm noresume selinux=0 edd=off pci=nomsi %(bootoptions)s
     initrd /boot/release/%(grml_flavour)s/initrd.gz
 }
 
@@ -423,7 +423,7 @@ initrd (hd0,%(install_partition)s)/boot/release/%(grml_flavour)s/initrd.gz
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 title %(grml_flavour)s-failsafe
-kernel (hd0,%(install_partition)s)/boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal boot=live noautoconfig atapicd noapic noacpi acpi=off nomodules nofirewire noudev nousb nohotplug noapm nopcmcia nosmp maxcpus=0 noscsi noagp nodma ide=nodma noswap nofstab nosound nogpm nosyslog nodhcp nocpu nodisc nomodem xmodule=vesa noraid nolvm noresume selinux=0 edd=off %(bootoptions)s
+kernel (hd0,%(install_partition)s)/boot/release/%(grml_flavour)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal boot=live noautoconfig atapicd noapic noacpi acpi=off nomodules nofirewire noudev nousb nohotplug noapm nopcmcia nosmp maxcpus=0 noscsi noagp nodma ide=nodma noswap nofstab nosound nogpm nosyslog nodhcp nocpu nodisc nomodem xmodule=vesa noraid nolvm noresume selinux=0 edd=off pci=nomsi %(bootoptions)s
 initrd (hd0,%(install_partition)s)/boot/release/%(grml_flavour)s/initrd.gz
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
@@ -603,7 +603,7 @@ APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live n
 # flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 LABEL  %(grml_flavour)s-failsafe
 KERNEL /boot/release/%(grml_flavour)s/linux26
-APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal boot=live noautoconfig atapicd noapic noacpi acpi=off nomodules nofirewire noudev nousb nohotplug noapm nopcmcia nosmp maxcpus=0 noscsi noagp nodma ide=nodma noswap nofstab nosound nogpm nosyslog nodhcp nocpu nodisc nomodem xmodule=vesa noraid nolvm noresume selinux=0 edd=off %(bootoptions)s
+APPEND initrd=/boot/release/%(grml_flavour)s/initrd.gz apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal boot=live noautoconfig atapicd noapic noacpi acpi=off nomodules nofirewire noudev nousb nohotplug noapm nopcmcia nosmp maxcpus=0 noscsi noagp nodma ide=nodma noswap nofstab nosound nogpm nosyslog nodhcp nocpu nodisc nomodem xmodule=vesa noraid nolvm noresume selinux=0 edd=off pci=nomsi %(bootoptions)s
 
 # flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 LABEL  %(grml_flavour)s-forensic
