@@ -11,8 +11,9 @@ grml2usb (0.9.10) UNRELEASED; urgency=low
   * Mention the --syslinux option if grub-install fails.
   * Fix usage of --force in combination with --fat16. Thanks to
     Johannes Endres and Reiko Kaps for the bugreport.
+  * Replace hint to '--grub' with 'grub'.
 
- -- Michael Prokop <mika@grml.org>  Mon, 07 Sep 2009 16:16:16 +0200
+ -- Michael Prokop <mika@grml.org>  Mon, 07 Sep 2009 16:32:33 +0200
 
 grml2usb (0.9.9) unstable; urgency=low
 

@@ -225,7 +225,6 @@ def mkfs_fat16(device):
 
     @device: partition that should be formated"""
 
-    # syslinux -d boot/isolinux /dev/sdb1
     if options.dryrun:
         logging.info("Would execute mkfs.vfat -F 16 %s now.", device)
         return 0
@@ -666,7 +665,7 @@ def install_syslinux(device):
     proc = subprocess.Popen(["syslinux", "-d", "boot/syslinux", device])
     proc.wait()
     if proc.returncode != 0:
-        raise CriticalException("Error executing syslinux (either try --fat16 or --grub?)")
+        raise CriticalException("Error executing syslinux (either try --fat16 or use grub?)")
 
 
 def install_bootloader(device):
