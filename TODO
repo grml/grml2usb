@@ -1,6 +1,9 @@
 TODOs
 -----
 
+* support new vesamenu isolinux/syslinux bootsplash
+  -> should simplify multiboot setup
+* if 'grml2usb grml64.iso grml.iso' is invoked there are two identically named boot entries (both "grml")
 * support installation of new ISO[s] additionally to already existing grml ISOs on the usb device
   -> add "old"/already existing images automatically to bootloader configuration [thx gebi]
 * support installation of "dupes", meaning grml2usb grml_2008.11.iso grml_2009.05.iso
@@ -28,7 +31,6 @@ TODOs
   - improve error handling wherever possible :) => especially disk full, any other known test cases?
   - use 'with open("...", "w") as f: ... f.write("...")'
   - use class design (like used in https://fedorahosted.org/liveusb-creator/browser/liveusb)
-* check out what's *really* necessary if someone wants to use only the grml2usb python script
 * provide a Windows version (for example via PyQt4)
 * provide unit-testing (any ideas for useful/test-able scenarious?)
 * provide progress bar when copying files
