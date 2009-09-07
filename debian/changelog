@@ -9,8 +9,10 @@ grml2usb (0.9.10) UNRELEASED; urgency=low
     Thanks for the patch to Alexander 'Leo' Bergolth <leo@strike.wu.ac.at>!
   * Use 'pci=nomsi' in failsafe bootoption. Thanks to Marc 'HE' Brockschmidt.
   * Mention the --syslinux option if grub-install fails.
+  * Fix usage of --force in combination with --fat16. Thanks to
+    Johannes Endres and Reiko Kaps for the bugreport.
 
- -- Michael Prokop <mika@grml.org>  Mon, 07 Sep 2009 15:21:39 +0200
+ -- Michael Prokop <mika@grml.org>  Mon, 07 Sep 2009 16:16:16 +0200
 
 grml2usb (0.9.9) unstable; urgency=low
 

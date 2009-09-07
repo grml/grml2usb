@@ -1629,16 +1629,24 @@ def handle_vfat(device):
     @device: device that should checked / formated"""
 
     # make sure we have mkfs.vfat available
-    if options.fat16 and not options.force:
+    if options.fat16:
         if not which("mkfs.vfat") and not options.copyonly and not options.dryrun:
             logging.critical('Sorry, mkfs.vfat not available. Exiting.')
             logging.critical('Please make sure to install dosfstools.')
             sys.exit(1)
 
-        # make sure the user is aware of what he is doing
-        f = raw_input("Are you sure you want to format the specified partition with fat16? y/N ")
-        if f == "y" or f == "Y":
-            logging.info("Note: you can skip this question using the option --force")
+        exec_mkfs = False
+        if options.force:
+            print "Forcing mkfs.fat16 on %s as requested via option --force." % device
+            exec_mkfs = True
+        else:
+            # make sure the user is aware of what he is doing
+            f = raw_input("Are you sure you want to format the specified partition with fat16? y/N ")
+            if f == "y" or f == "Y":
+                logging.info("Note: you can skip this question using the option --force")
+                exec_mkfs = True
+
+        if exec_mkfs:
             try:
                 mkfs_fat16(device)
             except CriticalException, error:
