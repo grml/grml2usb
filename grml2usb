@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.6
 # -*- coding: utf-8 -*-
 """
 grml2usb
@@ -158,7 +158,7 @@ def execute(f, *exec_arguments):
     # TODO: doesn't work for proc = execute(subprocess.Popen...() -> any ideas?
     if options.dryrun:
         # pylint: disable-msg=W0141
-        logging.debug('dry-run only: %s(%s)' % (get_function_name(f), ', '.join(map(repr, exec_arguments))))
+        logging.debug('dry-run only: %s(%s)', get_function_name(f), ', '.join(map(repr, exec_arguments)))
     else:
         # pylint: disable-msg=W0142
         return f(*exec_arguments)
@@ -225,7 +225,7 @@ def mkfs_fat16(device):
         return 0
 
     logging.info("Formating partition with fat16 filesystem")
-    logging.debug("mkfs.vfat -F 16 %s" % device)
+    logging.debug("mkfs.vfat -F 16 %s", device)
     proc = subprocess.Popen(["mkfs.vfat", "-F", "16", device])
     proc.wait()
     if proc.returncode != 0:
@@ -649,7 +649,7 @@ def install_grub(device):
                     cleanup()
                     sys.exit(1)
             except CriticalException, error:
-                logging.critical("Fatal: %s" % error)
+                logging.critical("Fatal: %s", error)
                 cleanup()
                 sys.exit(1)
 
@@ -670,7 +670,7 @@ def install_syslinux(device):
 
     # syslinux -d boot/isolinux /dev/sdb1
     logging.info("Installing syslinux as bootloader")
-    logging.debug("syslinux -d boot/syslinux %s" % device)
+    logging.debug("syslinux -d boot/syslinux %s", device)
     proc = subprocess.Popen(["syslinux", "-d", "boot/syslinux", device])
     proc.wait()
     if proc.returncode != 0:
@@ -687,7 +687,7 @@ def install_bootloader(device):
         try:
             install_syslinux(device)
         except CriticalException, error:
-            logging.critical("Fatal: %s" % error)
+            logging.critical("Fatal: %s", error)
             cleanup()
             sys.exit(1)
     else:
@@ -699,7 +699,7 @@ def install_bootloader(device):
             try:
                 install_grub(device)
             except CriticalException, error:
-                logging.critical("Fatal: %s" % error)
+                logging.critical("Fatal: %s", error)
                 cleanup()
                 sys.exit(1)
 
@@ -712,14 +712,14 @@ def execute_lilo(lilo, device):
 
     # to support -A for extended partitions:
     logging.info("Activating partitions in MBR via lilo")
-    logging.debug("%s -S /dev/null -M %s ext" % (lilo, device))
+    logging.debug("%s -S /dev/null -M %s ext", lilo, device)
     proc = subprocess.Popen([lilo, "-S", "/dev/null", "-M", device, "ext"])
     proc.wait()
     if proc.returncode != 0:
         raise Exception("error executing lilo")
 
     # activate partition:
-    logging.debug("%s -S /dev/null -A %s 1" % (lilo, device))
+    logging.debug("%s -S /dev/null -A %s 1", lilo, device)
     proc = subprocess.Popen([lilo, "-S", "/dev/null", "-A", device, "1"])
     proc.wait()
     if proc.returncode != 0:
@@ -740,14 +740,14 @@ def install_syslinux_mbr(device):
         raise Exception("/usr/lib/syslinux/mbr.bin can not be read")
 
     logging.info("Installing syslinux MBR")
-    logging.debug("cat /usr/lib/syslinux/mbr.bin > %s" % device)
+    logging.debug("cat /usr/lib/syslinux/mbr.bin > %s", device)
     try:
         # TODO -> use Popen instead?
         retcode = subprocess.call("cat /usr/lib/syslinux/mbr.bin > "+ device, shell=True)
         if retcode < 0:
-            logging.critical("Error copying MBR to device (%s)" % retcode)
+            logging.critical("Error copying MBR to device (%s)", retcode)
     except OSError, error:
-        logging.critical("Execution failed:", error)
+        logging.critical("Execution failed: %s", error)
 
 
 def install_mir_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
@@ -777,7 +777,7 @@ def install_mir_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     logging.info("Installing default MBR")
 
     if not os.path.isfile(mbrtemplate):
-        logging.critical("Error: %s can not be read." % mbrtemplate)
+        logging.critical("Error: %s can not be read.", mbrtemplate)
         raise CriticalException("Error installing MBR (either try --syslinux-mbr or install missing file?)")
 
     if (partition < 0) or (partition > 3):
@@ -790,14 +790,14 @@ def install_mir_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
 
     tmpf = tempfile.NamedTemporaryFile()
 
-    logging.debug("executing: dd if='%s' of='%s' bs=512 count=1" % (device, tmpf.name))
+    logging.debug("executing: dd if='%s' of='%s' bs=512 count=1", device, tmpf.name)
     proc = subprocess.Popen(["dd", "if=%s" % device, "of=%s" % tmpf.name, "bs=512", "count=1"], stderr=file(os.devnull, "r+"))
     proc.wait()
     if proc.returncode != 0:
         raise Exception("error executing dd (first run)")
 
-    logging.debug("executing: dd if=%s of=%s bs=%s count=1 conv=notrunc" % (mbrtemplate,
-        tmpf.name, nmbrbytes))
+    logging.debug("executing: dd if=%s of=%s bs=%s count=1 conv=notrunc", mbrtemplate,
+        tmpf.name, nmbrbytes)
     proc = subprocess.Popen(["dd", "if=%s" % mbrtemplate, "of=%s" % tmpf.name, "bs=%s" % nmbrbytes,
         "count=1", "conv=notrunc"], stderr=file(os.devnull, "r+"))
     proc.wait()
@@ -825,7 +825,7 @@ def install_mir_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     tmpf.file.write(mbrcode)
     tmpf.file.close()
 
-    logging.debug("executing: dd if='%s' of='%s' bs=512 count=1 conv=notrunc" % (tmpf.name, device))
+    logging.debug("executing: dd if='%s' of='%s' bs=512 count=1 conv=notrunc", tmpf.name, device)
     proc = subprocess.Popen(["dd", "if=%s" % tmpf.name, "of=%s" % device, "bs=512", "count=1",
                             "conv=notrunc"], stderr=file(os.devnull, "r+"))
     proc.wait()
@@ -897,16 +897,16 @@ def mount(source, target, mount_options):
             raise CriticalException("Error executing mount: %s already mounted - please unmount before invoking grml2usb" % source)
 
     if os.path.isdir(source):
-        logging.debug("Source %s is not a device, therefore not mounting." % source)
+        logging.debug("Source %s is not a device, therefore not mounting.", source)
         return 0
 
-    logging.debug("mount %s %s %s" % (mount_options, source, target))
+    logging.debug("mount %s %s %s", mount_options, source, target)
     proc = subprocess.Popen(["mount"] + list(mount_options) + [source, target])
     proc.wait()
     if proc.returncode != 0:
         raise CriticalException("Error executing mount (no filesystem on the partition?)")
     else:
-        logging.debug("register_mountpoint(%s)" % target)
+        logging.debug("register_mountpoint(%s)", target)
         register_mountpoint(target)
 
 
@@ -925,15 +925,15 @@ def unmount(target, unmount_options):
             target_unmount = True
 
     if not target_unmount:
-        logging.debug("%s not mounted anymore" % target)
+        logging.debug("%s not mounted anymore", target)
     else:
-        logging.debug("umount %s %s" % (list(unmount_options), target))
+        logging.debug("umount %s %s", list(unmount_options), target)
         proc = subprocess.Popen(["umount"] + list(unmount_options) + [target])
         proc.wait()
         if proc.returncode != 0:
             raise Exception("Error executing umount")
         else:
-            logging.debug("unregister_mountpoint(%s)" % target)
+            logging.debug("unregister_mountpoint(%s)", target)
             unregister_mountpoint(target)
 
 
@@ -996,7 +996,7 @@ def exec_rsync(source, target):
 
     @source: source file/directory
     @target: target file/directory"""
-    logging.debug(source, target)
+    logging.debug("Source: %s / Target: %s", source, target)
     proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", source, target])
     proc.wait()
     if proc.returncode == 12:
@@ -1005,7 +1005,7 @@ def exec_rsync(source, target):
         sys.exit(1)
 
     if proc.returncode != 0:
-        logging.critical("Fatal: could not install %s" % source)
+        logging.critical("Fatal: could not install %s", source)
         cleanup()
         sys.exit(1)
 
@@ -1162,7 +1162,7 @@ def copy_bootloader_files(iso_mount, target):
     execute(mkdir, grub_target)
 
     if not os.path.isfile(GRML2USB_BASE + "/grub/splash.xpm.gz"):
-        logging.critical("Error: %s/grub/splash.xpm.gz can not be read." % (GRML2USB_BASE, ))
+        logging.critical("Error: %s/grub/splash.xpm.gz can not be read.", (GRML2USB_BASE, ))
         logging.critical("Please make sure you've the grml2usb Debian package installed!")
         raise
     else:
@@ -1223,7 +1223,7 @@ def uninstall_files(device):
     @device: partition where grml2usb files should be removed from"""
 
     # TODO - not implemented yet
-    logging.critical("TODO: uninstalling files from %s not yet implement, sorry." % device)
+    logging.critical("TODO: uninstalling files from %s not yet implement, sorry.", device)
 
 
 def identify_grml_flavour(mountpath):
@@ -1434,7 +1434,7 @@ def handle_syslinux_config(grml_flavour, target):
         syslinux_config_file.write(generate_flavour_specific_syslinux_config(grml_flavour, bootopt))
         syslinux_config_file.close()
 
-    logging.debug("Generating isolinux/syslinux splash %s" % syslinux_target + 'boot.msg')
+    logging.debug("Generating isolinux/syslinux splash %s", syslinux_target + 'boot.msg')
     isolinux_splash = open(syslinux_target + 'boot.msg', 'w')
     isolinux_splash.write(generate_isolinux_splash(grml_flavour))
     isolinux_splash.close()
@@ -1453,7 +1453,7 @@ def handle_bootloader_config(grml_flavour, device, target):
         try:
             handle_syslinux_config(grml_flavour, target)
         except CriticalException, error:
-            logging.critical("Fatal: %s" % error)
+            logging.critical("Fatal: %s", error)
             sys.exit(1)
 
     if options.skipgrubconfig:
@@ -1462,7 +1462,7 @@ def handle_bootloader_config(grml_flavour, device, target):
         try:
             handle_grub_config(grml_flavour, device, target)
         except CriticalException, error:
-            logging.critical("Fatal: %s" % error)
+            logging.critical("Fatal: %s", error)
             sys.exit(1)
 
 def handle_dir(live_image, device):
@@ -1471,7 +1471,7 @@ def handle_dir(live_image, device):
     @live_image: directory where currently running live system resides (usually /live/image)
     @device: partition where the specified ISO should be installed to"""
 
-    logging.info("Using %s as install base" % live_image)
+    logging.info("Using %s as install base", live_image)
 
     if os.path.isdir(device):
         logging.info("Specified target is a directory, therefore not mounting.")
@@ -1484,14 +1484,14 @@ def handle_dir(live_image, device):
         try:
             mount(device, device_mountpoint, "")
         except CriticalException, error:
-            logging.critical("Fatal: %s" % error)
+            logging.critical("Fatal: %s", error)
             cleanup()
             sys.exit(1)
 
     try:
         try:
             grml_flavour = identify_grml_flavour(live_image)
-            logging.info("Identified grml flavour \"%s\"." % grml_flavour)
+            logging.info("Identified grml flavour \"%s\".", grml_flavour)
             install_iso_files(grml_flavour, live_image, device, device_mountpoint)
         except TypeError:
             logging.critical("Fatal: a critical error happend during execution (not a grml ISO?), giving up")
@@ -1504,7 +1504,7 @@ def handle_dir(live_image, device):
                     os.rmdir(device_mountpoint)
                     unregister_tmpfile(device_mountpoint)
             except CriticalException, error:
-                logging.critical("Fatal: %s" % error)
+                logging.critical("Fatal: %s", error)
                 cleanup()
 
 
@@ -1514,21 +1514,21 @@ def handle_iso(iso, device):
     @iso: full path to the ISO that should be installed to the specified device
     @device: partition where the specified ISO should be installed to"""
 
-    logging.info("Using ISO %s" % iso)
+    logging.info("Using ISO %s", iso)
 
     iso_mountpoint = tempfile.mkdtemp(prefix="grml2usb")
     register_tmpfile(iso_mountpoint)
     remove_iso_mountpoint = True
 
     if not os.path.isfile(iso):
-        logging.critical("Fatal: specified ISO %s could not be read" % iso)
+        logging.critical("Fatal: specified ISO %s could not be read", iso)
         cleanup()
         sys.exit(1)
 
     try:
         mount(iso, iso_mountpoint, ["-o", "loop", "-t", "iso9660"])
     except CriticalException, error:
-        logging.critical("Fatal: %s" % error)
+        logging.critical("Fatal: %s", error)
         sys.exit(1)
 
     if os.path.isdir(device):
@@ -1543,14 +1543,14 @@ def handle_iso(iso, device):
         try:
             mount(device, device_mountpoint, "")
         except CriticalException, error:
-            logging.critical("Fatal: %s" % error)
+            logging.critical("Fatal: %s", error)
             cleanup()
             sys.exit(1)
 
     try:
         try:
             grml_flavour = identify_grml_flavour(iso_mountpoint)
-            logging.info("Identified grml flavour \"%s\"." % grml_flavour)
+            logging.info("Identified grml flavour \"%s\".", grml_flavour)
             install_iso_files(grml_flavour, iso_mountpoint, device, device_mountpoint)
         except TypeError:
             logging.critical("Fatal: a critical error happend during execution (not a grml ISO?), giving up")
@@ -1567,7 +1567,7 @@ def handle_iso(iso, device):
                     os.rmdir(device_mountpoint)
                     unregister_tmpfile(device_mountpoint)
             except CriticalException, error:
-                logging.critical("Fatal: %s" % error)
+                logging.critical("Fatal: %s", error)
                 cleanup()
 
 
@@ -1589,7 +1589,7 @@ def handle_mbr(device):
     # into /dev/loop of course, therefore use /dev/loop1 as mbr_device
     if mbr_device == "/dev/loop":
         mbr_device = device
-        logging.info("Detected loop device - using %s as MBR device therefore" % mbr_device)
+        logging.info("Detected loop device - using %s as MBR device therefore", mbr_device)
         skip_install_mir_mbr = True
 
     try:
@@ -1701,7 +1701,7 @@ def handle_bootloader(device):
     if options.copyonly:
         logging.info("Not installing bootloader and its files as requested via option copyonly.")
     elif os.path.isdir(device):
-        logging.info("Not installing bootloader as %s is a directory." % device)
+        logging.info("Not installing bootloader as %s is a directory.", device)
     else:
         install_bootloader(device)
 
@@ -1765,13 +1765,13 @@ def main():
 
     handle_bootloader(device)
 
-    logging.info("Note: grml flavour %s was installed as the default booting system." % GRML_DEFAULT)
+    logging.info("Note: grml flavour %s was installed as the default booting system.", GRML_DEFAULT)
 
     for flavour in GRML_FLAVOURS:
-        logging.info("Note: you can boot flavour %s using '%s' on the commandline." % (flavour, flavour))
+        logging.info("Note: you can boot flavour %s using '%s' on the commandline.", flavour, flavour)
 
     # finally be politely :)
-    logging.info("Finished execution of grml2usb (%s). Have fun with your grml system." % PROG_VERSION)
+    logging.info("Finished execution of grml2usb (%s). Have fun with your grml system.", PROG_VERSION)
 
 
 if __name__ == "__main__":

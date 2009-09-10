@@ -1,3 +1,10 @@
+grml2usb (0.9.12) unstable; urgency=low
+
+  * Replace 'logging.*("%s" % foo)' with 'logging.*("%s", foo)'
+    so the logging works with python2.6 as well.
+
+ -- Michael Prokop <mika@grml.org>  Thu, 10 Sep 2009 16:21:06 +0200
+
 grml2usb (0.9.11) unstable; urgency=low
 
   * Improve handling the 'No space left on device' situation through
