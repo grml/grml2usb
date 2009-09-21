@@ -1,3 +1,10 @@
+grml2usb (0.9.13) UNRELEASED; urgency=low
+
+  * Update documentation regarding syslinux and FAT32 (thanks to
+    Stefan Traby <stefan@hello-penguin.com> for the hint).
+
+ -- Michael Prokop <mika@grml.org>  Mon, 21 Sep 2009 17:55:00 +0200
+
 grml2usb (0.9.12) unstable; urgency=low
 
   * Replace 'logging.*("%s" % foo)' with 'logging.*("%s", foo)'

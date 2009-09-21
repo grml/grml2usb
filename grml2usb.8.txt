@@ -534,13 +534,14 @@ you do not have a Debian system please see section <<download,Where can I get
 grml2usb?>> in this FAQ.
 
 [[fat16]]
-Why do I have to use a FAT16 filesystem?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Why do I have to use a FAT16/FAT32 filesystem?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You have to use a FAT16 filesystem only if you consider using syslinux. Syslinux
-(currently) does not support any other filesystems. If you want to use another
-filesystem (like ext2/3) just don't use syslinux (drop the \--syslinux option)
-but use the default bootloader (grub) instead.
+You have to use a FAT16/FAT32 filesystem only if you consider using syslinux.
+Syslinux (currently) does not support any other filesystems. If you want to use
+another filesystem (like ext2/3) just don't use syslinux (drop the \--syslinux
+option) but use the default bootloader (grub) instead. Note that FAT32 is
+supported since syslinux version 3.0.
 
 [[cool-idea]]
 I think I've got a really cool idea!
