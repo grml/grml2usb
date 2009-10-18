@@ -96,9 +96,11 @@ class CriticalException(Exception):
 # with manipulation of files on the octet level, like shell
 # arrays, e.g. in MBR creation.
 
+
 def array2string(a):
     """Convert a list of integers [0;255] to a string."""
     return struct.pack("%sB" % len(a), *a)
+
 
 def string2array(s):
     """Convert a (bytes) string into a list of integers."""
@@ -1137,6 +1139,7 @@ def copy_bootloader_files(iso_mount, target):
     if os.path.isfile("/usr/share/grub/ascii.pf2"):
         exec_rsync('/usr/share/grub/ascii.pf2', grub_target + 'ascii.pf2')
 
+
 def install_iso_files(grml_flavour, iso_mount, device, target):
     """Copy files from ISO to given target
 
@@ -1353,6 +1356,7 @@ def initial_syslinux_config(target):
     data.write(generate_main_syslinux_config())
     data.close
 
+
 def adjust_syslinux_bootoptions(src_name, dst_name, flavour):
     append_re = re.compile("^(\s*append.*)$", re.I)
     boot_re = re.compile("/boot/([a-zA-Z0-9_]+/)+([a-zA-Z0-9._]+)")
@@ -1362,8 +1366,8 @@ def adjust_syslinux_bootoptions(src_name, dst_name, flavour):
     dst = open(dst_name, "w")
 
     for line in src:
-        line = boot_re.sub(r'/boot/release/%s/\2 ' % flavour, line) 
-        line = flavour_re.sub(r'\1 %s-\2' % flavour, line) 
+        line = boot_re.sub(r'/boot/release/%s/\2 ' % flavour, line)
+        line = flavour_re.sub(r'\1 %s-\2' % flavour, line)
         line = default_re.sub(r'%s-\1' % flavour, line)
         line = append_re.sub(r'\1 live-media-path=/live/%s/ ' % flavour, line)
         dst.write(line)
@@ -1386,8 +1390,6 @@ def add_syslinux_entry(filename, grml_flavour):
     data = open(path + "/" + entry_filename, "w")
     data.write(generate_flavour_specific_syslinux_config(grml_flavour))
     data.close()
-
-
 
 
 def handle_syslinux_config(grml_flavour, target):
@@ -1437,9 +1439,6 @@ def handle_syslinux_config(grml_flavour, target):
     add_syslinux_entry("%s/additional.cfg" % syslinux_target, grml_flavour)
 
 
-
-
-
 def handle_bootloader_config(grml_flavour, device, target):
     """Main handler for generating bootloader's configuration
 
@@ -1464,6 +1463,7 @@ def handle_bootloader_config(grml_flavour, device, target):
         except CriticalException, error:
             logging.critical("Fatal: %s", error)
             sys.exit(1)
+
 
 def handle_dir(live_image, device):
     """Main logic for copying files of the currently running grml system.
@@ -1772,7 +1772,6 @@ def main():
 
     # finally be politely :)
     logging.info("Finished execution of grml2usb (%s). Have fun with your grml system.", PROG_VERSION)
-
 
 if __name__ == "__main__":
     try:
