@@ -525,7 +525,7 @@ def generate_flavour_specific_syslinux_config(grml_flavour):
 
     return("""\
 menu begin grml %(grml_flavour)s
-    menu title Grml %(grml_flavour)s
+    menu title %(grml_flavour)s
     label mainmenu
     menu label ^Back to main menu...
     menu exit
@@ -1341,7 +1341,18 @@ def adjust_syslinux_bootoptions(src_name, dst_name, flavour):
 
 
 def add_syslinux_entry(filename, grml_flavour):
-    data = open(filename, "a")
+    data = open(filename, "a+")
+    entry_filename = "option-%s.cfg" % grml_flavour
+    entry = "include %s\n" % entry_filename
+    path = os.path.dirname(filename)
+    for line in data:
+        if line == entry:
+            break
+    else:
+        data.write(entry)
+
+    data.close()
+    data = open(path + "/" + entry_filename, "w")
     data.write(generate_flavour_specific_syslinux_config(grml_flavour))
     data.close()
 
@@ -1383,8 +1394,14 @@ def handle_syslinux_config(grml_flavour, target):
 
     new_hidden =  "%s-hidden.cfg" % (grml_flavour)
     new_default = "%s-default.cfg" % (grml_flavour)
-    default_file = open("%s/defaults.cfg" % syslinux_target, "a")
-    default_file.write("include %s\n" % new_default)
+    default_file = open("%s/defaults.cfg" % syslinux_target, "a+")
+    entry = "include %s\n" % new_default
+    for line in default_file:
+        if line == entry:
+            break
+    else:
+        default_file.write("include %s\n" % new_default)
+
     default_file.close()
     add_syslinux_entry("%s/additional.cfg" % syslinux_target, grml_flavour)
 
