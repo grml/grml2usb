@@ -1,9 +1,25 @@
 grml2usb (0.9.13) UNRELEASED; urgency=low
 
+  [ Ulrich Dangel ]
+  * Modified syslinux configuration handling to generate new vesa
+    menu entries.
+
+  [ Michael Prokop ]
   * Update documentation regarding syslinux and FAT32 (thanks to
     Stefan Traby <stefan@hello-penguin.com> for the hint).
+  * Changes with regards to Ulrich's work:
+    - Add a check to identify old ISOs which do not ship
+      a default.cfg file and abort then. We have to break
+      backward compability, otherwise the isolinux/syslinux
+      code would become worse than it's already nowadays.
+    - Search for isolinux files in /boot/isolinux/ so the
+      correct grml.png is used.
+  * Apply patch from Thorsten Glaser which prepares code for
+    his future[tm] work.
+  * Raise CriticalException if filesystem.module, kernel or
+    initrd are not present.
 
- -- Michael Prokop <mika@grml.org>  Mon, 21 Sep 2009 17:55:00 +0200
+ -- Michael Prokop <mika@grml.org>  Mon, 19 Oct 2009 00:54:04 +0200
 
 grml2usb (0.9.12) unstable; urgency=low
 
