@@ -1102,8 +1102,10 @@ def copy_bootloader_files(iso_mount, target):
         bootsplash = search_file(ffile, iso_mount)
         exec_rsync(bootsplash, syslinux_target + ffile)
 
-    for filename in 'addons.cfg', 'default.cfg', 'distri.cfg', 'hidden.cfg', 'grml.cfg', 'grml.png', 'hd.cfg', 'isoprompt.cfg', 'options.cfg','vesamenu.c32', 'vesamenu.cfg', 'grml.png':
-        path = search_file(filename, iso_mount)
+    for filename in 'addons.cfg', 'default.cfg', 'distri.cfg', 'hidden.cfg', \
+                    'grml.cfg', 'grml.png', 'hd.cfg', 'isoprompt.cfg', 'options.cfg', \
+                    'vesamenu.c32', 'vesamenu.cfg', 'grml.png':
+        path = search_file(filename, iso_mount + '/boot/isolinux/')
         exec_rsync(path, syslinux_target + filename)
 
     grub_target = target + '/boot/grub/'
