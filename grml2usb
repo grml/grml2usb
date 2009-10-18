@@ -955,6 +955,7 @@ def copy_system_files(grml_flavour, iso_mount, target):
     filesystem_module = search_file('filesystem.module', iso_mount)
     if filesystem_module is None:
         logging.critical("Fatal: filesystem.module not found")
+        raise CriticalException("error locating filesystem.module file")
     else:
         exec_rsync(filesystem_module, squashfs_target + 'filesystem.module')
 
@@ -964,12 +965,14 @@ def copy_system_files(grml_flavour, iso_mount, target):
     kernel = search_file('linux26', iso_mount)
     if kernel is None:
         logging.critical("Fatal kernel not found")
+        raise CriticalException("error locating kernel file")
     else:
         exec_rsync(kernel, release_target + '/linux26')
 
     initrd = search_file('initrd.gz', iso_mount)
     if initrd is None:
         logging.critical("Fatal: initrd not found")
+        raise CriticalException("error locating initrd file")
     else:
         exec_rsync(initrd, release_target + '/initrd.gz')
 
