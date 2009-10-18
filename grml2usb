@@ -49,6 +49,8 @@ parser.add_option("--fat16", dest="fat16", action="store_true",
                   help="format specified partition with FAT16")
 parser.add_option("--force", dest="force", action="store_true",
                   help="force any actions requiring manual interaction")
+parser.add_option("--grub", dest="grub", action="store_true",
+                  help="install grub bootloader instead of (default) syslinux")
 parser.add_option("--grub-mbr", dest="grubmbr", action="store_true",
                   help="install grub into MBR instead of (default) PBR")
 parser.add_option("--lilo-binary", dest="lilobin",  action="store", type="string",
@@ -66,7 +68,7 @@ parser.add_option("--skip-mbr", dest="skipmbr", action="store_true",
 parser.add_option("--skip-syslinux-config", dest="skipsyslinuxconfig", action="store_true",
                   help="skip generation of syslinux configuration files")
 parser.add_option("--syslinux", dest="syslinux", action="store_true",
-                  help="install syslinux bootloader instead of grub")
+                  help="install syslinux bootloader (deprecated as it's the default)")
 parser.add_option("--syslinux-mbr", dest="syslinuxmbr", action="store_true",
                   help="install syslinux master boot record (MBR) instead of default")
 parser.add_option("--verbose", dest="verbose", action="store_true",
@@ -585,7 +587,7 @@ def install_grub(device):
                 proc.wait()
                 if proc.returncode != 0:
                     # raise Exception("error executing grub-install")
-                    logging.critical("Fatal: error executing grub-install (please check the grml2usb FAQ or use --syslinux)")
+                    logging.critical("Fatal: error executing grub-install (please check the grml2usb FAQ or drop the --grub option)")
                     logging.critical("Note:  if using grub2 consider using the --grub-mbr option because grub2's PBR feature is broken.")
                     cleanup()
                     sys.exit(1)
@@ -625,13 +627,9 @@ def install_bootloader(device):
 
     # by default we use grub, so install syslinux only on request
     if options.syslinux:
-        try:
-            install_syslinux(device)
-        except CriticalException, error:
-            logging.critical("Fatal: %s", error)
-            cleanup()
-            sys.exit(1)
-    else:
+        logging.info("Note: the --syslinux option is deprecated as syslinux is grml2usb's default. Continuing anyway.")
+
+    if options.grub:
         if not which("grub-install"):
             logging.critical("Fatal: grub-install not available (please install the grub package or use the --syslinux option)")
             cleanup()
@@ -643,6 +641,13 @@ def install_bootloader(device):
                 logging.critical("Fatal: %s", error)
                 cleanup()
                 sys.exit(1)
+    else:
+        try:
+            install_syslinux(device)
+        except CriticalException, error:
+            logging.critical("Fatal: %s", error)
+            cleanup()
+            sys.exit(1)
 
 
 def execute_lilo(lilo, device):
@@ -674,7 +679,7 @@ def install_syslinux_mbr(device):
 
     # make sure we have syslinux available
     if not which("syslinux") and not options.copyonly:
-        raise Exception("syslinux not available (either install it or consider dropping the --syslinux option)")
+        raise Exception("syslinux not available (either install it or consider using the --grub option)")
 
     # lilo's mbr is broken, use the one from syslinux instead:
     if not os.path.isfile("/usr/lib/syslinux/mbr.bin"):

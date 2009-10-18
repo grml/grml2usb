@@ -29,9 +29,7 @@ By default a compatible master boot record (MBR) is installed on the device
 (being for example /dev/sdX when executing 'grml2usb grml.iso /dev/sdX1') and
 grub is being used as default bootloader. Avoid installation of the default MBR
 using the '--skip-mbr' option or if you encounter any problems with the default
-MBR consider using '--syslinux-mbr' instead. If bootloader grub doesn't work for
-you check out <<faq,the FAQ section of this document>> or consider using the
-'--syslinux' option.
+MBR consider using '--syslinux-mbr' instead.
 
 [[options]]
 Options
@@ -106,7 +104,7 @@ option *--initrd* as well. (Be aware when using multiboot setup.)
   *\--lilo-binary=...*::
 
 Use specified lilo executable for installing master boot record (MBR) when using
-the --syslinux-mbr option. By default any system wide (from $PATH) lilo
+the '--syslinux-mbr' option. By default any system wide (from $PATH) lilo
 executable is taken.  If there can not be find any lilo executable the
 statically compiled version of the grml2usb Debian package (see
 /usr/share/grml2usb/lilo/lilo.static.[amd64|i386]) is taken.
@@ -119,7 +117,7 @@ boot from floppy. When NOT using the --mbr-menu option a MBR with LBA and large
 disc support but without an integrated boot menu is installed (so it's not
 visible at all but instead directly jumps to the bootloader - being grub or
 syslinux). Note: This options is available only when using the default MBR and
-won't have any effect if you're using the --syslinux-mbr option.
+won't have any effect if you're using the '--syslinux-mbr' option.
 
   *\--quiet*::
 
@@ -147,7 +145,10 @@ file no matter whether you're using grub or syslinux as bootloader.
 
   *\--syslinux*::
 
-Install syslinux bootloader instead of the default one (being grub).
+This option is deprecated and is being left only for backwards compability
+reasons. Syslinux is the default bootloader of grml2usb and therefore the
+'--syslinux' option doesn't have any effects. If you do not want to use syslinux
+as bootloader consider using the '--grub' option.
 
   *\--syslinux-mbr*::
 
@@ -155,7 +156,7 @@ Install syslinux' master boot record (MBR, which is booting from the partition
 with the "active" flag set) instead of the default one.  If you encounter any
 problems with the default MBR you can try using the syslinux MBR instead. If
 that works for you please <<author,let us know>> so we can adjust our default
-MBR accordingly. Note: When using the --syslinux-mbr option lilo is executed
+MBR accordingly. Note: When using the '--syslinux-mbr' option lilo is executed
 before the MBR is installed so the according partitions are set active.
 
 //////////////////////////////////////////////////////////////////////////
@@ -513,15 +514,13 @@ instead of MBR (Master Boot Record).
 
 To work around this issue you can install grub into the MBR (Master Boot Record)
 using the '--grub-mbr' option of grml2usb or switch to syslinux as bootmanager
-(using the '--syslinux' option).
+(just drop the '--grub'  option).
 
 To fix this issue manually you can also execute (adjust '/dev/sdX' to your
 device of course):
 
   mount /dev/sdX1 /mnt/test
   grub-install --force --recheck --no-floppy --root-directory=/mnt/test /dev/sdX
-
-Sorry about that.
 
 [[splash-xpm]]
 I'm getting something like "Error: /usr/share/grml2usb/grub/splash.xpm.gz can not be read"!?
@@ -537,11 +536,13 @@ grml2usb?>> in this FAQ.
 Why do I have to use a FAT16/FAT32 filesystem?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You have to use a FAT16/FAT32 filesystem only if you consider using syslinux.
-Syslinux (currently) does not support any other filesystems. If you want to use
-another filesystem (like ext2/3) just don't use syslinux (drop the \--syslinux
-option) but use the default bootloader (grub) instead. Note that FAT32 is
-supported since syslinux version 3.0.
+Syslinux (currently) does not support any other filesystems besides FAT16/FAT32
+(though that's a sane default if you want to share your files with other
+(operating) systems). If you want to use a different filesystem (like ext2/3)
+use the bootloader grub instead using grml2usb's '--grub' option.
+
+[NOTE]
+FAT32 is supported since syslinux version 3.0.
 
 [[cool-idea]]
 I think I've got a really cool idea!
@@ -595,10 +596,11 @@ ISO on device /dev/sdX1 for multibooting.
 Install specified ISO on device /dev/sdX1 and format partition /dev/sdX1 with
 FAT16 filesystem.
 
-  # grml2usb --syslinux /home/grml/grml_2009.05.iso /dev/sdX1
+  # grml2usb --grub --grub-mbr /home/grml/grml_2009.05.iso /dev/sdX1
 
-Install specified ISO on device /dev/sdX1 and use syslinux as bootloader
-(instead of grub being the default).
+Install specified ISO on device /dev/sdX1 and use grub as bootloader (instead of
+syslinux being the default) and install a master boot record (MBR) to the MBR of
+/dev/sdX.
 
 ///////////////////////////////////////////////////////////////////////////////////////
   # grml2usb --kernel=/boot/vmlinuz-2.6.28-grml --initrd=/boot/initrd.img-2.6.28-grml \
