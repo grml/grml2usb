@@ -88,6 +88,21 @@ class CriticalException(Exception):
     pass
 
 
+# The following two functions help to operate on strings as
+# array (list) of bytes (octets). In Python 3000, the bytes
+# datatype will need to be used. This is intended for using
+# with manipulation of files on the octet level, like shell
+# arrays, e.g. in MBR creation.
+
+def array2string(a):
+    """Convert a list of integers [0;255] to a string."""
+    return struct.pack("%sB" % len(a), *a)
+
+def string2array(s):
+    """Convert a (bytes) string into a list of integers."""
+    return struct.unpack("%sB" % len(s), s)
+
+
 def cleanup():
     """Cleanup function to make sure there aren't any mounted devices left behind.
     """
