@@ -1,8 +1,6 @@
 TODOs
 -----
 
-* support new vesamenu isolinux/syslinux bootsplash
-  -> should simplify multiboot setup
 * if 'grml2usb grml64.iso grml.iso' is invoked there are two identically named boot entries (both "grml")
 * support installation of new ISO[s] additionally to already existing grml ISOs on the usb device
   -> add "old"/already existing images automatically to bootloader configuration [thx gebi]
@@ -16,7 +14,9 @@ TODOs
     iso1.... OK
     iso2.... FAIL (error)
   done.
-* provide default entry of all installed ISOs on the top of the bootscreen (in grub's config)
+* provide default entry of all installed ISOs on the top of the bootscreen
+  - done for isolinux
+  - missing in grub
 * implement --kernel option to install specific linux26 file
 * implement --initrd option to install specific initrd file
 * implement --squashfs option to install specific squashfs file
