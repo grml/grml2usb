@@ -18,8 +18,10 @@ grml2usb (0.9.13) UNRELEASED; urgency=low
     his future[tm] work.
   * Raise CriticalException if filesystem.module, kernel or
     initrd are not present.
+  * Avoid the "file is read only, overwrite anyway (y/n) ?"
+    question of mtools by syslinux.
 
- -- Michael Prokop <mika@grml.org>  Mon, 19 Oct 2009 00:54:04 +0200
+ -- Michael Prokop <mika@grml.org>  Mon, 19 Oct 2009 02:13:02 +0200
 
 grml2usb (0.9.12) unstable; urgency=low
 
