@@ -20,8 +20,11 @@ grml2usb (0.9.13) UNRELEASED; urgency=low
     initrd are not present.
   * Avoid the "file is read only, overwrite anyway (y/n) ?"
     question of mtools by syslinux.
+  * Inform user when using grub as bootloader.
+  * Make syslinux the default bootloader (drop --syslinux,
+    add --grub instead). Grub fails just too often.
 
- -- Michael Prokop <mika@grml.org>  Mon, 19 Oct 2009 02:13:02 +0200
+ -- Michael Prokop <mika@grml.org>  Mon, 19 Oct 2009 02:14:15 +0200
 
 grml2usb (0.9.12) unstable; urgency=low
 
