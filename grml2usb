@@ -1119,7 +1119,7 @@ def copy_bootloader_files(iso_mount, target):
     logo = search_file('logo.16', iso_mount)
     exec_rsync(logo, syslinux_target + 'logo.16')
 
-    for ffile in 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10':
+    for ffile in 'f1', 'f2', 'f3', 'f4', 'f5', 'f6', 'f7', 'f8', 'f9', 'f10':
         bootsplash = search_file(ffile, iso_mount)
         exec_rsync(bootsplash, syslinux_target + ffile)
 
