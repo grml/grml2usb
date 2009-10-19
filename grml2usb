@@ -1350,7 +1350,7 @@ def initial_syslinux_config(target):
 
 def adjust_syslinux_bootoptions(src_name, dst_name, flavour):
     append_re = re.compile("^(\s*append.*)$", re.I)
-    boot_re = re.compile("/boot/([a-zA-Z0-9_]+/)+(\w+)")
+    boot_re = re.compile("/boot/([a-zA-Z0-9_]+/)+([a-zA-Z0-9._]+)")
     flavour_re = re.compile("(label.*)(grml\w+)")
     default_re = re.compile("(default.cfg)")
     src = open(src_name, "r")
