@@ -534,7 +534,17 @@ include additional.cfg
 
 include options.cfg
 include addons.cfg
-include isoprompt.cfg
+
+label help
+  menu label S^yslinux prompt
+  config prompt.cfg
+  text help
+                                        Jump to old style isolinux prompt
+                                        featuring further information
+                                        regarding available boot options.
+  endtext
+
+
 include hiddens.cfg
 """)
 
