@@ -16,6 +16,7 @@ This script installs a grml system (either a running system or ISO[s]) to a USB 
 from optparse import OptionParser
 from inspect import isroutine, isclass
 import datetime, logging, os, re, subprocess, sys, tempfile, time, os.path
+import fileinput
 
 # global variables
 PROG_VERSION = "0.9.13-pre1"
@@ -1363,13 +1364,11 @@ def initial_syslinux_config(target):
     data.close
 
 
-def adjust_syslinux_bootoptions(src_name, dst_name, flavour):
+def adjust_syslinux_bootoptions(src, flavour):
     append_re = re.compile("^(\s*append.*)$", re.I)
     boot_re = re.compile("/boot/([a-zA-Z0-9_]+/)+([a-zA-Z0-9._]+)")
     flavour_re = re.compile("(label.*)(grml\w+)")
     default_re = re.compile("(default.cfg)")
-    src = open(src_name, "r")
-    dst = open(dst_name, "w")
 
     # do NOT write "None" in kernel cmdline
     if options.bootoptions is None:
@@ -1377,15 +1376,14 @@ def adjust_syslinux_bootoptions(src_name, dst_name, flavour):
     else:
         bootopt = options.bootoptions
 
-    for line in src:
+    for line in fileinput.input(src, inplace=1):
         line = boot_re.sub(r'/boot/release/%s/\2 ' % flavour, line)
         line = flavour_re.sub(r'\1 %s-\2' % flavour, line)
         line = default_re.sub(r'%s-\1' % flavour, line)
         line = append_re.sub(r'\1 live-media-path=/live/%s/ ' % flavour, line)
         line = append_re.sub(r'\1 boot=live %s ' % bootopt, line)
-        dst.write(line)
-    src.close()
-    dst.close()
+        print line
+    fileinput.close()
 
 
 def add_syslinux_entry(filename, grml_flavour):
@@ -1435,8 +1433,8 @@ def handle_syslinux_config(grml_flavour, target):
     for filename in 'grml.cfg', 'default.cfg', 'hidden.cfg':
         old_filename = "%s/%s" % (syslinux_target, filename)
         new_filename = "%s/%s-%s" % (syslinux_target, grml_flavour, filename)
-        adjust_syslinux_bootoptions(old_filename, new_filename, grml_flavour)
-        os.unlink(old_filename)
+        os.rename(old_filename, new_filename)
+        adjust_syslinux_bootoptions(new_filename, grml_flavour)
 
     new_hidden =  "%s-hidden.cfg" % (grml_flavour)
     new_default = "%s-default.cfg" % (grml_flavour)
