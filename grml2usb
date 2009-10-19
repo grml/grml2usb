@@ -1371,11 +1371,18 @@ def adjust_syslinux_bootoptions(src_name, dst_name, flavour):
     src = open(src_name, "r")
     dst = open(dst_name, "w")
 
+    # do NOT write "None" in kernel cmdline
+    if options.bootoptions is None:
+        bootopt = ""
+    else:
+        bootopt = options.bootoptions
+
     for line in src:
         line = boot_re.sub(r'/boot/release/%s/\2 ' % flavour, line)
         line = flavour_re.sub(r'\1 %s-\2' % flavour, line)
         line = default_re.sub(r'%s-\1' % flavour, line)
         line = append_re.sub(r'\1 live-media-path=/live/%s/ ' % flavour, line)
+        line = append_re.sub(r'\1 boot=live %s ' % bootopt, line)
         dst.write(line)
     src.close()
     dst.close()
