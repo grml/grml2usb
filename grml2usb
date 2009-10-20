@@ -1448,7 +1448,7 @@ def remove_default_entry(filename):
     default_re = re.compile("^(\s*menu\s*default\s*)$", re.I)
     for line in fileinput.input(filename, inplace=1):
         if default_re.match(line): continue
-        print line
+        sys.stdout.write(line)
     fileinput.close()
 
 
