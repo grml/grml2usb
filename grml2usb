@@ -1467,7 +1467,8 @@ def handle_syslinux_config(grml_flavour, target):
     # install main configuration only *once*, no matter how many ISOs we have:
     syslinux_flavour_is_default = False
     syslinux_config_file = open(syslinux_cfg, 'w')
-    syslinux_config_file.write("include vesamenu.cfg")
+    syslinux_config_file.write("TIMEOUT 300\n")
+    syslinux_config_file.write("include vesamenu.cfg\n")
     syslinux_config_file.close()
 
     initial_syslinux_config(syslinux_target)
