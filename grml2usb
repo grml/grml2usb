@@ -1444,6 +1444,14 @@ def modify_filenames(grml_flavour, target, filenames):
         adjust_syslinux_bootoptions(new_filename, grml_flavour)
 
 
+def remove_default_entry(filename):
+    default_re = re.compile("^(\s*menu\s*default\s*)$", re.I)
+    for line in fileinput.input(filename, inplace=1):
+        if default_re.match(line): continue
+        print line
+    fileinput.close()
+
+
 def handle_syslinux_config(grml_flavour, target):
     """Main handler for generating syslinux configuration
 
@@ -1493,6 +1501,11 @@ def handle_syslinux_config(grml_flavour, target):
 
     new_default = "%s-default.cfg" % (grml_flavour)
     entry = 'include %s\n' % new_default
+    defaults_file = '%s/defaults.cfg' % syslinux_target
+
+    if os.path.isfile(defaults_file):
+        remove_default_entry('%s/%s-default.cfg' % (syslinux_target, grml_flavour))
+
     add_entry_if_not_present("%s/defaults.cfg" % syslinux_target, entry)
 
     add_syslinux_entry("%s/additional.cfg" % syslinux_target, grml_flavour)
