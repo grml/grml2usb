@@ -557,16 +557,16 @@ def generate_flavour_specific_syslinux_config(grml_flavour):
 
     return("""\
 menu begin grml %(grml_flavour)s
-    menu title %(grml_flavour)s
+    menu title %(display_name)s
     label mainmenu
     menu label ^Back to main menu...
     menu exit
     menu separator
     # include config for boot parameters from disk
-    include %(grml_flavour)s-grml.cfg
+    include %(grml_flavour)s_grml.cfg
     menu hide
 menu end
-""" % {'grml_flavour': grml_flavour } )
+""" % {'grml_flavour': grml_flavour, 'display_name' : grml_flavour.replace('_', '-') } )
 
 
 def install_grub(device):
@@ -1135,13 +1135,17 @@ def copy_bootloader_files(iso_mount, target):
         raise
 
     for filename in 'addons.cfg', 'default.cfg', 'distri.cfg', \
-                    'grml.cfg', 'grml.png', 'hd.cfg', 'isoprompt.cfg', 'options.cfg', \
+                    'grml.cfg', 'grml.png', 'hd.cfg', 'isolinux.cfg', 'isolinux.bin', \
+                    'isoprompt.cfg', 'options.cfg', \
                     'prompt.cfg', 'vesamenu.c32', 'vesamenu.cfg', 'grml.png':
         path = search_file(filename, iso_mount + '/boot/isolinux/')
+        if not path:
+            print filename
+            continue
         exec_rsync(path, syslinux_target + filename)
 
     path = search_file('hidden.cfg', iso_mount + '/boot/isolinux/')
-    exec_rsync(path, syslinux_target + "new-" + 'hidden.cfg')
+    exec_rsync(path, syslinux_target + "new_" + 'hidden.cfg')
 
 
     grub_target = target + '/boot/grub/'
@@ -1426,7 +1430,7 @@ def adjust_labels(src, flavour):
 
 
 def add_syslinux_entry(filename, grml_flavour):
-    entry_filename = "option-%s.cfg" % grml_flavour
+    entry_filename = "option_%s.cfg" % grml_flavour
     entry = "include %s\n" % entry_filename
 
     add_entry_if_not_present(filename, entry)
@@ -1437,9 +1441,10 @@ def add_syslinux_entry(filename, grml_flavour):
     data.close()
 
 def modify_filenames(grml_flavour, target, filenames):
+    grml_flavour = grml_flavour.replace('-', '_')
     for filename in filenames:
         old_filename = "%s/%s" % (target, filename)
-        new_filename = "%s/%s-%s" % (target, grml_flavour, filename)
+        new_filename = "%s/%s_%s" % (target, grml_flavour, filename)
         os.rename(old_filename, new_filename)
         adjust_syslinux_bootoptions(new_filename, grml_flavour)
 
@@ -1486,33 +1491,36 @@ def handle_syslinux_config(grml_flavour, target):
     initial_syslinux_config(syslinux_target)
     modify_filenames(grml_flavour, syslinux_target, ['grml.cfg', 'default.cfg'])
 
-    filename = search_file("new-hidden.cfg", syslinux_target)
+    filename = search_file("new_hidden.cfg", syslinux_target)
+
+
+    flavour_filename = grml_flavour.replace('-', '_')
     # process hidden file
     if not search_file("hidden.cfg", syslinux_target):
         new_hidden = syslinux_target + "hidden.cfg"
         os.rename(filename, new_hidden)
         adjust_syslinux_bootoptions(new_hidden, grml_flavour)
     else:
-        new_hidden =  "%s-hidden.cfg" % (grml_flavour)
+        new_hidden =  "%s_hidden.cfg" % (flavour_filename)
         new_hidden_file =  "%s/%s" % (syslinux_target, new_hidden)
         os.rename(filename, new_hidden_file)
-        adjust_labels(new_hidden_file, grml_flavour)
-        adjust_syslinux_bootoptions(new_hidden_file, grml_flavour)
+        adjust_labels(new_hidden_file, flavour_filename)
+        adjust_syslinux_bootoptions(new_hidden_file, flavour_filename)
         entry = 'include %s\n' % new_hidden
         add_entry_if_not_present("%s/hiddens.cfg" % syslinux_target, entry)
 
 
 
-    new_default = "%s-default.cfg" % (grml_flavour)
+    new_default = "%s_default.cfg" % (flavour_filename)
     entry = 'include %s\n' % new_default
     defaults_file = '%s/defaults.cfg' % syslinux_target
 
     if os.path.isfile(defaults_file):
-        remove_default_entry('%s/%s-default.cfg' % (syslinux_target, grml_flavour))
+        remove_default_entry('%s/%s_default.cfg' % (syslinux_target, flavour_filename))
 
     add_entry_if_not_present("%s/defaults.cfg" % syslinux_target, entry)
 
-    add_syslinux_entry("%s/additional.cfg" % syslinux_target, grml_flavour)
+    add_syslinux_entry("%s/additional.cfg" % syslinux_target, flavour_filename)
 
 
 def handle_bootloader_config(grml_flavour, device, target):
