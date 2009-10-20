@@ -3,6 +3,7 @@ grml2usb (0.9.13) UNRELEASED; urgency=low
   [ Ulrich Dangel ]
   * Modified syslinux configuration handling to generate new vesa
     menu entries.
+  * Support adding additional isos to existing grml2usb installation.
 
   [ Michael Prokop ]
   * Update documentation regarding syslinux and FAT32 (thanks to
