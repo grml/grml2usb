@@ -6,15 +6,18 @@ grml2usb (0.9.13) unstable; urgency=low
 
   * This release provides decent support for multi-ISO within the
     new vesamenu bootsplash, providing a menu based system.  We had
-    to break backward compability (otherwise the isolinux/syslinux
-    code would be unmaintainable).  Therefore support for older
-    ISOs (everything before grml release 2009.10) had to be
-    dropped. If you still need an old version of Grml on your usb
-    device just use an older version of grml2usb as well (the
-    old grml2usb versions support recent ISOs too, they just
-    don't use/support the new vesamenu bootsplash then).
+    to break backward compatibility (otherwise the isolinux/syslinux
+    code would be unmaintainable). Therefore support for older ISOs
+    (everything before grml release 2009.10) had to be dropped. If
+    you still need an old version of Grml on your usb device just
+    use an older version of grml2usb (the old grml2usb versions
+    support recent ISOs too, they just don't use/support the new
+    vesamenu bootsplash then). The grml team supports old
+    grml2usb versions through the grml2usb-compat Debian package.
+    Further details are available in the FAQ at
+    http://grml.org/grml2usb/#grml2usb-compat
 
- -- Michael Prokop <mika@grml.org>  Mon, 19 Oct 2009 02:14:29 +0200
+ -- Michael Prokop <mika@grml.org>  Wed, 21 Oct 2009 23:32:08 +0200
 
 grml2usb (0.9.2) unstable; urgency=low
 

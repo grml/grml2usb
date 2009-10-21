@@ -1,9 +1,10 @@
-grml2usb (0.9.13) UNRELEASED; urgency=low
+grml2usb (0.9.13) unstable; urgency=low
 
   [ Ulrich Dangel ]
   * Modified syslinux configuration handling to generate new vesa
     menu entries.
   * Support adding additional isos to existing grml2usb installation.
+  * grml2iso supports new grml2usb using syslinux now.
 
   [ Michael Prokop ]
   * Update documentation regarding syslinux and FAT32 (thanks to
@@ -11,7 +12,7 @@ grml2usb (0.9.13) UNRELEASED; urgency=low
   * Changes with regards to Ulrich's work:
     - Add a check to identify old ISOs which do not ship
       a default.cfg file and abort then. We have to break
-      backward compability, otherwise the isolinux/syslinux
+      backward compatibility, otherwise the isolinux/syslinux
       code would become worse than it's already nowadays.
     - Search for isolinux files in /boot/isolinux/ so the
       correct grml.png is used.
@@ -27,7 +28,7 @@ grml2usb (0.9.13) UNRELEASED; urgency=low
   * Make syslinux the default bootloader (drop --syslinux,
     add --grub instead). Grub fails just too often.
 
- -- Michael Prokop <mika@grml.org>  Mon, 19 Oct 2009 02:43:23 +0200
+ -- Michael Prokop <mika@grml.org>  Wed, 21 Oct 2009 22:25:57 +0200
 
 grml2usb (0.9.12) unstable; urgency=low
 
