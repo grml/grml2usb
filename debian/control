@@ -20,7 +20,7 @@ Description: install grml system / ISO to usb device - compat version
  This package provides support for installation of older grml ISOs.
  Whereas the grml2usb package (without -compat) supports ISOs
  which are build using grml-live >=0.9.24 (grml releases >= 2009.10)
- this package is meant to be a compability package so
+ this package is meant to be a compatibility package so
  installation of older ISOs is possible as well. This grml2usb
  version is expected to be work with current grml ISOs as well,
  though it lacks support for the new vesamenu based bootsplashes.
