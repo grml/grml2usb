@@ -33,15 +33,15 @@ install: build
 	dh_testdir
 	dh_testroot
 	dh_clean -k
-	dh_installdirs usr/share/grml2usb/lilo usr/share/grml2usb/grub usr/share/grml2usb/mbr
+	dh_installdirs usr/share/grml2usb-compat/lilo usr/share/grml2usb-compat/grub usr/share/grml2usb-compat/mbr
 
-	# Add here commands to install the package into debian/grml2usb.
-	install -m 755 grml2usb               debian/grml2usb/usr/sbin/grml2usb
-	install -m 755 grml2iso               debian/grml2usb/usr/sbin/grml2iso
-	install -m 644 mbr/mbrmgr             debian/grml2usb/usr/share/grml2usb/mbr/mbrmgr
-	install -m 644 mbr/mbrldr             debian/grml2usb/usr/share/grml2usb/mbr/mbrldr
-	cp -a          lilo/                  debian/grml2usb/usr/share/grml2usb/
-	cp -a          grub/                  debian/grml2usb/usr/share/grml2usb/
+	# Add here commands to install the package into debian/grml2usb-compat.
+	install -m 755 grml2usb-compat debian/grml2usb-compat/usr/sbin/grml2usb-compat
+	install -m 755 grml2iso-compat debian/grml2usb-compat/usr/sbin/grml2iso-compat
+	install -m 644 mbr/mbrmgr      debian/grml2usb-compat/usr/share/grml2usb-compat/mbr/mbrmgr
+	install -m 644 mbr/mbrldr      debian/grml2usb-compat/usr/share/grml2usb-compat/mbr/mbrldr
+	cp -a          lilo/           debian/grml2usb-compat/usr/share/grml2usb-compat/
+	cp -a          grub/           debian/grml2usb-compat/usr/share/grml2usb-compat/
 
 # Build architecture-dependent files here.
 binary-arch: build install
@@ -53,12 +53,12 @@ binary-indep: build install
 	dh_testroot
 	dh_installchangelogs
 	dh_installdocs TODO
-	dh_installman grml2usb.8 grml2iso.8
+	dh_installman grml2usb-compat.8 grml2iso-compat.8
 	dh_link
 	dh_strip
 	dh_compress
-	mkdir -p debian/grml2usb/usr/share/lintian/overrides/
-	cp -av debian/overrides debian/grml2usb/usr/share/lintian/overrides/grml2usb
+	mkdir -p debian/grml2usb-compat/usr/share/lintian/overrides/
+	cp -av debian/overrides debian/grml2usb-compat/usr/share/lintian/overrides/grml2usb-compat
 	dh_fixperms
 	dh_installdeb
 	dh_shlibdeps

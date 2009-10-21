@@ -1,13 +1,13 @@
-grml2usb(8)
-==========
+grml2usb-compat(8)
+==================
 
 Name
 ----
-grml2usb - install grml ISO(s) on usb device for booting
+grml2usb-compat - install grml ISO(s) on usb device for booting (compat version)
 
 Synopsis
 --------
-grml2usb [ options ] <ISO[s]> <device>
+grml2usb-compat [ options ] <ISO[s]> <device>
 
 *******************************************************************************
 Important! The grml team does not take responsibility for loss of any data!

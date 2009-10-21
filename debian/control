@@ -1,4 +1,4 @@
-Source: grml2usb
+Source: grml2usb-compat
 Section: grml
 Priority: optional
 Maintainer: Michael Prokop <mika@grml.org>
@@ -9,10 +9,18 @@ Homepage: http://grml.org/grml2usb/
 Vcs-git: git://git.grml.org/grml2usb.git
 Vcs-Browser: http://git.grml.org/?p=grml2usb.git
 
-Package: grml2usb
+Package: grml2usb-compat
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}, syslinux | grub2 | grub, python
-Description: install grml system / ISO to usb device
+Description: install grml system / ISO to usb device - compat version
  This script installs a grml ISO to an USB device to be able
  to boot from it.  Make sure you have at least one grml ISO
  or a running grml system (/live/image) available.
+ .
+ This package provides support for installation of older grml ISOs.
+ Whereas the grml2usb package (without -compat) supports ISOs
+ which are build using grml-live >=0.9.24 (grml releases >= 2009.10)
+ this package is meant to be a compability package so
+ installation of older ISOs is possible as well. This grml2usb
+ version is expected to be work with current grml ISOs as well,
+ though it lacks support for the new vesamenu based bootsplashes.

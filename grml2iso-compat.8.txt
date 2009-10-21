@@ -1,13 +1,13 @@
-grml2iso(8)
-==========
+grml2iso-compat(8)
+==================
 
 Name
 ----
-grml2iso - create a multiboot grml ISO using grml2usb
+grml2iso-compat - create a multiboot grml ISO using grml2usb (compat version)
 
 Synopsis
 --------
-grml2iso -o <target.iso> <ISO[s]>
+grml2iso-compat -o <target.iso> <ISO[s]>
 
 *******************************************************************************
 Important! The grml team does not take responsibility for loss of any data!
