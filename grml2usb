@@ -532,6 +532,7 @@ menu label Additional boot entries for:
 menu disable
 include additional.cfg
 
+menu separator
 include options.cfg
 include addons.cfg
 
