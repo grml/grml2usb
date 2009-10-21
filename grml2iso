@@ -90,8 +90,9 @@
 # move syslinux to isolinux {{{
   mv "$WRKDIR"/cddir/boot/syslinux "$WRKDIR"/cddir/boot/isolinux
 
-  echo "menu label ^Isolinux prompt" > "$WRKDIR"/cddir/boot/isolinux/promptname.cfg
   cd "$WRKDIR/cddir"
+  echo "menu label ^Isolinux prompt" > boot/isolinux/promptname.cfg
+  echo "include hd.cfg" >> boot/isolinux/grmlmain.cfg
 # }}}
 
 # generate the CD/DVD ISO {{{
