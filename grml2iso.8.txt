@@ -30,11 +30,26 @@ WRKDIR specifies the work directory for creating the filesystem.
 The work directory needs at least as much free disk space as the sum
 of all specified ISOs.
 
-  *\--o <target.iso>*::
+  *\-o <target.iso>*::
 
 This option is mandatory and specifies where the resulting multiboot grml ISO
 should be placed. Note that (to avoid any possible data loss) grml2iso will exit
 if the specified target.iso exists already.
+
+  *\-c <directory>*::
+
+The content of the specified directory will be copied to the resulting
+multiboot grml ISO.
+
+  *\-b <boot params>*::
+
+Use specified default bootoptions as default.
+
+  *\-f *::
+
+Force the program to run and overwrite an existing iso image.
+
+
 
 Usage examples
 --------------
@@ -42,6 +57,10 @@ Usage examples
   # grml2iso -o /tmp/grml.iso grml_2009.05.iso grml64_2009.05.iso
 
 Create multiboot ISO /tmp/grml.iso with grml_2009.05.iso and grml64_2009.05.iso.
+
+ # grml2iso -b 'lang=de ssh=passwd' -c /tmp/grml-content -o /srv/grml.iso /srv/grml/grml_2009.10.iso
+
+Create a new iso with additional boot parameters and copy the content from /tmp/grml-content to the generated iso image.
 
   # GRML2USB=/srv/git/grml2usb grml2iso -o /srv/grml.iso /srv/grml/grml_2009.05.iso /srv/grml/grml64-medium_2009.05.iso
 
