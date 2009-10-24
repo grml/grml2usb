@@ -1261,7 +1261,7 @@ def modify_grub_config(filename):
         for line in fileinput.input(filename, inplace=1):
             if regexe and option_re.search(line):
                 for regex in regexe:
-                    line = regex.sub(r'', line)
+                    line = regex.sub(' ', line)
 
             sys.stdout.write(line)
 
@@ -1457,7 +1457,7 @@ def adjust_syslinux_bootoptions(src, flavour):
         line = append_re.sub(r'\1 boot=live %s ' % bootopt, line)
         if option_re and option_re.search(line):
             for regex in regexe:
-                line = regex.sub('', line)
+                line = regex.sub(' ', line)
         sys.stdout.write(line)
     fileinput.close()
 
