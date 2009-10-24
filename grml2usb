@@ -1254,11 +1254,14 @@ def modify_grub_config(filename):
     if options.removeoption:
         regexe = []
         for regex in options.removeoption:
-            regexe.append(re.compile(r'(.*/boot/release/.*linux26.*)(%s)(.*)' % regex))
+            regexe.append(re.compile(r'%s' % regex))
+
+        option_re = re.compile(r'(.*/boot/release/.*linux26.*)')
 
         for line in fileinput.input(filename, inplace=1):
-            for regex in regexe:
-                line = regex.sub( r'\1 \3', line)
+            if regexe and option_re.search(line):
+                for regex in regexe:
+                    line = regex.sub(r'', line)
 
             sys.stdout.write(line)
 
@@ -1439,9 +1442,12 @@ def adjust_syslinux_bootoptions(src, flavour):
         bootopt = options.bootoptions
 
     regexe = []
+    option_re = None
     if options.removeoption:
+        option_re = re.compile(r'/boot/release/.*/initrd.gz')
+
         for regex in options.removeoption:
-            regexe.append(re.compile(r'(.*/boot/release/.*/initrd.gz.*)(%s)(.*)' % regex))
+            regexe.append(re.compile(r'%s' % regex))
 
     for line in fileinput.input(src, inplace=1):
         line = boot_re.sub(r'/boot/release/%s/\2 ' % flavour.replace('-', ''), line)
@@ -1449,8 +1455,9 @@ def adjust_syslinux_bootoptions(src, flavour):
         line = default_re.sub(r'%s-\1' % flavour, line)
         line = append_re.sub(r'\1 live-media-path=/live/%s/ ' % flavour, line)
         line = append_re.sub(r'\1 boot=live %s ' % bootopt, line)
-        for regex in regexe:
-            line = regex.sub( r'\1 \3', line)
+        if option_re and option_re.search(line):
+            for regex in regexe:
+                line = regex.sub('', line)
         sys.stdout.write(line)
     fileinput.close()
 
