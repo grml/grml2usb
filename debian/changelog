@@ -2,16 +2,19 @@ grml2usb (0.9.14) UNRELEASED; urgency=low
 
   [ Ulrich Dangel ]
   * Do not use '-' in the directory name for the linux kernel to allow
+    creating iso image from generated directory layout.
   * Introduced --remove-bootoption in grml2usb to delete existing
     default boot entries.
+  * Added -c option to grml2iso for copying the contents of specified
+    directory to the generated iso image.
+  * Added -b option to grml2iso for specifing additional default boot entries.
 
   [ Michael Prokop ]
   * Sync and add grml2usb-compat to grml2usb package. This simplifies
     installation as well as use for developers and users.
   * Drop unnecessary header line from grml2usb script.
 
-
- -- Ulrich Dangel <mru@grml.org>  Sat, 24 Oct 2009 12:41:24 +0200
+ -- Ulrich Dangel <mru@grml.org>  Sat, 24 Oct 2009 14:05:34 +0200
 
 grml2usb (0.9.13) unstable; urgency=low
 
