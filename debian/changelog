@@ -8,8 +8,9 @@ grml2usb (0.9.14) UNRELEASED; urgency=low
   [ Michael Prokop ]
   * Sync and add grml2usb-compat to grml2usb package. This simplifies
     installation as well as use for developers and users.
+  * Drop unnecessary header line from grml2usb script.
 
- -- Michael Prokop <mika@grml.org>  Sat, 24 Oct 2009 11:02:10 +0200
+ -- Michael Prokop <mika@grml.org>  Sat, 24 Oct 2009 11:50:49 +0200
 
 grml2usb (0.9.13) unstable; urgency=low
 
