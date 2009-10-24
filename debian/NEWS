@@ -13,7 +13,7 @@ grml2usb (0.9.13) unstable; urgency=low
     use an older version of grml2usb (the old grml2usb versions
     support recent ISOs too, they just don't use/support the new
     vesamenu bootsplash then). The grml team supports old
-    grml2usb versions through the grml2usb-compat Debian package.
+    grml2usb versions through the grml2usb-compat script.
     Further details are available in the FAQ at
     http://grml.org/grml2usb/#grml2usb-compat
 

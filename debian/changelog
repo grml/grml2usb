@@ -1,3 +1,16 @@
+grml2usb (0.9.14) UNRELEASED; urgency=low
+
+  [ Ulrich Dangel ]
+  * Do not use '-' in the directory name for the linux kernel to allow
+  * Introduced --remove-bootoption in grml2usb to delete existing
+    default boot
+
+  [ Michael Prokop ]
+  * Sync and add grml2usb-compat to grml2usb package. This simplifies
+    installation as well as use for developers and users.
+
+ -- Michael Prokop <mika@grml.org>  Sat, 24 Oct 2009 11:02:10 +0200
+
 grml2usb (0.9.13) unstable; urgency=low
 
   [ Ulrich Dangel ]

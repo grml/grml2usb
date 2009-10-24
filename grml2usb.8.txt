@@ -31,6 +31,10 @@ grub is being used as default bootloader. Avoid installation of the default MBR
 using the '--skip-mbr' option or if you encounter any problems with the default
 MBR consider using '--syslinux-mbr' instead.
 
+[NOTE]
+Whereas grml2usb is the script to install recent grml ISOs (>=2009.10) the
+script grml2usb-compat supports older grml releases (<2009.10) as well.
+
 [[options]]
 Options
 -------
@@ -284,14 +288,14 @@ or:
 Finally create a filesystem and execute grml2usb as needed:
 
   # mkfs.vfat /dev/loop1
-  # grml2usb --bootloader-only /grml/isos/grml-small_2009.05.iso /dev/loop1
+  # grml2usb --bootloader-only /grml/isos/grml-small_2009.10.iso /dev/loop1
 
 [[performance-tracing]]
 Performance tracing
 ~~~~~~~~~~~~~~~~~~~
 
   # blktrace -d /dev/sdX -o - | blkparse -i -
-  # grml2usb grml_2009.05.iso /dev/sdX1
+  # grml2usb grml_2009.10.iso /dev/sdX1
 
 [[troubleshooting]]
 Troubleshooting and Pitfalls when booting
@@ -395,7 +399,7 @@ Grab a recent grml ISO and use
 link:http://syslinux.zytor.com/wiki/index.php/Doc/isolinux#HYBRID_CD-ROM.2FHARD_DISK_MODE[isohybrid
 from the syslinux project]:
 
-  % isohybrid grml_2009.05.iso
+  % isohybrid grml_2009.10.iso
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 This allows you to dd the Grml ISO to your USB device (use for example
@@ -439,10 +443,8 @@ recent version of grml2usb then you might notice:
   Fatal: a critical error happend during execution (not a grml ISO?), giving up
 
 Breaking the backward compatibility was necessary to avoid maintainability hell.
-If you want to install older grml ISOs please grab the grml2usb-compat Debian
-package which provides support for older releases or the
-link:http://grml.org/grml2usb/grml2usb-compat.tgz[grml2usb-compat tarball]
-(link:http://grml.org/grml2usb/grml2usb-compat.tgz.md5.asc[gpg signature/md5]).
+If you want to install older grml ISOs please use the grml2usb-compat script
+which provides support for older releases.
 
 [[menu-lst]]
 Why is there a menu.lst and a grub.cfg inside /boot/grub/?
@@ -584,59 +586,59 @@ of your grml2usb commandline (consider using the "\--verbose" option).
 Usage examples
 --------------
 
-  # grml2usb /home/grml/grml_2009.05.iso /dev/sdX1
+  # grml2usb /home/grml/grml_2009.10.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1.
 
-  # grml2usb /home/grml/grml_2009.05.iso /home/grml/grml_small_2009.05.iso /dev/sdX1
+  # grml2usb /home/grml/grml_2009.10.iso /home/grml/grml_small_2009.10.iso /dev/sdX1
 
 Install specified ISOs on device /dev/sdX1 for multibooting ISOs.
-Note: boot "grml" as usual, for booting grml-small use "grml-small on the
-bootprompt, for grml64 use "grml64" and so on... The *first* specified ISO is
-the one being the default (when just pressing enter or waiting until the timeout
-is reached).
 
   # grml2usb /live/image /dev/sdX1
 
 Install currently running grml live system on device /dev/sdX1.
 
-  # grml2usb /live/image /home/grml/grml_2009.05.iso /dev/sdX1
+  # grml2usb /live/image /home/grml/grml_2009.10.iso /dev/sdX1
 
 Install currently running grml live system and the specified
 ISO on device /dev/sdX1 for multibooting.
 
-  # grml2usb --fat16 /home/grml/grml_2009.05.iso /dev/sdX1
+  # grml2usb --fat16 /home/grml/grml_2009.10.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1 and format partition /dev/sdX1 with
 FAT16 filesystem.
 
-  # grml2usb --grub --grub-mbr /home/grml/grml_2009.05.iso /dev/sdX1
+  # grml2usb --grub --grub-mbr /home/grml/grml_2009.10.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1 and use grub as bootloader (instead of
 syslinux being the default) and install a master boot record (MBR) to the MBR of
 /dev/sdX.
 
+  # grml2usb-compat /home/grml/grml_2009.05.iso /dev/sdX1
+
+Install older grml ISO on device /dev/sdX1.
+
 ///////////////////////////////////////////////////////////////////////////////////////
   # grml2usb --kernel=/boot/vmlinuz-2.6.28-grml --initrd=/boot/initrd.img-2.6.28-grml \
-             /home/grml/grml_2009.05.iso /dev/sdX1
+             /home/grml/grml_2009.10.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1 but use given kernel and initrd
 instead of the ones provided by the ISO.
 
   # grml2usb --squashfs=/grml/grml-live/grml_cd/live/grml.squashfs \
-             /home/grml/grml_2009.05.iso /dev/sdX1
+             /home/grml/grml_2009.10.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1 but use given squashfs
 file instead of the one provided by the ISO.
 ///////////////////////////////////////////////////////////////////////////////////////
 
-  # grml2usb --bootoptions="lang=de ssh=mysecret" grml_2009.05.iso /dev/sdX1
+  # grml2usb --bootoptions="lang=de ssh=mysecret" grml_2009.10.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1 and use "lang=de ssh=mysecret" as
 default bootoptions.
 
 
-  # grml2usb --remove-bootoption="vga=791" --remove-bootoption="quiet" grml_2009.05.iso /dev/sdX1
+  # grml2usb --remove-bootoption="vga=791" --remove-bootoption="quiet" grml_2009.10.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1 remove vga=791 and quiet from existing bootoptions.
 
