@@ -134,7 +134,8 @@ Do not install /boot/addons/ files (like dos, grub, memdisk,...).
   *\--remove-bootoption=...*::
 
 Remove specified bootoption (could be a regex) from existing boot options. Use
-multiple entries for removing different bootoptions at once.
+multiple entries for removing different bootoptions at once. (Note: this option
+is not support in grml2usb-compat.)
 
   *\--skip-grub-config*::
 
