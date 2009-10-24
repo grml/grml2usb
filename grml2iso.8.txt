@@ -49,6 +49,11 @@ Use specified default bootoptions as default.
 
 Force the program to run and overwrite an existing iso image.
 
+  *\-r <boot param>*::
+
+Remove specified boot parameter from existing command line. Could be specified multiple times.
+
+
 
 
 Usage examples
@@ -61,6 +66,10 @@ Create multiboot ISO /tmp/grml.iso with grml_2009.05.iso and grml64_2009.05.iso.
  # grml2iso -b 'lang=de ssh=passwd' -c /tmp/grml-content -o /srv/grml.iso /srv/grml/grml_2009.10.iso
 
 Create a new iso with additional boot parameters and copy the content from /tmp/grml-content to the generated iso image.
+
+  # grml2iso -r quiet -r vga=791 -o /srv/grml.iso /srv/grml-small_2009.10.iso
+
+Create a new iso and remove existing boot parameters quiet and vga=791.
 
   # GRML2USB=/srv/git/grml2usb grml2iso -o /srv/grml.iso /srv/grml/grml_2009.05.iso /srv/grml/grml64-medium_2009.05.iso
 

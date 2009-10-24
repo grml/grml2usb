@@ -35,6 +35,8 @@ Options:
      -b Boot Params    Additional boot parameters passed to grml2usb
      -c Directory      Copy files from directory to generated iso
      -f                Force overwrite of existing target.iso
+     -r BootParam      Remove specified boot params.
+                       Could be specfied multiple times.
 "
     [ -n "$1" ] && exit $1 || exit 1
   }
@@ -45,14 +47,16 @@ Options:
 
   ISOFILE=''
   DIR=''
-  GRML2USB_PARAMS=''
+  ADD_OPTS=''
   FORCE=''
-  while getopts fb:c:o: name; do
+  typeset -a REMOVE_OPTS
+  while getopts fb:c:o:r: name; do
     case $name in
       o)   ISOFILE="$OPTARG";;
-      b)   GRML2USB_PARAMS='--bootoptions='"${OPTARG}";;
+      b)   ADD_OPTS="--bootoption="$OPTARG"";;
       c)   DIR="$OPTARG";;
       f)   FORCE='true';;
+      r)   REMOVE_OPTS+=(--remove-bootoption="$OPTARG");;
       ?)   usage 2;;
     esac
   done
@@ -100,7 +104,7 @@ Options:
 # }}}}
 
 # execute grml2usb with all ISOs you'd like to install {{{
-  $GRML2USB "${GRML2USB_PARAMS}" "$@" "$WRKDIR/cddir"
+  $GRML2USB "${REMOVE_OPTS[@]}" ${ADD_OPTS:+"$ADD_OPTS"} "$@" "$WRKDIR/cddir"
 # }}}
 
 # move syslinux to isolinux {{{
