@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+       #include <stdlib.h>
 # -*- coding: utf-8 -*-
 """
 grml2usb
@@ -60,6 +61,8 @@ parser.add_option("--mbr-menu", dest="mbrmenu", action="store_true",
                   help="enable interactive boot menu in MBR")
 parser.add_option("--quiet", dest="quiet", action="store_true",
                   help="do not output anything but just errors on console")
+parser.add_option("--remove-bootoption", dest="removeoption", action="append",
+                  help="regex for removing existing bootoptions")
 parser.add_option("--skip-addons", dest="skipaddons", action="store_true",
                   help="do not install /boot/addons/ files")
 parser.add_option("--skip-grub-config", dest="skipgrubconfig", action="store_true",
@@ -1248,6 +1251,20 @@ def identify_grml_flavour(mountpath):
     return grml_flavour
 
 
+def modify_grub_config(filename):
+    if options.removeoption:
+        regexe = []
+        for regex in options.removeoption:
+            regexe.append(re.compile(r'(.*/boot/release/.*linux26.*)(%s)(.*)' % regex))
+
+        for line in fileinput.input(filename, inplace=1):
+            for regex in regexe:
+                line = regex.sub( r'\1 \3', line)
+
+            sys.stdout.write(line)
+
+        fileinput.close()
+
 def handle_grub1_config(grml_flavour, install_partition, grub_target, bootopt):
     """Main handler for generating grub1 configuration
 
@@ -1285,6 +1302,8 @@ def handle_grub1_config(grml_flavour, install_partition, grub_target, bootopt):
         grub1_config_file = open(grub1_cfg, 'a')
         grub1_config_file.write(generate_flavour_specific_grub1_config(grml_flavour, install_partition, bootopt))
         grub1_config_file.close()
+
+    modify_grub_config(grub1_cfg)
 
     # make sure grub.conf isn't a symlink but a plain file instead,
     # otherwise it will break on FAT16 filesystems
@@ -1343,9 +1362,11 @@ def handle_grub2_config(grml_flavour, grub_target, bootopt):
         grub2_config_file.write(generate_flavour_specific_grub2_config(grml_flavour, bootopt))
         grub2_config_file.close()
 
+    modify_grub_config(grub2_cfg)
+
 
 def handle_grub_config(grml_flavour, device, target):
-    """Main handler for generating grub (v1 and v2) configuration
+    """Main handler for generati3g grub (v1 and v2) configuration
 
     @grml_flavour: name of grml flavour the configuration should be generated for
     @device: device/partition where grub should be installed to
@@ -1418,12 +1439,19 @@ def adjust_syslinux_bootoptions(src, flavour):
     else:
         bootopt = options.bootoptions
 
+    regexe = []
+    if options.removeoption:
+        for regex in options.removeoption:
+            regexe.append(re.compile(r'(.*/boot/release/.*/initrd.gz.*)(%s)(.*)' % regex))
+
     for line in fileinput.input(src, inplace=1):
         line = boot_re.sub(r'/boot/release/%s/\2 ' % flavour.replace('-', ''), line)
         # line = flavour_re.sub(r'\1 %s-\2' % flavour, line)
         line = default_re.sub(r'%s-\1' % flavour, line)
         line = append_re.sub(r'\1 live-media-path=/live/%s/ ' % flavour, line)
         line = append_re.sub(r'\1 boot=live %s ' % bootopt, line)
+        for regex in regexe:
+            line = regex.sub( r'\1 \3', line)
         sys.stdout.write(line)
     fileinput.close()
 

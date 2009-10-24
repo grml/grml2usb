@@ -127,6 +127,11 @@ Do not output anything but just errors on console.
 
 Do not install /boot/addons/ files (like dos, grub, memdisk,...).
 
+  *\--remove-bootoption=...*::
+
+Remove specified bootoption (could be a regex) from existing boot options. Use
+multiple entries for removing different bootoptions at once.
+
   *\--skip-grub-config*::
 
 Skip generation of grub configuration files. By default the configuration
@@ -629,6 +634,11 @@ file instead of the one provided by the ISO.
 
 Install specified ISO on device /dev/sdX1 and use "lang=de ssh=mysecret" as
 default bootoptions.
+
+
+  # grml2usb --remove-bootoption="vga=791" --remove-bootoption="quiet" grml_2009.05.iso /dev/sdX1
+
+Install specified ISO on device /dev/sdX1 remove vga=791 and quiet from existing bootoptions.
 
 [[ressources]]
 Online Ressources
