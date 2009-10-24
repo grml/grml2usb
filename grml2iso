@@ -7,8 +7,7 @@
 # License:       This file is licensed under the GPL v2 or any later version.
 ################################################################################
 # TODO:
-# * support isolinux as bootloader on the ISO
-# * support setting grml2usb options (e.g. --bootoptions=...)
+# * support setting grml2usb options
 ################################################################################
 
 # define function getfilesize before "set -e" {{{
@@ -30,7 +29,15 @@
   set -e
 
   usage() {
-    echo >&2 "Usage: $0 -o target.iso source1.iso [source2.iso ...]"
+    echo >&2 "Usage: $0 [OPTIONS] -o target.iso source1.iso [source2.iso ...]"
+    echo >&2 "
+Options:
+     -b Boot Params    Additional boot parameters passed to grml2usb
+     -c Directory      Copy files from directory to generated iso
+     -f                Force overwrite of existing target.iso
+     -r BootParam      Remove specified boot params.
+                       Could be specfied multiple times.
+"
     [ -n "$1" ] && exit $1 || exit 1
   }
 # }}}
@@ -39,9 +46,17 @@
   [[ $# -gt 2 ]] || usage 1
 
   ISOFILE=''
-  while getopts ao: name; do
+  DIR=''
+  ADD_OPTS=''
+  FORCE=''
+  typeset -a REMOVE_OPTS
+  while getopts fb:c:o:r: name; do
     case $name in
       o)   ISOFILE="$OPTARG";;
+      b)   ADD_OPTS="--bootoption="$OPTARG"";;
+      c)   DIR="$OPTARG";;
+      f)   FORCE='true';;
+      r)   REMOVE_OPTS+=(--remove-bootoption="$OPTARG");;
       ?)   usage 2;;
     esac
   done
@@ -50,9 +65,14 @@
   [ -n "$ISOFILE" ] || usage 1
 
 # we don't to override any files by accident
-  if [ -e "$ISOFILE" ]; then
+  if [ -e "$ISOFILE" -a ! -n "$FORCE" ]; then
     echo "Error: target file $ISOFILE exists already." >&2
     exit 1
+  fi
+
+  if [ ! -z "$DIR" -a ! -d "$DIR" ] ; then
+     echo "Error: specified parameter for -c is not a directory" >&2
+     exit 1
   fi
 
   shift $(($OPTIND - 1))
@@ -84,7 +104,7 @@
 # }}}}
 
 # execute grml2usb with all ISOs you'd like to install {{{
-  $GRML2USB "$@" "$WRKDIR/cddir"
+  $GRML2USB "${REMOVE_OPTS[@]}" ${ADD_OPTS:+"$ADD_OPTS"} "$@" "$WRKDIR/cddir"
 # }}}
 
 # move syslinux to isolinux {{{
@@ -93,6 +113,14 @@
   cd "$WRKDIR/cddir"
   echo "menu label ^Isolinux prompt" > boot/isolinux/promptname.cfg
   echo "include hd.cfg" >> boot/isolinux/grmlmain.cfg
+# }}}
+
+# copy specified directory to cd {{{
+  if [ -n "$DIR" ] ; then
+     echo >&2 "Copying ${DIR} to generated iso"
+     rsync -a ${DIR}/ .
+  fi
+
 # }}}
 
 # generate the CD/DVD ISO {{{
