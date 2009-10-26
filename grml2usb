@@ -28,7 +28,7 @@ GRML_FLAVOURS = set() # which flavours are being installed?
 global GRML_DEFAULT
 
 def syslinux_warning(option, opt, value, parser):
-    sys.stderr.write("\nNote: the --syslinux option is deprecated as syslinux " +
+    sys.stderr.write("Note: the --syslinux option is deprecated as syslinux " +
             "is grml2usb's default. Continuing anyway.\n")
     setattr(parser.values, option.dest, True)
 
