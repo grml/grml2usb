@@ -1143,7 +1143,7 @@ def copy_bootloader_files(iso_mount, target):
         logging.critical("       Please visit http://grml.org/grml2usb/#grml2usb-compat for further information.")
         raise
 
-    for filename in 'addons.cfg', 'default.cfg', 'distri.cfg', \
+    for filename in 'default.cfg', 'distri.cfg', \
                     'grml.cfg', 'grml.png', 'hd.cfg', 'isolinux.cfg', 'isolinux.bin', \
                     'isoprompt.cfg', 'options.cfg', \
                     'prompt.cfg', 'vesamenu.c32', 'vesamenu.cfg', 'grml.png':
@@ -1151,7 +1151,7 @@ def copy_bootloader_files(iso_mount, target):
         exec_rsync(path, syslinux_target + filename)
 
     # copy the addons_*.cfg file to the new syslinux directory
-    for filename in glob.glob(iso_mount + '/boot/isolinux/' + 'addon_*.cfg'):
+    for filename in glob.glob(iso_mount + '/boot/isolinux/' + 'addon*.cfg'):
         exec_rsync(filename, syslinux_target)
 
     path = search_file('hidden.cfg', iso_mount + '/boot/isolinux/')
