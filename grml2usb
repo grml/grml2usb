@@ -17,6 +17,7 @@ from optparse import OptionParser
 from inspect import isroutine, isclass
 import datetime, logging, os, re, subprocess, sys, tempfile, time, os.path
 import fileinput
+import glob
 
 # global variables
 PROG_VERSION = "0.9.14"
@@ -1148,6 +1149,10 @@ def copy_bootloader_files(iso_mount, target):
                     'prompt.cfg', 'vesamenu.c32', 'vesamenu.cfg', 'grml.png':
         path = search_file(filename, iso_mount + '/boot/isolinux/')
         exec_rsync(path, syslinux_target + filename)
+
+    # copy the addons_*.cfg file to the new syslinux directory
+    for filename in glob.glob(iso_mount + '/boot/isolinux/' + 'addon_*.cfg'):
+        exec_rsync(filename, syslinux_target)
 
     path = search_file('hidden.cfg', iso_mount + '/boot/isolinux/')
     exec_rsync(path, syslinux_target + "new_" + 'hidden.cfg')
