@@ -1147,9 +1147,6 @@ def copy_bootloader_files(iso_mount, target):
                     'isoprompt.cfg', 'options.cfg', \
                     'prompt.cfg', 'vesamenu.c32', 'vesamenu.cfg', 'grml.png':
         path = search_file(filename, iso_mount + '/boot/isolinux/')
-        if not path:
-            print filename
-            continue
         exec_rsync(path, syslinux_target + filename)
 
     path = search_file('hidden.cfg', iso_mount + '/boot/isolinux/')
