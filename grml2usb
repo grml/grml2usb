@@ -27,6 +27,11 @@ DATESTAMP = time.mktime(datetime.datetime.now().timetuple()) # unique identifier
 GRML_FLAVOURS = set() # which flavours are being installed?
 global GRML_DEFAULT
 
+def syslinux_warning(option, opt, value, parser):
+    sys.stderr.write("\nNote: the --syslinux option is deprecated as syslinux " +
+            "is grml2usb's default. Continuing anyway.\n")
+    setattr(parser.values, option.dest, True)
+
 # cmdline parsing
 USAGE = "Usage: %prog [options] <[ISO[s] | /live/image]> </dev/sdX#>\n\
 \n\
@@ -71,7 +76,8 @@ parser.add_option("--skip-mbr", dest="skipmbr", action="store_true",
                   help="do not install a master boot record (MBR) on the device")
 parser.add_option("--skip-syslinux-config", dest="skipsyslinuxconfig", action="store_true",
                   help="skip generation of syslinux configuration files")
-parser.add_option("--syslinux", dest="syslinux", action="store_true",
+parser.add_option("--syslinux", dest="syslinux", action="callback", default=True,
+                  callback=syslinux_warning,
                   help="install syslinux bootloader (deprecated as it's the default)")
 parser.add_option("--syslinux-mbr", dest="syslinuxmbr", action="store_true",
                   help="install syslinux master boot record (MBR) instead of default")
@@ -650,9 +656,6 @@ def install_bootloader(device):
     @device: partition where bootloader should be installed to"""
 
     # by default we use grub, so install syslinux only on request
-    if options.syslinux:
-        logging.info("Note: the --syslinux option is deprecated as syslinux is grml2usb's default. Continuing anyway.")
-
     if options.grub:
         if not which("grub-install"):
             logging.critical("Fatal: grub-install not available (please install the grub package or use the --syslinux option)")
