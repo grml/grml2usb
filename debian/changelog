@@ -1,3 +1,9 @@
+grml2usb (0.9.17) UNRELEASED; urgency=low
+
+  * Depend on rsync (thanks for the bugreport, Andras Korn).
+
+ -- Michael Prokop <mika@grml.org>  Tue, 27 Oct 2009 23:49:37 +0100
+
 grml2usb (0.9.16) unstable; urgency=low
 
   * Dynamic check for addons as grml-small is nowadays shipped with addons.
