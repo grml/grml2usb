@@ -1117,6 +1117,12 @@ def copy_addons(iso_mount, target):
     else:
         exec_rsync(memtestimg, addons + 'memtest')
 
+    # gpxe.lkrn
+    gpxeimg = search_file('gpxe.lkrn', iso_mount)
+    if gpxeimg is None:
+        logging.warn("Warning: gpxe.lkrn not found (that's fine if you don't need it)")
+    else:
+        exec_rsync(gpxeimg, addons + 'gpxe.lkrn')
 
 def copy_bootloader_files(iso_mount, target):
     """copy grml's bootloader files to a given target
