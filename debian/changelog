@@ -1,3 +1,11 @@
+grml2usb (0.9.16) unstable; urgency=low
+
+  * Dynamic check for addons as grml-small is nowadays shipped with addons.
+  * Copy gpxe.lkrn from addons.
+  * Modified grml2usb to be able to run on a generated grml2usb iso/directory.
+
+ -- Ulrich Dangel <mru@grml.org>  Tue, 27 Oct 2009 21:41:07 +0100
+
 grml2usb (0.9.15) unstable; urgency=low
 
   * Support new addon menu file layout from grml-live.
