@@ -1222,8 +1222,8 @@ def install_iso_files(grml_flavour, iso_mount, device, target):
             sys.exit(1)
 
     if not options.skipaddons:
-        if grml_flavour.endswith('-small'):
-            logging.info("Note: grml-small doesn't provide any addons, not installing them therefore.")
+        if not search_file('addons', iso_mount):
+            logging.info("Could not find addons, therefore not installing.")
         else:
             copy_addons(iso_mount, target)
 
