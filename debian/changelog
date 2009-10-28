@@ -1,8 +1,13 @@
 grml2usb (0.9.17) UNRELEASED; urgency=low
 
+  [ Michael Prokop ]
   * Depend on rsync (thanks for the bugreport, Andras Korn).
 
- -- Michael Prokop <mika@grml.org>  Tue, 27 Oct 2009 23:49:37 +0100
+  [ Ulrich Dangel ]
+  * Adjust labels in {grml,default}.cfg if necessary.
+  * Always copy grub files.
+
+ -- Ulrich Dangel <mru@grml.org>  Wed, 28 Oct 2009 23:47:22 +0100
 
 grml2usb (0.9.16) unstable; urgency=low
 
