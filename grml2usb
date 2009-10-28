@@ -1483,10 +1483,10 @@ def adjust_syslinux_bootoptions(src, flavour):
         sys.stdout.write(line)
     fileinput.close()
 
-def adjust_labels(src, flavour):
+def adjust_labels(src, replacement):
     label_re = re.compile("^(\s*label\s*) ([a-zA-Z0-9_-]+)", re.I)
     for line in fileinput.input(src, inplace=1):
-        line = label_re.sub(r'\1 %s-\2' % flavour, line)
+        line = label_re.sub(replacement, line)
         sys.stdout.write(line)
     fileinput.close()
 
@@ -1567,8 +1567,8 @@ def handle_syslinux_config(grml_flavour, target):
         new_hidden =  "%s_hidden.cfg" % (flavour_filename)
         new_hidden_file =  "%s/%s" % (syslinux_target, new_hidden)
         os.rename(filename, new_hidden_file)
-        adjust_labels(new_hidden_file, flavour_filename)
-        adjust_syslinux_bootoptions(new_hidden_file, flavour_filename)
+        adjust_labels(new_hidden_file, r'\1 %s-\2' % grml_flavour)
+        adjust_syslinux_bootoptions(new_hidden_file, grml_flavour)
         entry = 'include %s\n' % new_hidden
         add_entry_if_not_present("%s/hiddens.cfg" % syslinux_target, entry)
 
@@ -1579,7 +1579,16 @@ def handle_syslinux_config(grml_flavour, target):
     defaults_file = '%s/defaults.cfg' % syslinux_target
 
     if os.path.isfile(defaults_file):
-        remove_default_entry('%s/%s_default.cfg' % (syslinux_target, flavour_filename))
+        new_default_with_path = "%s/%s" % (syslinux_target, new_default)
+        new_grml_cfg = "%s/%s_grml.cfg" % ( syslinux_target, flavour_filename)
+
+        # remove default menu entry in menu
+        remove_default_entry(new_default_with_path)
+
+        # adjust all labels for additional isos
+        adjust_labels(new_default_with_path, r'\1 %s' % grml_flavour)
+        adjust_labels(new_grml_cfg, r'\1 %s-\2' % grml_flavour)
+
 
     add_entry_if_not_present("%s/defaults.cfg" % syslinux_target, entry)
 
