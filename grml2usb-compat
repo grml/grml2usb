@@ -18,7 +18,7 @@ from inspect import isroutine, isclass
 import datetime, logging, os, re, subprocess, sys, tempfile, time, os.path
 
 # global variables
-PROG_VERSION = "0.9.17-pre1-compat"
+PROG_VERSION = "0.9.17-compat"
 MOUNTED = set()  # register mountpoints
 TMPFILES = set() # register tmpfiles
 DATESTAMP = time.mktime(datetime.datetime.now().timetuple()) # unique identifier for syslinux.cfg
