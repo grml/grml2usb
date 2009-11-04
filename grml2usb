@@ -20,7 +20,7 @@ import fileinput
 import glob
 
 # global variables
-PROG_VERSION = "0.9.18-pre1"
+PROG_VERSION = "0.9.18"
 MOUNTED = set()  # register mountpoints
 TMPFILES = set() # register tmpfiles
 DATESTAMP = time.mktime(datetime.datetime.now().timetuple()) # unique identifier for syslinux.cfg
