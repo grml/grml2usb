@@ -1,3 +1,12 @@
+grml2usb (0.9.18) UNRELEASED; urgency=low
+
+  * Also set GRML_DEFAULT when running with --dry-run. Thanks to Moritz
+    Augsburger for the bug report.
+  * Make sure that --grub-mbr requires --grub. Thanks to Moritz
+    Augsburger and mika for the bug report.
+
+ -- Ulrich Dangel <mru@grml.org>  Wed, 04 Nov 2009 11:09:02 +0100
+
 grml2usb (0.9.17) unstable; urgency=low
 
   [ Michael Prokop ]
