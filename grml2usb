@@ -1714,11 +1714,15 @@ def handle_iso(iso, device):
         register_tmpfile(device_mountpoint)
         remove_device_mountpoint = True
         try:
-            mount(device, device_mountpoint, "")
+            check_for_fat(device)
+            mount(device, device_mountpoint, ['-o', 'utf8,iocharset=iso8859-1'])
         except CriticalException, error:
-            logging.critical("Fatal: %s", error)
-            cleanup()
-            sys.exit(1)
+            try:
+                mount(device, device_mountpoint, "")
+            except CriticalException, error:
+                logging.critical("Fatal: %s", error)
+                cleanup()
+                sys.exit(1)
 
     try:
         try:
