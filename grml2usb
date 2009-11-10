@@ -32,6 +32,11 @@ def syslinux_warning(option, opt, value, parser):
             "is grml2usb's default. Continuing anyway.\n")
     setattr(parser.values, option.dest, True)
 
+# if grub option is set, unset syslinux option
+def grub_option(option, opt, value, parser):
+    setattr(parser.values, option.dest, True)
+    setattr(parser.values, 'syslinux', False)
+
 # cmdline parsing
 USAGE = "Usage: %prog [options] <[ISO[s] | /live/image]> </dev/sdX#>\n\
 \n\
@@ -56,7 +61,8 @@ parser.add_option("--fat16", dest="fat16", action="store_true",
                   help="format specified partition with FAT16")
 parser.add_option("--force", dest="force", action="store_true",
                   help="force any actions requiring manual interaction")
-parser.add_option("--grub", dest="grub", action="store_true",
+parser.add_option("--grub", dest="grub", action="callback",
+                  callback=grub_option,
                   help="install grub bootloader instead of (default) syslinux")
 parser.add_option("--grub-mbr", dest="grubmbr", action="store_true",
                   help="install grub into MBR instead of (default) PBR")
