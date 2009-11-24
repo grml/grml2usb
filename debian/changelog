@@ -1,3 +1,10 @@
+grml2usb (0.9.20) unstable; urgency=low
+
+  * tarball.sh: do not use $UID but use $(id -u) instead so it proberly
+    works with dash and make sure to escape "$0". Thanks to Stefan Weiss!
+
+ -- Michael Prokop <mika@grml.org>  Wed, 25 Nov 2009 00:47:36 +0100
+
 grml2usb (0.9.19) unstable; urgency=low
 
   [ Ulrich Dangel ]

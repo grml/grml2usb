@@ -43,8 +43,8 @@ cat > "${DIR}"/install.sh << EOF
 
 set -e
 
-if [ "\$UID" != 0 ] ; then
-   echo "Error: become root before starting $0" >& 2
+if [ \$(id -u) != 0 ] ; then
+   echo "Error: become root before starting \$0" >& 2
    exit 1
 fi
 
@@ -93,8 +93,8 @@ cat > "${DIR}"/uninstall.sh << EOF
 
 set -e
 
-if [ "\$UID" != 0 ] ; then
-   echo "Error: become root before starting $0" >& 2
+if [ \$(id -u) != 0 ] ; then
+   echo "Error: become root before starting \$0" >& 2
    exit 1
 fi
 
