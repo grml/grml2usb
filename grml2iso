@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Filename:      grml2iso
 # Purpose:       create a multiboot grml ISO using grml2usb
 # Authors:       Michael Prokop <mika@grml.org>,
