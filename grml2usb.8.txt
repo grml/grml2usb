@@ -323,6 +323,19 @@ kernel loads but you very soon get the error message.
 *Reason*:: the partition layout is not ok. Very probably there's no primary
   partition (/dev/sdX{1..4}) or none has the flag 'bootable' set.
 
+*Error message*:: Boot error.
+
+*Reason*:: Some BIOSses offer different modes for USB booting. The proper mode
+to boot a USB stick is USB-HDD. If that doesn’t work or is not supported by your
+system, you need to format your USB-Stick as USB-ZIP.  To do this, syslinux
+contains an utility called mkdiskimage, which you can use to re-format your USB
+stick in USB-ZIP format running 'mkdiskimage -4 /dev/sdX 1 64 32'. Please be
+aware that this procedure will erase all data on your stick.  After executing
+mkdiskimage just continue installing as usual (grml2usb ...  /dev/sdX4). Note
+that this is not going to work for any device larger than 8 GB, since
+mkdiskimage only supports 1024c 256h 63s. For a more detailed explanation, refer
+to /usr/share/doc/syslinux-common/usbkey.txt.
+
 *Error message*:: No operating system found.
 
 *Reason*:: you forgot to set the boot-flag on the partition. Or there really isn't
