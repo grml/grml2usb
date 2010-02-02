@@ -18,6 +18,7 @@ from inspect import isroutine, isclass
 import datetime, logging, os, re, subprocess, sys, tempfile, time, os.path
 import fileinput
 import glob
+import uuid
 
 # global variables
 PROG_VERSION = "0.9.20"
@@ -26,6 +27,7 @@ TMPFILES = set() # register tmpfiles
 DATESTAMP = time.mktime(datetime.datetime.now().timetuple()) # unique identifier for syslinux.cfg
 GRML_FLAVOURS = set() # which flavours are being installed?
 global GRML_DEFAULT
+global UUID
 
 def syslinux_warning(option, opt, value, parser):
     sys.stderr.write("Note: the --syslinux option is deprecated as syslinux " +
@@ -304,7 +306,7 @@ fi
 
 menuentry "%(grml_flavour)s (default)" {
     set gfxpayload=1024x768x16,1024x768
-    linux   /boot/release/%(flavour_filename)s/linux26 apm=power-off quiet boot=live nomce live-media-path=/live/%(grml_flavour)s/ %(bootoptions)s
+    linux   /boot/release/%(flavour_filename)s/linux26 apm=power-off quiet boot=live nomce live-media-path=/live/%(grml_flavour)s/ bootid=%(uid)s %(bootoptions)s
     initrd  /boot/release/%(flavour_filename)s/initrd.gz
 }
 
@@ -341,7 +343,7 @@ menuentry "Boot OS of first partition on first disk" {
 
 """ % {'grml_flavour': grml_flavour, 'local_datestamp': local_datestamp,
         'flavour_filename': grml_flavour.replace('-', ''),
-        'bootoptions': bootoptions } )
+        'uid': UUID, 'bootoptions': bootoptions } )
 
 
 def generate_flavour_specific_grub2_config(grml_flavour, bootoptions):
@@ -356,60 +358,60 @@ def generate_flavour_specific_grub2_config(grml_flavour, bootoptions):
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s            - boot in default mode" {
     set gfxpayload=1024x768x16,1024x768
-    linux  /boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ %(bootoptions)s
+    linux  /boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ bootid=%(uid)s %(bootoptions)s
     initrd /boot/release/%(flavour_filename)s/initrd.gz
 }
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s-persistent - enable persistency feature" {
     set gfxpayload=1024x768x16,1024x768
-    linux  /boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet persistent live-media-path=/live/%(grml_flavour)s/ %(bootoptions)s
+    linux  /boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet persistent live-media-path=/live/%(grml_flavour)s/ bootid=%(uid)s %(bootoptions)s
     initrd /boot/release/%(flavour_filename)s/initrd.gz
 }
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s2ram        - copy compressed grml file to RAM" {
     set gfxpayload=1024x768x16,1024x768
-    linux  /boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ toram=%(grml_flavour)s.squashfs %(bootoptions)s
+    linux  /boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ toram=%(grml_flavour)s.squashfs bootid=%(uid)s %(bootoptions)s
     initrd /boot/release/%(flavour_filename)s/initrd.gz
 }
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s-debug      - enable debugging options" {
     set gfxpayload=1024x768x16,1024x768
-    linux /boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ debug initcall_debug%(bootoptions)s
+    linux /boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ debug bootid=%(uid)s initcall_debug %(bootoptions)s
     initrd /boot/release/%(flavour_filename)s/initrd.gz
 }
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s-x          - start X Window System" {
     set gfxpayload=1024x768x16,1024x768
-    linux  /boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ startx=wm-ng %(bootoptions)s
+    linux  /boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ startx=wm-ng bootid=%(uid)s %(bootoptions)s
     initrd /boot/release/%(flavour_filename)s/initrd.gz
 }
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s-nofb       - disable framebuffer" {
-    linux  /boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal video=ofonly %(bootoptions)s
+    linux  /boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal video=ofonly bootid=%(uid)s %(bootoptions)s
     initrd /boot/release/%(flavour_filename)s/initrd.gz
 }
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s-failsafe   - disable hardware detection" {
-    linux /boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal noautoconfig atapicd noapic noacpi acpi=off nomodules nofirewire noudev nousb nohotplug noapm nopcmcia nosmp maxcpus=0 noscsi noagp nodma ide=nodma noswap nofstab nosound nogpm nosyslog nodhcp nocpu nodisc nomodem xmodule=vesa noraid nolvm noresume selinux=0 edd=off pci=nomsi %(bootoptions)s
+    linux /boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal noautoconfig atapicd noapic noacpi acpi=off nomodules nofirewire noudev nousb nohotplug noapm nopcmcia nosmp maxcpus=0 noscsi noagp nodma ide=nodma noswap nofstab nosound nogpm nosyslog nodhcp nocpu nodisc nomodem xmodule=vesa noraid nolvm noresume selinux=0 edd=off pci=nomsi bootid=%(uid)s %(bootoptions)s
     initrd /boot/release/%(flavour_filename)s/initrd.gz
 }
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s-forensic   - do not touch harddisks during hw recognition" {
     set gfxpayload=1024x768x16,1024x768
-    linux /boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ nofstab noraid nolvm noautoconfig noswap raid=noautodetect forensic readonly %(bootoptions)s
+    linux /boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ nofstab noraid nolvm noautoconfig noswap raid=noautodetect forensic readonly bootid=%(uid)s %(bootoptions)s
     initrd /boot/release/%(flavour_filename)s/initrd.gz
 }
 
 """ % {'grml_flavour': grml_flavour, 'local_datestamp': local_datestamp,
        'flavour_filename': grml_flavour.replace('-', ''),
-       'bootoptions': bootoptions } )
+       'uid': UUID, 'bootoptions': bootoptions } )
 
 
 def generate_flavour_specific_grub1_config(grml_flavour, install_partition, bootoptions):
@@ -424,51 +426,51 @@ def generate_flavour_specific_grub1_config(grml_flavour, install_partition, boot
     return("""\
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 title %(grml_flavour)s
-kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ %(bootoptions)s
+kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ bootid=%(uid)s %(bootoptions)s
 initrd (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/initrd.gz
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 title %(grml_flavour)s-persistent
-kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce vga=791 quiet persistent live-media-path=/live/%(grml_flavour)s/ %(bootoptions)s
+kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce vga=791 quiet persistent live-media-path=/live/%(grml_flavour)s/ bootid=%(uid)s %(bootoptions)s
 initrd (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/initrd.gz
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 title %(grml_flavour)s2ram
-kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ toram=%(grml_flavour)s.squashfs %(bootoptions)s
+kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ toram=%(grml_flavour)s.squashfs bootid=%(uid)s %(bootoptions)s
 initrd (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/initrd.gz
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 title %(grml_flavour)s-debug
-kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ debug initcall_debug%(bootoptions)s
+kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ debug initcall_debug bootid=%(uid)s %(bootoptions)s
 initrd (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/initrd.gz
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 title %(grml_flavour)s-x
-kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ startx=wm-ng %(bootoptions)s
+kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ startx=wm-ng bootid=%(uid)s %(bootoptions)s
 initrd (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/initrd.gz
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 title %(grml_flavour)s-nofb
-kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal video=ofonly %(bootoptions)s
+kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal video=ofonly bootid=%(uid)s %(bootoptions)s
 initrd (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/initrd.gz
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 title %(grml_flavour)s-failsafe
-kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal noautoconfig atapicd noapic noacpi acpi=off nomodules nofirewire noudev nousb nohotplug noapm nopcmcia nosmp maxcpus=0 noscsi noagp nodma ide=nodma noswap nofstab nosound nogpm nosyslog nodhcp nocpu nodisc nomodem xmodule=vesa noraid nolvm noresume selinux=0 edd=off pci=nomsi %(bootoptions)s
+kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal noautoconfig atapicd noapic noacpi acpi=off nomodules nofirewire noudev nousb nohotplug noapm nopcmcia nosmp maxcpus=0 noscsi noagp nodma ide=nodma noswap nofstab nosound nogpm nosyslog nodhcp nocpu nodisc nomodem xmodule=vesa noraid nolvm noresume selinux=0 edd=off pci=nomsi bootid=%(uid)s %(bootoptions)s
 initrd (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/initrd.gz
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 title %(grml_flavour)s-forensic
-kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ nofstab noraid nolvm noautoconfig noswap raid=noautodetect forensic readonly %(bootoptions)s
+kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ nofstab noraid nolvm noautoconfig noswap raid=noautodetect forensic readonly bootid=%(uid)s %(bootoptions)s
 initrd (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/initrd.gz
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 title %(grml_flavour)s-serial
-kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal video=vesafb:off console=tty1 console=ttyS0,9600n8 %(bootoptions)s
+kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal video=vesafb:off console=tty1 console=ttyS0,9600n8 bootid=%(uid)s %(bootoptions)s
 initrd (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/initrd.gz
 
 """ % {'grml_flavour': grml_flavour, 'local_datestamp': local_datestamp,
-       'flavour_filename': grml_flavour.replace('-', ''),
+       'flavour_filename': grml_flavour.replace('-', ''), 'uid': UUID,
        'bootoptions': bootoptions, 'install_partition': install_partition } )
 
 
@@ -490,7 +492,7 @@ background  = FFCC33
 
 # define entries:
 title %(grml_flavour)s  - Default boot (using 1024x768 framebuffer)
-kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off vga=791 quiet boot=live nomce live-media-path=/live/%(grml_flavour)s/ %(bootoptions)s
+kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off vga=791 quiet boot=live nomce live-media-path=/live/%(grml_flavour)s/ bootid=%(uid)s %(bootoptions)s
 initrd (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/initrd.gz
 
 title Memory test (memtest86+)
@@ -508,7 +510,7 @@ title MirOS BSD
 kernel (hd0,%(install_partition)s)/boot/addons/bsd4grml/ldbsd.com
 
 """ % {'grml_flavour': grml_flavour, 'local_datestamp': local_datestamp,
-       'flavour_filename': grml_flavour.replace('-', ''),
+       'flavour_filename': grml_flavour.replace('-', ''), 'uid': UUID,
        'bootoptions': bootoptions, 'install_partition': install_partition } )
 
 
@@ -989,6 +991,31 @@ def exec_rsync(source, target):
         sys.exit(1)
 
 
+def write_uuid(target_file):
+    file = open(target_file, 'w')
+    uid = str(uuid.uuid4())
+    file.write(uid)
+    file.close()
+    return uid
+
+
+def get_uuid(target):
+    print 1111
+    conf_target = target + "/conf/"
+    uuid_file_name = conf_target + "/bootid.txt"
+    if os.path.isdir(conf_target):
+        if os.path.isfile(uuid_file_name):
+           uuid_file = open(uuid_file_name, 'r')
+           uid = uuid_file.readline().strip()
+           uuid_file.close()
+           return uid
+        else:
+           return write_uuid(uuid_file_name)
+    else:
+        execute(mkdir, conf_target)
+        return write_uuid(uuid_file_name)
+
+
 def copy_system_files(grml_flavour, iso_mount, target):
     """copy grml's main files (like squashfs, kernel and initrd) to a given target
 
@@ -1011,6 +1038,7 @@ def copy_system_files(grml_flavour, iso_mount, target):
         raise CriticalException("error locating filesystem.module file")
     else:
         exec_rsync(filesystem_module, squashfs_target + 'filesystem.module')
+
 
     release_target = target + '/boot/release/' + grml_flavour.replace('-', '')
     execute(mkdir, release_target)
@@ -1473,6 +1501,7 @@ def adjust_syslinux_bootoptions(src, flavour):
     boot_re = re.compile("/boot/([a-zA-Z0-9_]+/)+([a-zA-Z0-9._]+)")
     # flavour_re = re.compile("(label.*)(grml\w+)")
     default_re = re.compile("(default.cfg)")
+    bootid_re = re.compile("(bootid)=[\w_-]+")
 
     # do NOT write "None" in kernel cmdline
     if options.bootoptions is None:
@@ -1488,12 +1517,15 @@ def adjust_syslinux_bootoptions(src, flavour):
         for regex in options.removeoption:
             regexe.append(re.compile(r'%s' % regex))
 
+    global UUID
     for line in fileinput.input(src, inplace=1):
         line = boot_re.sub(r'/boot/release/%s/\2 ' % flavour.replace('-', ''), line)
         # line = flavour_re.sub(r'\1 %s-\2' % flavour, line)
         line = default_re.sub(r'%s-\1' % flavour, line)
+        line = bootid_re.sub(' ', line)
         line = append_re.sub(r'\1 live-media-path=/live/%s/ ' % flavour, line)
         line = append_re.sub(r'\1 boot=live %s ' % bootopt, line)
+        line = append_re.sub(r'\1 %s=%s ' % ("bootid", UUID), line)
         if option_re and option_re.search(line):
             for regex in regexe:
                 line = regex.sub(' ', line)
@@ -1619,6 +1651,8 @@ def handle_bootloader_config(grml_flavour, device, target):
     @device: device/partition where bootloader should be installed to
     @target: path of bootloader's configuration files"""
 
+    global UUID
+    UUID = get_uuid(target)
     if options.skipsyslinuxconfig:
         logging.info("Skipping generation of syslinux configuration as requested.")
     else:
