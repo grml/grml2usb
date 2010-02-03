@@ -1,3 +1,13 @@
+grml2usb (0.9.21) unstable; urgency=low
+
+  [ Michael Prokop ]
+  * Document the Boot error issue regarding USB-ZIP.
+
+  [ Ulrich Dangel ]
+  * Support bootid bootoption.
+
+ -- Michael Prokop <mika@grml.org>  Thu, 04 Feb 2010 00:56:56 +0100
+
 grml2usb (0.9.20) unstable; urgency=low
 
   * tarball.sh: do not use $UID but use $(id -u) instead so it proberly
