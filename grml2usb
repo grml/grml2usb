@@ -1000,7 +1000,6 @@ def write_uuid(target_file):
 
 
 def get_uuid(target):
-    print 1111
     conf_target = target + "/conf/"
     uuid_file_name = conf_target + "/bootid.txt"
     if os.path.isdir(conf_target):
