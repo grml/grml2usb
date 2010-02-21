@@ -1252,9 +1252,9 @@ def install_iso_files(grml_flavour, iso_mount, device, target):
     # * provide alternative search_file() if file information is stored in a config.ini file?
     # * catch "install: .. No space left on device" & CO
 
+    global GRML_DEFAULT
+    GRML_DEFAULT = grml_flavour
     if options.dryrun:
-        global GRML_DEFAULT
-        GRML_DEFAULT = grml_flavour
         return 0
     elif not options.bootloaderonly:
         logging.info("Copying files. This might take a while....")
