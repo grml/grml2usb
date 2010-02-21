@@ -26,8 +26,8 @@ MOUNTED = set()  # register mountpoints
 TMPFILES = set() # register tmpfiles
 DATESTAMP = time.mktime(datetime.datetime.now().timetuple()) # unique identifier for syslinux.cfg
 GRML_FLAVOURS = set() # which flavours are being installed?
-global GRML_DEFAULT
-global UUID
+GRML_DEFAULT = None
+UUID = None
 
 def syslinux_warning(option, opt, value, parser):
     sys.stderr.write("Note: the --syslinux option is deprecated as syslinux " +
