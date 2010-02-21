@@ -1,3 +1,17 @@
+grml2usb (0.9.22) unstable; urgency=low
+
+  [ Ulrich Dangel ]
+  * Use GRML_{FLAVOURS,DEFAULT}, PROG_VERSION from global scope.
+    grml2usb was aborted when using --bootloader-only --skip-grub-config as
+    parameters. This fixes the behaviour and declares correctly the
+    correct scope for these variables. Thanks to Daniel Tiefnig for
+    reporting the bug.
+
+  [ Michael Prokop ]
+  * grml2usb-compat: drop duplicated boot=live bootoptions.
+
+ -- Michael Prokop <mika@grml.org>  Sun, 21 Feb 2010 16:49:41 +0100
+
 grml2usb (0.9.21) unstable; urgency=low
 
   [ Michael Prokop ]
