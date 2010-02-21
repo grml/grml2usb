@@ -1918,6 +1918,9 @@ def handle_bootloader(device):
 
 def main():
     """Main function [make pylint happy :)]"""
+    global GRML_FLAVOURS
+    global GRML_DEFAULT
+    global PROG_VERSION
 
     if options.version:
         print os.path.basename(sys.argv[0]) + " " + PROG_VERSION
