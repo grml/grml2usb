@@ -1,3 +1,10 @@
+grml2usb (0.9.23) unstable; urgency=low
+
+  [ Ulrich Dangel ]
+  * Only ask questions if options.force is not set. [Closes: issue833]
+
+ -- Michael Prokop <mika@grml.org>  Fri, 02 Apr 2010 18:32:25 +0200
+
 grml2usb (0.9.22) unstable; urgency=low
 
   [ Ulrich Dangel ]
