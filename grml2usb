@@ -226,6 +226,17 @@ def which(program):
     return None
 
 
+def get_defaults_file(iso_mount, flavour, name):
+    """get the default file for syslinux
+    """
+    bootloader_dirs = ['/boot/isolinux/', '/boot/syslinux/']
+    for dir in bootloader_dirs:
+        for name in name, \
+        "%s_%s" % (flavour_filename(flavour), name):
+            if os.path.isfile(iso_mount + dir + name):
+                return (dir, name)
+    return ('','')
+
 def search_file(filename, search_path='/bin' + os.pathsep + '/usr/bin'):
     """Given a search path, find file
 
@@ -234,10 +245,18 @@ def search_file(filename, search_path='/bin' + os.pathsep + '/usr/bin'):
     file_found = 0
     paths = search_path.split(os.pathsep)
     current_dir = '' # make pylint happy :)
+
+    def match_file(cwd):
+        return  os.path.exists(os.path.join(cwd, filename))
+
     for path in paths:
+        current_dir = path
+        if match_file(current_dir):
+            file_found = 1
+            break
         # pylint: disable-msg=W0612
         for current_dir, directories, files in os.walk(path):
-            if os.path.exists(os.path.join(current_dir, filename)):
+            if match_file(current_dir):
                 file_found = 1
                 break
     if file_found:
@@ -1031,7 +1050,9 @@ def copy_system_files(grml_flavour, iso_mount, target):
         execute(mkdir, squashfs_target)
     exec_rsync(squashfs, squashfs_target + grml_flavour + '.squashfs')
 
-    filesystem_module = search_file('filesystem.module', iso_mount)
+    for prefix in grml_flavour + "/", "":
+        filesystem_module = search_file(prefix + 'filesystem.module', iso_mount)
+        if filesystem_module: break
     if filesystem_module is None:
         logging.critical("Fatal: filesystem.module not found")
         raise CriticalException("error locating filesystem.module file")
@@ -1039,17 +1060,22 @@ def copy_system_files(grml_flavour, iso_mount, target):
         exec_rsync(filesystem_module, squashfs_target + 'filesystem.module')
 
 
-    release_target = target + '/boot/release/' + grml_flavour.replace('-', '')
+    release_path = 'boot/release/' + grml_flavour.replace('-', '')
+    release_target = target + "/" + release_path
     execute(mkdir, release_target)
 
-    kernel = search_file('linux26', iso_mount)
+    prefix = ""
+    if os.path.isdir(iso_mount + '/boot/release'):
+        prefix = release_path + '/'
+
+    kernel = search_file(prefix + 'linux26', iso_mount)
     if kernel is None:
         logging.critical("Fatal kernel not found")
         raise CriticalException("error locating kernel file")
     else:
         exec_rsync(kernel, release_target + '/linux26')
 
-    initrd = search_file('initrd.gz', iso_mount)
+    initrd = search_file(prefix + 'initrd.gz', iso_mount)
     if initrd is None:
         logging.critical("Fatal: initrd not found")
         raise CriticalException("error locating initrd file")
@@ -1066,7 +1092,33 @@ def copy_grml_files(iso_mount, target):
     grml_target = target + '/grml/'
     execute(mkdir, grml_target)
 
-    for myfile in 'grml-cheatcodes.txt', 'grml-version', 'LICENSE.txt', 'md5sums', 'README.txt':
+    copy_files = [ 'grml-cheatcodes.txt', 'LICENSE.txt', 'md5sums', 'README.txt' ]
+    # handle grml-version
+    new_grml_version = search_file('grml-version', grml_target)
+    if new_grml_version:
+        orig_grml_version = search_file('grml-version', iso_mount)
+        if not orig_grml_version:
+            logging.warn("Warning: %s could not be found - can not install it", orig_grml_version)
+        else:
+            try:
+                new_file = open(new_grml_version, 'a+')
+                new_flavours = [ get_flavour(l) for l in new_file.readlines() ]
+
+                old_file = open(orig_grml_version, 'r')
+                old_lines = old_file.readlines()
+                for line in old_lines:
+                    if not get_flavour(line) in new_flavours:
+                        new_file.write(line)
+
+            except IOError, e:
+                logging.warn("Warning: Could not write file")
+            finally:
+                new_file.close()
+                old_file.close()
+    else:
+        copy_files.append('grml-version')
+
+    for myfile in copy_files:
         grml_file = search_file(myfile, iso_mount)
         if grml_file is None:
             logging.warn("Warning: myfile %s could not be found - can not install it", myfile)
@@ -1169,34 +1221,40 @@ def copy_bootloader_files(iso_mount, target):
     logo = search_file('logo.16', iso_mount)
     exec_rsync(logo, syslinux_target + 'logo.16')
 
+
     for ffile in ['f%d' % number for number in range(1,11) ]:
         bootsplash = search_file(ffile, iso_mount)
         if not bootsplash:
             continue
         exec_rsync(bootsplash, syslinux_target + ffile)
 
+    loopback_cfg = search_file("loopback.cfg", iso_mount)
+    if loopback_cfg:
+        directory = os.path.dirname(loopback_cfg)
+        directory = directory.replace(iso_mount, "")
+        if not os.path.isdir(target + "/" + directory):
+            os.mkdir(target + os.path.sep + directory)
+        exec_rsync(loopback_cfg, target + os.path.sep + directory)
+
     # avoid the "file is read only, overwrite anyway (y/n) ?" question
     # of mtools by syslinux ("mmove -D o -D O s:/ldlinux.sys $target_file")
     if os.path.isfile(syslinux_target + 'ldlinux.sys'):
         os.unlink(syslinux_target + 'ldlinux.sys')
 
-    bootloader_dirs = ['/boot/isolinux/', '/boot/syslinux/']
-    source_dir = None
-    for dir in bootloader_dirs:
-        if glob.glob(iso_mount + dir + '*default.cfg'):
-            source_dir = dir
-            break
-    else:
+    source_dir, name = get_defaults_file(iso_mount, GRML_DEFAULT, "default.cfg")
+    (source_dir,options) = get_defaults_file(iso_mount, GRML_DEFAULT, "grml.cfg")
+
+    if not source_dir:
         logging.critical("Fatal: file default.cfg could not be found.")
         logging.critical("Note:  this grml2usb version requires an ISO generated by grml-live >=0.9.24 ...")
         logging.critical("       ... either use grml releases >=2009.10 or switch to an older grml2usb version.")
         logging.critical("       Please visit http://grml.org/grml2usb/#grml2usb-compat for further information.")
         raise
 
-    for expr in '*default.cfg', 'distri.cfg', \
-                    '*grml.cfg', 'grml.png', 'hd.cfg', 'isolinux.cfg', 'isolinux.bin', \
-                    'isoprompt.cfg', 'options.cfg', \
-                    'prompt.cfg', 'vesamenu.c32', 'vesamenu.cfg', 'grml.png':
+    for expr in name, 'distri.cfg', \
+        options, 'grml.png', 'hd.cfg', 'isolinux.cfg', 'isolinux.bin', \
+        'isoprompt.cfg', 'options.cfg', \
+        'prompt.cfg', 'vesamenu.c32', 'vesamenu.cfg', 'grml.png':
         files = glob.glob(iso_mount + source_dir + expr)
         for path in files:
             filename = os.path.basename(path)
@@ -1291,6 +1349,11 @@ def uninstall_files(device):
     logging.critical("TODO: uninstalling files from %s not yet implement, sorry.", device)
 
 
+def get_flavour(str):
+    """Returns the flavour of a grml version string
+    """
+    return re.match(r'[\w-]*', str).group()
+
 def identify_grml_flavour(mountpath):
     """Get name of grml flavour
 
@@ -1303,17 +1366,21 @@ def identify_grml_flavour(mountpath):
         logging.critical("Error: could not find grml-version file.")
         raise
 
+    flavours = []
+    tmpfile = None
     try:
         tmpfile = open(version_file, 'r')
-        grml_info = tmpfile.readline()
-        grml_flavour = re.match(r'[\w-]*', grml_info).group()
-    except TypeError:
+        for line in tmpfile.readlines():
+            flavours.append(get_flavour(line))
+    except TypeError, e:
         raise
     except Exception, e:
         logging.critical("Unexpected error: %s", e)
         raise
+    finally:
+        if tmpfile: tmpfile.close()
 
-    return grml_flavour
+    return flavours
 
 
 def modify_grub_config(filename):
@@ -1493,14 +1560,16 @@ def add_entry_if_not_present(filename, entry):
 
     data.close()
 
-
+def flavour_filename(flavour):
+    return flavour.replace('-', '_')
 
 def adjust_syslinux_bootoptions(src, flavour):
-    append_re = re.compile("^(\s*append.*)$", re.I)
+    append_re = re.compile("^(\s*append.*/boot/release.*)$", re.I)
     boot_re = re.compile("/boot/([a-zA-Z0-9_]+/)+([a-zA-Z0-9._]+)")
     # flavour_re = re.compile("(label.*)(grml\w+)")
     default_re = re.compile("(default.cfg)")
-    bootid_re = re.compile("(bootid)=[\w_-]+")
+    bootid_re = re.compile("bootid=[\w_-]+")
+    live_media_path_re = re.compile("live-media-path=[\w_/-]+")
 
     # do NOT write "None" in kernel cmdline
     if options.bootoptions is None:
@@ -1521,7 +1590,8 @@ def adjust_syslinux_bootoptions(src, flavour):
         line = boot_re.sub(r'/boot/release/%s/\2 ' % flavour.replace('-', ''), line)
         # line = flavour_re.sub(r'\1 %s-\2' % flavour, line)
         line = default_re.sub(r'%s-\1' % flavour, line)
-        line = bootid_re.sub(' ', line)
+        line = bootid_re.sub('', line)
+        line = live_media_path_re.sub('', line)
         line = append_re.sub(r'\1 live-media-path=/live/%s/ ' % flavour, line)
         line = append_re.sub(r'\1 boot=live %s ' % bootopt, line)
         line = append_re.sub(r'\1 %s=%s ' % ("bootid", UUID), line)
@@ -1556,7 +1626,6 @@ def modify_filenames(grml_flavour, target, filenames):
         old_filename = "%s/%s" % (target, filename)
         new_filename = "%s/%s_%s" % (target, grml_filename, filename)
         os.rename(old_filename, new_filename)
-        adjust_syslinux_bootoptions(new_filename, grml_flavour)
 
 
 def remove_default_entry(filename):
@@ -1599,13 +1668,14 @@ def handle_syslinux_config(grml_flavour, target):
     prompt_name.close()
 
     initial_syslinux_config(syslinux_target)
+    flavour_filename = grml_flavour.replace('-', '_')
+
     if search_file('default.cfg', syslinux_target):
         modify_filenames(grml_flavour, syslinux_target, ['grml.cfg', 'default.cfg'])
 
     filename = search_file("new_hidden.cfg", syslinux_target)
 
 
-    flavour_filename = grml_flavour.replace('-', '_')
     # process hidden file
     if not search_file("hidden.cfg", syslinux_target):
         new_hidden = syslinux_target + "hidden.cfg"
@@ -1625,10 +1695,10 @@ def handle_syslinux_config(grml_flavour, target):
     new_default = "%s_default.cfg" % (flavour_filename)
     entry = 'include %s\n' % new_default
     defaults_file = '%s/defaults.cfg' % syslinux_target
+    new_default_with_path = "%s/%s" % (syslinux_target, new_default)
+    new_grml_cfg = "%s/%s_grml.cfg" % ( syslinux_target, flavour_filename)
 
     if os.path.isfile(defaults_file):
-        new_default_with_path = "%s/%s" % (syslinux_target, new_default)
-        new_grml_cfg = "%s/%s_grml.cfg" % ( syslinux_target, flavour_filename)
 
         # remove default menu entry in menu
         remove_default_entry(new_default_with_path)
@@ -1637,6 +1707,9 @@ def handle_syslinux_config(grml_flavour, target):
         adjust_labels(new_default_with_path, r'\1 %s' % grml_flavour)
         adjust_labels(new_grml_cfg, r'\1 %s-\2' % grml_flavour)
 
+    # always adjust bootoptions
+    adjust_syslinux_bootoptions(new_default_with_path, grml_flavour)
+    adjust_syslinux_bootoptions(new_grml_cfg, grml_flavour)
 
     add_entry_if_not_present("%s/defaults.cfg" % syslinux_target, entry)
 
@@ -1696,9 +1769,15 @@ def handle_dir(live_image, device):
 
     try:
         try:
-            grml_flavour = identify_grml_flavour(live_image)
-            logging.info("Identified grml flavour \"%s\".", grml_flavour)
-            install_iso_files(grml_flavour, live_image, device, device_mountpoint)
+            grml_flavours = identify_grml_flavour(live_image)
+            worked_flavours = []
+            for flavour in grml_flavours:
+                if flavour in worked_flavours:
+                    continue
+                else:
+                    worked_flavours.append(flavour)
+                logging.info("Identified grml flavour \"%s\".", flavour)
+                install_iso_files(flavour, live_image, device, device_mountpoint)
         except TypeError:
             logging.critical("Fatal: a critical error happend during execution (not a grml ISO?), giving up")
             sys.exit(1)
@@ -1759,9 +1838,15 @@ def handle_iso(iso, device):
 
     try:
         try:
-            grml_flavour = identify_grml_flavour(iso_mountpoint)
-            logging.info("Identified grml flavour \"%s\".", grml_flavour)
-            install_iso_files(grml_flavour, iso_mountpoint, device, device_mountpoint)
+            grml_flavours = identify_grml_flavour(iso_mountpoint)
+            worked_flavours = []
+            for flavour in grml_flavours:
+                if flavour in worked_flavours:
+                    continue
+                else:
+                    worked_flavours.append(flavour)
+                logging.info("Identified grml flavour \"%s\".", flavour)
+                install_iso_files(flavour, iso_mountpoint, device, device_mountpoint)
         except TypeError:
             logging.critical("Fatal: a critical error happend during execution (not a grml ISO?), giving up")
             sys.exit(1)
