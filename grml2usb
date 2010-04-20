@@ -30,7 +30,7 @@ UUID = None
 
 def syslinux_warning(option, opt, value, parser):
     sys.stderr.write("Note: the --syslinux option is deprecated as syslinux " +
-            "is grml2usb's default. Continuing anyway.\n")
+                     "is grml2usb's default. Continuing anyway.\n")
     setattr(parser.values, option.dest, True)
 
 # if grub option is set, unset syslinux option
@@ -360,8 +360,8 @@ menuentry "Boot OS of first partition on first disk" {
 }
 
 """ % {'grml_flavour': grml_flavour, 'local_datestamp': local_datestamp,
-        'flavour_filename': grml_flavour.replace('-', ''),
-        'uid': UUID, 'bootoptions': bootoptions } )
+       'flavour_filename': grml_flavour.replace('-', ''),
+       'uid': UUID, 'bootoptions': bootoptions } )
 
 
 def generate_flavour_specific_grub2_config(grml_flavour, bootoptions):
@@ -637,9 +637,9 @@ def install_grub(device):
 
                 logging.info("Installing grub as bootloader")
                 logging.debug("grub-install --recheck --no-floppy --root-directory=%s %s",
-                    device_mountpoint, grub_device)
+                              device_mountpoint, grub_device)
                 proc = subprocess.Popen(["grub-install", "--recheck", "--no-floppy",
-                    "--root-directory=%s" % device_mountpoint, grub_device], stdout=file(os.devnull, "r+"))
+                                         "--root-directory=%s" % device_mountpoint, grub_device], stdout=file(os.devnull, "r+"))
                 proc.wait()
                 if proc.returncode != 0:
                     # raise Exception("error executing grub-install")
@@ -796,9 +796,9 @@ def install_mir_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
         raise Exception("error executing dd (first run)")
 
     logging.debug("executing: dd if=%s of=%s bs=%s count=1 conv=notrunc", mbrtemplate,
-        tmpf.name, nmbrbytes)
+                  tmpf.name, nmbrbytes)
     proc = subprocess.Popen(["dd", "if=%s" % mbrtemplate, "of=%s" % tmpf.name, "bs=%s" % nmbrbytes,
-        "count=1", "conv=notrunc"], stderr=file(os.devnull, "r+"))
+                             "count=1", "conv=notrunc"], stderr=file(os.devnull, "r+"))
     proc.wait()
     if proc.returncode != 0:
         raise Exception("error executing dd (second run)")
@@ -809,15 +809,15 @@ def install_mir_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
 
     if ismirbsdmbr:
         mbrcode = mbrcode[0:439] + chr(partition) + \
-          mbrcode[440:510] + "\x55\xAA"
+                mbrcode[440:510] + "\x55\xAA"
     else:
         actives = ["\x00", "\x00", "\x00", "\x00"]
         actives[partition] = "\x80"
         mbrcode = mbrcode[0:446] + actives[0] + \
-          mbrcode[447:462] + actives[1] + \
-          mbrcode[463:478] + actives[2] + \
-          mbrcode[479:494] + actives[3] + \
-          mbrcode[495:510] + "\x55\xAA"
+                mbrcode[447:462] + actives[1] + \
+                mbrcode[463:478] + actives[2] + \
+                mbrcode[479:494] + actives[3] + \
+                mbrcode[495:510] + "\x55\xAA"
 
     tmpf.file.seek(0)
     tmpf.file.truncate()
@@ -826,7 +826,7 @@ def install_mir_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
 
     logging.debug("executing: dd if='%s' of='%s' bs=512 count=1 conv=notrunc", tmpf.name, device)
     proc = subprocess.Popen(["dd", "if=%s" % tmpf.name, "of=%s" % device, "bs=512", "count=1",
-                            "conv=notrunc"], stderr=file(os.devnull, "r+"))
+                             "conv=notrunc"], stderr=file(os.devnull, "r+"))
     proc.wait()
     if proc.returncode != 0:
         raise Exception("error executing dd (third run)")
@@ -964,7 +964,7 @@ def check_for_fat(partition):
 
     try:
         udev_info = subprocess.Popen(["/sbin/blkid", "-s", "TYPE", "-o", "value", partition],
-                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         filesystem = udev_info.communicate()[0].rstrip()
 
         if udev_info.returncode == 2:
@@ -1022,12 +1022,12 @@ def get_uuid(target):
     uuid_file_name = conf_target + "/bootid.txt"
     if os.path.isdir(conf_target):
         if os.path.isfile(uuid_file_name):
-           uuid_file = open(uuid_file_name, 'r')
-           uid = uuid_file.readline().strip()
-           uuid_file.close()
-           return uid
+            uuid_file = open(uuid_file_name, 'r')
+            uid = uuid_file.readline().strip()
+            uuid_file.close()
+            return uid
         else:
-           return write_uuid(uuid_file_name)
+            return write_uuid(uuid_file_name)
     else:
         execute(mkdir, conf_target)
         return write_uuid(uuid_file_name)
