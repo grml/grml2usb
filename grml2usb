@@ -20,7 +20,7 @@ import glob
 import uuid
 
 # global variables
-PROG_VERSION = "0.9.23"
+PROG_VERSION = "0.9.24"
 MOUNTED = set()  # register mountpoints
 TMPFILES = set() # register tmpfiles
 DATESTAMP = time.mktime(datetime.datetime.now().timetuple()) # unique identifier for syslinux.cfg
