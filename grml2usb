@@ -625,7 +625,6 @@ def install_grub(device):
                 mount(device, device_mountpoint, "")
 
                 # If using --grub-mbr then make sure we install grub in MBR instead of PBR
-                # Thanks to grub2. NOT.
                 if options.grubmbr:
                     logging.debug("Using option --grub-mbr ...")
                     if device[-1:].isdigit():
@@ -638,13 +637,13 @@ def install_grub(device):
                 logging.info("Installing grub as bootloader")
                 logging.debug("grub-install --recheck --no-floppy --root-directory=%s %s",
                               device_mountpoint, grub_device)
-                proc = subprocess.Popen(["grub-install", "--recheck", "--no-floppy",
+                proc = subprocess.Popen(["grub-install", "--recheck", "--force", "--no-floppy",
                                          "--root-directory=%s" % device_mountpoint, grub_device], stdout=file(os.devnull, "r+"))
                 proc.wait()
                 if proc.returncode != 0:
                     # raise Exception("error executing grub-install")
                     logging.critical("Fatal: error executing grub-install (please check the grml2usb FAQ or drop the --grub option)")
-                    logging.critical("Note:  if using grub2 consider using the --grub-mbr option because grub2's PBR feature is broken.")
+                    logging.critical("Note:  if using grub2 consider using the --grub-mbr option as grub considers PBR problematic.")
                     cleanup()
                     sys.exit(1)
             except CriticalException, error:
