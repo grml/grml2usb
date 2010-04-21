@@ -81,9 +81,8 @@ Force any (possible dangerous) actions requiring manual interaction (like --fat1
   *\--grub-mbr*::
 
 Install grub into MBR (Master Boot Record) instead of PBR (Partition Boot
-Record).  This option sadly had to be introduced because grub2 can not be
-installed to partitions (PBR) instead of MBR anymore. Check out <<mbr-vs-pbr,the
-'mbr-vs-pbr' section in the FAQ of this document>> for further details.
+Record). Check out <<mbr-vs-pbr,the 'mbr-vs-pbr' section in the FAQ of this
+document>> for further details.
 
   *\--help*::
 
@@ -538,19 +537,14 @@ The following message:
   grub-setup: warn: Embedding is not possible.  GRUB can only be installed in this setup by using blocklists.  However, blocklists are UNRELIABLE and its use is discouraged.
   grub-setup: error: Cannot read `/grub/core.img' correctly
 
-appears because recent grub2 versions sadly introduced a regression which avoids
-that grub is being installed into a partition (PBR, Partition Boot Record)
-instead of MBR (Master Boot Record).
+appears when using grub2 versions older than 1.98 as those version introduced a
+regression which avoids that grub is being installed into a partition (PBR,
+Partition Boot Record) instead of MBR (Master Boot Record).
 
-To work around this issue you can install grub into the MBR (Master Boot Record)
-using the '--grub-mbr' option of grml2usb or switch to syslinux as bootmanager
-(just drop the '--grub'  option).
-
-To fix this issue manually you can also execute (adjust '/dev/sdX' to your
-device of course):
-
-  mount /dev/sdX1 /mnt/test
-  grub-install --force --recheck --no-floppy --root-directory=/mnt/test /dev/sdX
+To work around this issue you can either 1) upgrade to grub versions >=1.98, 2)
+install grub into the MBR (Master Boot Record) using the '--grub-mbr' option of
+grml2usb or 3) switch to syslinux as bootmanager (just drop the '--grub'
+option).
 
 [[splash-xpm]]
 I'm getting something like "Error: /usr/share/grml2usb/grub/splash.xpm.gz can not be read"!?
