@@ -1254,7 +1254,7 @@ def copy_bootloader_files(iso_mount, target):
     for expr in name, 'distri.cfg', \
         options, 'grml.png', 'hd.cfg', 'isolinux.cfg', 'isolinux.bin', \
         'isoprompt.cfg', 'options.cfg', \
-        'prompt.cfg', 'vesamenu.c32', 'vesamenu.cfg', 'grml.png':
+        'prompt.cfg', 'vesamenu.c32', 'vesamenu.cfg', 'grml.png', '*.c32':
         files = glob.glob(iso_mount + source_dir + expr)
         for path in files:
             filename = os.path.basename(path)
