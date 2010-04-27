@@ -1538,6 +1538,20 @@ def handle_grub2_config(grml_flavour, grub_target, bootopt):
     modify_grub_config(grub2_cfg)
 
 
+def get_bootoptions(grml_flavour):
+    """Returns bootoptions for specific flavour
+
+    @grml_flavour: name of the grml_flavour
+    """
+    # do NOT write "None" in kernel cmdline
+    if options.bootoptions is None:
+        bootopt = ""
+    else:
+        bootopt = options.bootoptions
+    bootopt = bootopt.replace("%flavour", grml_flavour)
+    return bootopt
+
+
 def handle_grub_config(grml_flavour, device, target):
     """Main handler for generating grub (v1 and v2) configuration
 
@@ -1557,11 +1571,8 @@ def handle_grub_config(grml_flavour, device, target):
         else:
             raise CriticalException("error validating partition schema (raw device?)")
 
-    # do NOT write "None" in kernel cmdline
-    if options.bootoptions is None:
-        bootopt = ""
-    else:
-        bootopt = options.bootoptions
+
+    bootopt = get_bootoptions(grml_flavour)
 
     # write menu.lst
     handle_grub1_config(grml_flavour, install_grub1_partition, grub_target, bootopt)
@@ -1624,11 +1635,7 @@ def adjust_syslinux_bootoptions(src, flavour):
     bootid_re = re.compile("bootid=[\w_-]+")
     live_media_path_re = re.compile("live-media-path=[\w_/-]+")
 
-    # do NOT write "None" in kernel cmdline
-    if options.bootoptions is None:
-        bootopt = ""
-    else:
-        bootopt = options.bootoptions
+    bootopt = get_bootoptions(flavour)
 
     regexe = []
     option_re = None

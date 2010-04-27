@@ -51,7 +51,8 @@ The following options are supported:
 
   *\--bootoptions=...*::
 
-Use specified bootoptions as default.
+Use specified bootoptions as default. To use flavour name as a argument for a
+boot parameter use %flavour which will be expanded to the flavour name.
 
   *\--bootloader-only*::
 
@@ -649,6 +650,12 @@ default bootoptions.
   # grml2usb --remove-bootoption="vga=791" --remove-bootoption="quiet" grml_2009.10.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1 remove vga=791 and quiet from existing bootoptions.
+
+  # grml2usb --bootoptions="persistent-path=%flavour_name" grml64_2010.04.iso grml_2010.04.iso /dev/sdX1
+
+Install specified Isos on device /dev/sdx and add parameter persisten-path
+to every menu entry. %flavour_name will be expanded to the flavour of the specific
+iso, e.g. grml64 and grml.
 
 [[ressources]]
 Online Ressources
