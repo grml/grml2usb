@@ -79,6 +79,10 @@ Format specified partition with FAT16.
 
 Force any (possible dangerous) actions requiring manual interaction (like --fat16).
 
+  *\--grub*::
+
+Install grub bootloader instead of (default) syslinux.
+
   *\--grub-mbr*::
 
 Install grub into MBR (Master Boot Record) instead of PBR (Partition Boot
