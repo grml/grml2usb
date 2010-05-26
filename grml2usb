@@ -910,8 +910,8 @@ def mount(source, target, mount_options):
 
     for x in file('/proc/mounts').readlines():
         if x.startswith(source):
-            raise CriticalException("Error executing mount: %s already mounted - "
-                                    + "please unmount before invoking grml2usb" % source)
+            raise CriticalException("Error executing mount: %s already mounted - " % source
+                                    + "please unmount before invoking grml2usb")
 
     if os.path.isdir(source):
         logging.debug("Source %s is not a device, therefore not mounting.", source)
