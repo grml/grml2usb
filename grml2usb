@@ -22,7 +22,7 @@ import uuid
 import struct
 
 # global variables
-PROG_VERSION = "0.9.25"
+PROG_VERSION = "0.9.26~git"
 MOUNTED = set()  # register mountpoints
 TMPFILES = set() # register tmpfiles
 DATESTAMP = time.mktime(datetime.datetime.now().timetuple()) # unique identifier for syslinux.cfg
@@ -990,8 +990,9 @@ def check_for_fat(partition):
                                     " (wrong UID/permissions or device/directory not present?)" % partition)
 
         if filesystem != "vfat":
-            raise CriticalException("Partition %s does not contain a FAT16 filesystem. "
-                                    + "(Use --fat16 or run mkfs.vfat %s)" % (partition, partition))
+            raise CriticalException(
+                    "Partition %s does not contain a FAT16 filesystem." % (partition) \
+                    + "(Use --fat16 or run mkfs.vfat %s)" % (partition))
 
     except OSError:
         raise CriticalException("Sorry, /sbin/blkid not available (install e2fsprogs?)")
