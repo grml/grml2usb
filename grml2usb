@@ -649,7 +649,7 @@ def install_grub(device):
                     grub_device = device
 
                 logging.info("Installing grub as bootloader")
-                logging.debug("grub-install --recheck --no-floppy --root-directory=%s %s",
+                logging.debug("grub-install --recheck --force --no-floppy --root-directory=%s %s",
                               device_mountpoint, grub_device)
                 proc = subprocess.Popen(["grub-install", "--recheck", "--force", "--no-floppy",
                                          "--root-directory=%s" % device_mountpoint, grub_device],
