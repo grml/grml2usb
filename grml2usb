@@ -699,18 +699,12 @@ def install_bootloader(device):
 
     # by default we use grub, so install syslinux only on request
     if options.grub:
-        if not which("grub-install"):
-            logging.critical("Fatal: grub-install not available (please install the "
-                             + "grub package or use the --syslinux option)")
+        try:
+            install_grub(device)
+        except CriticalException, error:
+            logging.critical("Fatal: %s", error)
             cleanup()
             sys.exit(1)
-        else:
-            try:
-                install_grub(device)
-            except CriticalException, error:
-                logging.critical("Fatal: %s", error)
-                cleanup()
-                sys.exit(1)
     else:
         try:
             install_syslinux(device)
@@ -2057,7 +2051,6 @@ def main():
     if options.dryrun:
         logging.info("Running in simulation mode as requested via option dry-run.")
 
-
     # specified arguments
     device = args[len(args) - 1]
     isos = args[0:len(args) - 1]
@@ -2069,6 +2062,18 @@ def main():
                 sys.exit(1)
         elif os.path.exists(device):
             logging.critical("Fatal: installation on raw device not supported. (BIOS won't support it.)")
+            sys.exit(1)
+
+    if options.grub:
+        if not which("grub-install"):
+            logging.critical("Fatal: grub-install not available (please install the "
+                             + "grub package or drop the --grub option)")
+            sys.exit(1)
+
+    if options.syslinux:
+        if not which("syslinux"):
+            logging.critical("Fatal: syslinux not available (please install the "
+                             + "syslinux package or use the --grub option)")
             sys.exit(1)
 
     if not which("rsync"):
