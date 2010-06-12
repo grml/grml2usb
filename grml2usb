@@ -34,7 +34,7 @@ def syslinux_warning(option, opt, value, opt_parser):
     """A helper function for printing a warning about deprecated option
     """
     # pylint: disable-msg=W0613
-    sys.stderr.write("Note: the --syslinux option is deprecated as syslinux " +
+    sys.stderr.write("Note: the --syslinux option is deprecated as syslinux "
                      "is grml2usb's default. Continuing anyway.\n")
     setattr(opt_parser.values, option.dest, True)
 
@@ -1263,11 +1263,13 @@ def copy_if_exist(filename, dst):
     if filename and (os.path.isfile(filename) or os.path.isdir(filename)):
         exec_rsync(filename, dst)
 
-def copy_bootloader_files(iso_mount, target):
+def copy_bootloader_files(iso_mount, target, grml_flavour):
     """Copy grml's bootloader files to a given target
 
     @iso_mount: path where a grml ISO is mounted on
-    @target: path where grml's main files should be copied to"""
+    @target: path where grml's main files should be copied to
+    @grml_flavour: name of the current processed grml_flavour
+    """
 
     syslinux_target = target + '/boot/syslinux/'
     execute(mkdir, syslinux_target)
@@ -1295,8 +1297,8 @@ def copy_bootloader_files(iso_mount, target):
     if os.path.isfile(syslinux_target + 'ldlinux.sys'):
         os.unlink(syslinux_target + 'ldlinux.sys')
 
-    (source_dir, name) = get_defaults_file(iso_mount, GRML_DEFAULT, "default.cfg")
-    (source_dir, defaults_file) = get_defaults_file(iso_mount, GRML_DEFAULT, "grml.cfg")
+    (source_dir, name) = get_defaults_file(iso_mount, grml_flavour, "default.cfg")
+    (source_dir, defaults_file) = get_defaults_file(iso_mount, grml_flavour, "grml.cfg")
 
     if not source_dir:
         logging.critical("Fatal: file default.cfg could not be found.")
@@ -1348,7 +1350,7 @@ def install_iso_files(grml_flavour, iso_mount, device, target):
     @target: path where grml's main files should be copied to"""
 
     global GRML_DEFAULT
-    GRML_DEFAULT = grml_flavour
+    GRML_DEFAULT = GRML_DEFAULT or grml_flavour
     if options.dryrun:
         return 0
     elif not options.bootloaderonly:
@@ -1367,7 +1369,7 @@ def install_iso_files(grml_flavour, iso_mount, device, target):
             copy_addons(iso_mount, target)
 
     if not options.copyonly:
-        copy_bootloader_files(iso_mount, target)
+        copy_bootloader_files(iso_mount, target, grml_flavour)
 
         if not options.dryrun:
             handle_bootloader_config(grml_flavour, device, target)
@@ -1866,11 +1868,13 @@ def install_grml(mountpoint, device):
             except CriticalException, error:
                 logging.critical("Fatal: %s", error)
                 raise
+    global GRML_FLAVOURS
     try:
         grml_flavours = identify_grml_flavour(mountpoint)
         for flavour in set(grml_flavours):
             logging.info("Identified grml flavour \"%s\".", flavour)
             install_iso_files(flavour, mountpoint, device, device_mountpoint)
+            GRML_FLAVOURS.add(flavour)
     finally:
         if remove_device_mountpoint:
             remove_mountpoint(device_mountpoint)
