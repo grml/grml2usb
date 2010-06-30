@@ -1,10 +1,20 @@
-grml2usb (0.9.27~pre1) UNRELEASED; urgency=low
+grml2usb (0.9.27) unstable; urgency=low
 
-  * Check for precense of grub/syslinux at startup time.
+  [ Michael Prokop ]
+  * [3836a71] Check for precense of grub/syslinux at startup time.
     Thanks to Eduard Bloch for reporting.  [Closes: issue855]
-  * Mention --force switch of grub-install in debug log.
+  * [bde7012] Mention --force switch of grub-install in debug log.
+  * [1c1c18c] Doc: fix documentation regarding default bootmanager.
+    (thanks Martin Krafft).
+  * [bae5bfb] Bump Standards-Version to 3.9.0.
 
- -- Michael Prokop <mika@grml.org>  Sat, 29 May 2010 01:35:05 +0200
+  [ Ulrich Dangel ]
+  * [b79a4cc] Fix error message for unintialized partition.
+    [Closes: issue857]
+  * [cd204ee] Fix user feedback about default flavour and
+    installed flavours.
+
+ -- Michael Prokop <mika@grml.org>  Wed, 30 Jun 2010 13:10:09 +0200
 
 grml2usb (0.9.26) unstable; urgency=low
 
