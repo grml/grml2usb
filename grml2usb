@@ -1116,26 +1116,26 @@ def update_grml_versions(iso_mount, target):
     @target: path of the target mount point
     """
     grml_target = target + '/grml/'
-    new_grml_version = search_file('grml-version', grml_target)
-    if new_grml_version:
-        orig_grml_version = search_file('grml-version', iso_mount)
-        if not orig_grml_version:
-            logging.warn("Warning: %s could not be found - can not install it", orig_grml_version)
+    target_grml_version_file = search_file('grml-version', grml_target)
+    if target_grml_version_file:
+        iso_grml_version_file = search_file('grml-version', iso_mount)
+        if not iso_grml_version_file:
+            logging.warn("Warning: %s could not be found - can not install it", iso_grml_version_file)
             return False
         try:
-            new_file = open(new_grml_version, 'a+')
-            new_flavours = [ get_flavour(l) for l in new_file.readlines() ]
+            target_file = open(target_grml_version_file, 'a+')
+            target_flavours = [ get_flavour(l) for l in target_file.readlines() ]
 
-            old_file = open(orig_grml_version, 'r')
-            old_lines = old_file.readlines()
-            for line in old_lines:
-                if not get_flavour(line) in new_flavours:
-                    new_file.write(line)
+            iso_file = open(iso_grml_version_file, 'r')
+            iso_lines = iso_file.readlines()
+            for line in iso_lines:
+                if not get_flavour(line) in target_flavours:
+                    target_file.write(line)
         except IOError:
             logging.warn("Warning: Could not write file")
         finally:
-            new_file.close()
-            old_file.close()
+            target_file.close()
+            iso_file.close()
         return True
     else:
         return False
