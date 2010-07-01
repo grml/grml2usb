@@ -1868,7 +1868,6 @@ def install_grml(mountpoint, device):
             except CriticalException, error:
                 logging.critical("Fatal: %s", error)
                 raise
-    global GRML_FLAVOURS
     try:
         grml_flavours = identify_grml_flavour(mountpoint)
         for flavour in set(grml_flavours):
@@ -2032,6 +2031,24 @@ def check_options(opts):
         sys.exit(1)
 
 
+def check_programs():
+    """check if all needed programs are installed"""
+    if options.grub:
+        if not which("grub-install"):
+            logging.critical("Fatal: grub-install not available (please install the "
+                             + "grub package or drop the --grub option)")
+            sys.exit(1)
+
+    if options.syslinux:
+        if not which("syslinux"):
+            logging.critical("Fatal: syslinux not available (please install the "
+                             + "syslinux package or use the --grub option)")
+            sys.exit(1)
+
+    if not which("rsync"):
+        logging.critical("Fatal: rsync not available, can not continue - sorry.")
+        sys.exit(1)
+
 def main():
     """Main function [make pylint happy :)]"""
 
@@ -2055,6 +2072,8 @@ def main():
     if options.dryrun:
         logging.info("Running in simulation mode as requested via option dry-run.")
 
+    check_programs()
+
     # specified arguments
     device = args[len(args) - 1]
     isos = args[0:len(args) - 1]
@@ -2068,21 +2087,6 @@ def main():
             logging.critical("Fatal: installation on raw device not supported. (BIOS won't support it.)")
             sys.exit(1)
 
-    if options.grub:
-        if not which("grub-install"):
-            logging.critical("Fatal: grub-install not available (please install the "
-                             + "grub package or drop the --grub option)")
-            sys.exit(1)
-
-    if options.syslinux:
-        if not which("syslinux"):
-            logging.critical("Fatal: syslinux not available (please install the "
-                             + "syslinux package or use the --grub option)")
-            sys.exit(1)
-
-    if not which("rsync"):
-        logging.critical("Fatal: rsync not available, can not continue - sorry.")
-        sys.exit(1)
 
     # provide upgrade path
     handle_compat_warning(device)
