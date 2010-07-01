@@ -1123,19 +1123,22 @@ def update_grml_versions(iso_mount, target):
             logging.warn("Warning: %s could not be found - can not install it", iso_grml_version_file)
             return False
         try:
-            target_file = open(target_grml_version_file, 'a+')
-            target_flavours = [ get_flavour(l) for l in target_file.readlines() ]
-
+            iso_versions = {}
             iso_file = open(iso_grml_version_file, 'r')
-            iso_lines = iso_file.readlines()
-            for line in iso_lines:
-                if not get_flavour(line) in target_flavours:
-                    target_file.write(line)
+            for line in iso_file:
+                iso_versions[get_flavour(line)] = line.strip()
+
+            for line in fileinput.input([target_grml_version_file], inplace=1):
+                flavour = get_flavour(line)
+                if flavour in iso_versions.keys():
+                    print iso_versions[flavour]
+                else:
+                    print line.strip()
         except IOError:
             logging.warn("Warning: Could not write file")
         finally:
-            target_file.close()
             iso_file.close()
+            fileinput.close()
         return True
     else:
         return False
