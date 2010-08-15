@@ -359,17 +359,48 @@ menuentry "Boot FreeDOS" {
     initrd  /boot/addons/balder10.imz
 }
 
-menuentry "Boot MirOS bsd4grml" {
-    multiboot /boot/addons/bsd4grml/ldbsd.com
-    module    /boot/addons/bsd4grml/bsd.rd
-    module    /boot/addons/bsd4grml/boot.1
-    module    /boot/addons/bsd4grml/boot.2
-    module    /boot/addons/bsd4grml/boot.3
-    module    /boot/addons/bsd4grml/boot.4
-    module    /boot/addons/bsd4grml/boot.5
-    module    /boot/addons/bsd4grml/boot.6
-    module    /boot/addons/bsd4grml/boot.cfg
-}
+if [ ${iso_path} ] ; then
+    # assume loopback.cfg boot
+    if [ -e /boot/addons/bsd4grml/loopback.0 ] ; then
+        # bsd4grml 20100815 and later
+        menuentry "Boot MirOS bsd4grml" {
+            multiboot /boot/addons/bsd4grml/ldbsd.com
+            module /boot/addons/bsd4grml/bsd.rd bsd
+            module /boot/addons/bsd4grml/loopback.0 boot.cfg
+            module /boot/addons/bsd4grml/loopback.1 boot.1
+            module /boot/addons/bsd4grml/loopback.2 boot.2
+            module /boot/addons/bsd4grml/loopback.3 boot.3
+            module /boot/addons/bsd4grml/loopback.4 boot.4
+            module /boot/addons/bsd4grml/loopback.5 boot.5
+            module /boot/addons/bsd4grml/loopback.6 boot.6
+        }
+    else
+        # old bsd4grml
+        menuentry "Boot MirOS bsd4grml" {
+            multiboot /boot/addons/bsd4grml/ldbsd.com
+            module /boot/addons/bsd4grml/bsd.rd bsd.rd
+            module /boot/addons/bsd4grml/boot.cfg boot.cfg
+            module /boot/addons/bsd4grml/boot.1 boot.1
+            module /boot/addons/bsd4grml/boot.2 boot.2
+            module /boot/addons/bsd4grml/boot.3 boot.3
+            module /boot/addons/bsd4grml/boot.4 boot.4
+            module /boot/addons/bsd4grml/boot.5 boot.5
+        }
+    fi
+else
+    # assume grub.cfg boot
+    menuentry "Boot MirOS bsd4grml" {
+        multiboot /boot/addons/bsd4grml/ldbsd.com
+        module /boot/addons/bsd4grml/bsd.rd bsd.rd
+        module /boot/addons/bsd4grml/boot.cfg boot.cfg
+        module /boot/addons/bsd4grml/boot.1 boot.1
+        module /boot/addons/bsd4grml/boot.2 boot.2
+        module /boot/addons/bsd4grml/boot.3 boot.3
+        module /boot/addons/bsd4grml/boot.4 boot.4
+        module /boot/addons/bsd4grml/boot.5 boot.5
+        module /boot/addons/bsd4grml/boot.6 boot.6
+    }
+fi
 
 menuentry "Boot OS of first partition on first disk" {
     set root=(hd0,1)
