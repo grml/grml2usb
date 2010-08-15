@@ -1322,7 +1322,7 @@ def handle_grub2_config(grml_flavour, grub_target, bootopt):
 
     # grub2 config
     grub2_cfg = grub_target + 'grub.cfg'
-    logging.debug("Creating grub2 configuration file (grub.lst)")
+    logging.debug("Creating grub2 configuration file (grub.cfg)")
 
     global GRML_DEFAULT
 
