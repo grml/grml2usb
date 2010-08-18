@@ -29,6 +29,7 @@ DATESTAMP = time.mktime(datetime.datetime.now().timetuple()) # unique identifier
 GRML_FLAVOURS = set() # which flavours are being installed?
 GRML_DEFAULT = None
 UUID = None
+SYSLINUX_LIBS = "/usr/lib/syslinux/"
 
 def syslinux_warning(option, opt, value, opt_parser):
     """A helper function for printing a warning about deprecated option
@@ -1313,8 +1314,12 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
     for expr in name, 'distri.cfg', \
         defaults_file, 'grml.png', 'hd.cfg', 'isolinux.cfg', 'isolinux.bin', \
         'isoprompt.cfg', 'options.cfg', \
-        'prompt.cfg', 'vesamenu.c32', 'vesamenu.cfg', 'grml.png', '*.c32':
+        'prompt.cfg', 'vesamenu.cfg', 'grml.png', '*.c32':
         glob_and_copy(iso_mount + source_dir + expr, syslinux_target)
+
+    for filename in glob.glob1(syslinux_target, "*.c32"):
+        copy_if_exist(os.path.join(SYSLINUX_LIBS, filename), syslinux_target)
+
 
     # copy the addons_*.cfg file to the new syslinux directory
     glob_and_copy(iso_mount + source_dir + 'addon*.cfg', syslinux_target)
