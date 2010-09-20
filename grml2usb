@@ -1201,7 +1201,7 @@ def handle_addon_copy(filename, dst, iso_mount):
     if file_location is None:
         logging.warn("Warning: %s not found (that's fine if you don't need it)",  filename)
     else:
-        exec_rsync(file_location, dst + filename)
+        exec_rsync(file_location, dst)
 
 
 def copy_addons(iso_mount, target):
