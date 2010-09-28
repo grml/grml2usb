@@ -1,3 +1,23 @@
+grml2usb (0.9.28) unstable; urgency=low
+
+  [ Ulrich Dangel ]
+  * [7b4fa5c] Some code cleanup.
+  * [2a93d92] Copy bootloader files from /usr/lib/syslinux/
+    [Closes: issue894]
+  * [c0fd54e] Run grub-install without and with --force option.
+  * [1a5a6cd] bsd4grml was not copied correctly to the target device.
+
+  [ Christian Hofstaedtler ]
+  * [875b62b] Rename variables in update_grml_versions to be less
+    confusing.
+  * [791485b] Properly update grml-versions when updating a grml
+    flavour.
+
+  [ Michael Prokop ]
+  * [91529cc] Bump Standards-Version to 3.9.1.
+
+ -- Michael Prokop <mika@grml.org>  Tue, 28 Sep 2010 23:57:16 +0200
+
 grml2usb (0.9.27) unstable; urgency=low
 
   [ Michael Prokop ]
