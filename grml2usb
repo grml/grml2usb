@@ -1159,22 +1159,30 @@ def update_grml_versions(iso_mount, target):
             logging.warn("Warning: %s could not be found - can not install it", iso_grml_version_file)
             return False
         try:
+            # read the flavours from the iso image
             iso_versions = {}
             iso_file = open(iso_grml_version_file, 'r')
             for line in iso_file:
                 iso_versions[get_flavour(line)] = line.strip()
 
+            # update the existing flavours on the target
             for line in fileinput.input([target_grml_version_file], inplace=1):
                 flavour = get_flavour(line)
                 if flavour in iso_versions.keys():
-                    print iso_versions[flavour]
+                    print iso_versions.pop(flavour)
                 else:
                     print line.strip()
+            fileinput.close()
+
+            target_file = open(target_grml_version_file, 'a')
+            # add the new flavours from the current iso
+            for flavour in iso_versions:
+                target_file.write("%s\n" % iso_versions[flavour])
         except IOError:
             logging.warn("Warning: Could not write file")
         finally:
             iso_file.close()
-            fileinput.close()
+            target_file.close()
         return True
     else:
         return False
