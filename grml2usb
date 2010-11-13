@@ -1102,7 +1102,8 @@ def copy_system_files(grml_flavour, iso_mount, target):
 
     squashfs = search_file(grml_flavour + '.squashfs', iso_mount)
     if squashfs is None:
-        logging.critical("Fatal: squashfs file not found")
+        logging.critical("Fatal: squashfs file not found"
+        ", please check that your iso is not corrupt")
         raise CriticalException("error locating squashfs file")
     else:
         squashfs_target = target + '/live/' + grml_flavour + '/'
@@ -1922,6 +1923,8 @@ def install_grml(mountpoint, device):
     try:
         grml_flavours = identify_grml_flavour(mountpoint)
         for flavour in set(grml_flavours):
+            if not flavour:
+                logging.warning("No valid flavour found, please check your iso")
             logging.info("Identified grml flavour \"%s\".", flavour)
             install_iso_files(flavour, mountpoint, device, device_mountpoint)
             GRML_FLAVOURS.add(flavour)
