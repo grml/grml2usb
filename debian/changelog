@@ -1,3 +1,23 @@
+grml2usb (0.9.29) unstable; urgency=low
+
+  [ Thorsten Glaser ]
+  * [601cc84] correct a pasto (it's 'grub.cfg')
+  * [dc6a084] There is no /bin/bash on most operating systems.
+  * [eb1a910] fix bsd4grml boot (loopback and regular)
+
+  [ Ulrich Dangel ]
+  * [3cec649] Append new flavours to grml-version, do not only update
+    existing versions
+  * [35d64cf] Update version
+  * [ff5be86] Improve logging message
+
+  [ Michael Prokop ]
+  * [e32e549] Re-add mtools to Depends as they are just suggests of
+    syslinux package - thanks to Michael Gissing for the bugreport.
+    [Closes: issue905]
+
+ -- Michael Prokop <mika@grml.org>  Thu, 25 Nov 2010 11:15:10 +0100
+
 grml2usb (0.9.28) unstable; urgency=low
 
   [ Ulrich Dangel ]

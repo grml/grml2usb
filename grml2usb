@@ -22,7 +22,7 @@ import uuid
 import struct
 
 # global variables
-PROG_VERSION = "0.9.29~git"
+PROG_VERSION = "0.9.29"
 MOUNTED = set()  # register mountpoints
 TMPFILES = set() # register tmpfiles
 DATESTAMP = time.mktime(datetime.datetime.now().timetuple()) # unique identifier for syslinux.cfg
