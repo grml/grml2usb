@@ -256,7 +256,7 @@ if loadfont /boot/grub/ascii.pf2 ; then
    set gfxmode=640x480
    insmod gfxterm
    insmod vbe
-   if terminal_output.gfxterm ; then true ; else
+   if terminal_output gfxterm ; then true ; else
     # For backward compatibility with versions of terminal.mod that don't
     # understand terminal_output
     terminal gfxterm
