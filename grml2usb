@@ -7,7 +7,7 @@ grml2usb
 
 This script installs a grml system (either a running system or ISO[s]) to a USB device
 
-:copyright: (c) 2009 by Michael Prokop <mika@grml.org>
+:copyright: (c) 2009, 2010, 2011 by Michael Prokop <mika@grml.org>
 :license: GPL v2 or any later version
 :bugreports: http://grml.org/bugs/
 
@@ -22,7 +22,7 @@ import uuid
 import struct
 
 # global variables
-PROG_VERSION = "0.9.29"
+PROG_VERSION = "0.9.30"
 MOUNTED = set()  # register mountpoints
 TMPFILES = set() # register tmpfiles
 DATESTAMP = time.mktime(datetime.datetime.now().timetuple()) # unique identifier for syslinux.cfg

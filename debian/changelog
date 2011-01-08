@@ -1,3 +1,11 @@
+grml2usb (0.9.30) unstable; urgency=low
+
+  * [35b606b] fix broken grub command terminal_output (should be
+    "terminal_output gfxterm" instead of terminal_output.gfxterm) -
+    thanks to Bert Schulze <spambemyguest@googlemail.com>
+
+ -- Michael Prokop <mika@grml.org>  Sat, 08 Jan 2011 23:11:15 +0100
+
 grml2usb (0.9.29) unstable; urgency=low
 
   [ Thorsten Glaser ]
