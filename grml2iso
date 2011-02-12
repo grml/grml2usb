@@ -6,9 +6,6 @@
 # Bug-Reports:   see http://grml.org/bugs/
 # License:       This file is licensed under the GPL v2 or any later version.
 ################################################################################
-# TODO:
-# * support setting grml2usb options
-################################################################################
 
 # define function getfilesize before "set -e" {{{
   if stat --help >/dev/null 2>&1; then
@@ -41,11 +38,14 @@ fi
     echo >&2 "Usage: $0 [OPTIONS] -o target.iso source1.iso [source2.iso ...]"
     echo >&2 "
 Options:
-     -b Boot Params    Additional boot parameters passed to grml2usb
-     -c Directory      Copy files from directory to generated iso
-     -f                Force overwrite of existing target.iso
-     -r BootParam      Remove specified boot params.
-                       Could be specfied multiple times.
+     -b Boot Params      Additional boot parameters passed to grml2usb
+     -c Directory        Copy files from directory to generated iso
+     -f                  Force overwrite of existing target.iso
+     -r BootParam        Remove specified boot params.
+                         Could be specfied multiple times.
+     -p <grml2usb param> Add the specified parameter to the grml2usb
+                         commandline. For a list of valid parameters have
+                         a look at the grml2usb manpage.
 "
     [ -n "$1" ] && exit $1 || exit 1
   }
@@ -58,14 +58,15 @@ Options:
   DIR=''
   ADD_OPTS=''
   FORCE=''
-  typeset -a REMOVE_OPTS
-  while getopts fb:c:o:r: name; do
+  typeset -a GRML2USB_OPTS
+  while getopts fb:c:o:r:p: name; do
     case $name in
       o)   ISOFILE="$OPTARG";;
-      b)   ADD_OPTS="--bootoption="$OPTARG"";;
+      b)   GRML2USB_OPTS+=(--bootoptions="$OPTARG");;
       c)   DIR="$OPTARG";;
       f)   FORCE='true';;
-      r)   REMOVE_OPTS+=(--remove-bootoption="$OPTARG");;
+      r)   GRML2USB_OPTS+=(--remove-bootoption="$OPTARG");;
+      p)   GRML2USB_OPTS+=("$OPTARG");;
       ?)   usage 2;;
     esac
   done
@@ -125,7 +126,7 @@ Options:
   # remove all parameters
   shift $(($OPTIND - 1))
 
-  $GRML2USB "${REMOVE_OPTS[@]}" ${ADD_OPTS:+"$ADD_OPTS"} "$@" "$WRKDIR/cddir"
+  $GRML2USB "${GRML2USB_OPTS[@]}" "$@" "$WRKDIR/cddir"
 # }}}
 
 

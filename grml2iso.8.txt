@@ -53,6 +53,9 @@ Force the program to run and overwrite an existing iso image.
 
 Remove specified boot parameter from existing command line. Could be specified multiple times.
 
+  *\-p <grml2usb param>*::
+
+Execute grml2usb with the specified parameters. For a list of valid parameters have a look at the link:http://grml.org/grml2usb/[grml2usb webpage] or the grml2usb manpage
 
 
 
@@ -80,6 +83,11 @@ grml64-medium_2009.05.iso using /srv/git/grml2usb as grml2usb script.
 
 Use /mnt/test/grml-tmp as working directory for creating the multiboot ISO
 /mnt/test/grml.iso with grml_2009.05.iso and grml64_2009.05.iso.
+
+  # grml2iso -p --skip-addons -o /srv/grml.iso /srv/grml-small_2009.10.iso /srv/grml64-small_2009.10.iso
+
+Don't copy the addons from the specified iso images
+
 
 Online Ressources
 -----------------
