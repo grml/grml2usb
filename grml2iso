@@ -46,6 +46,18 @@ Options:
      -p <grml2usb param> Add the specified parameter to the grml2usb
                          commandline. For a list of valid parameters have
                          a look at the grml2usb manpage.
+                         Could be specfied multiple times.
+     -s URI              Generate a small iso file which downloads the squashfs
+                         file from the specified URI. Please note that due to
+                         restrictions in the bootprocess only IPs are allowed.
+                         Supported protocols are: http and ftp
+
+     Examples:
+     $0 -s http://192.168.23.42:8000/grml/ -o small.iso grml64_2010.12.iso
+
+     Will generate a file small.iso which tries to download the squashfs file from
+     http://192.168.23.42:8000/grml/ The squashfs file is located in the output
+     directory as the iso file.
 "
     [ -n "$1" ] && exit $1 || exit 1
   }
@@ -58,8 +70,9 @@ Options:
   DIR=''
   ADD_OPTS=''
   FORCE=''
+  URI=''
   typeset -a GRML2USB_OPTS
-  while getopts fb:c:o:r:p: name; do
+  while getopts fb:c:o:r:p:s: name; do
     case $name in
       o)   ISOFILE="$OPTARG";;
       b)   GRML2USB_OPTS+=(--bootoptions="$OPTARG");;
@@ -67,9 +80,14 @@ Options:
       f)   FORCE='true';;
       r)   GRML2USB_OPTS+=(--remove-bootoption="$OPTARG");;
       p)   GRML2USB_OPTS+=("$OPTARG");;
+      s)   URI="$OPTARG";;
       ?)   usage 2;;
     esac
   done
+  # test for specified URI
+  if [ -n "$URI" ] ; then
+    GRML2USB_OPTS+=(--bootoptions="fetch=$URI")
+  fi
 
 # make sure -o is specified
   [ -n "$ISOFILE" ] || usage 1
@@ -138,6 +156,28 @@ Options:
   echo "include hd.cfg" >> boot/isolinux/grmlmain.cfg
 # }}}
 
+# adjust iso for small output if necessary [{{
+  if [ -n "$URI" ] ; then
+     bootloader_files=$(find . -name "*.cfg" -type f)
+     bootloader_files+=" "
+     bootloader_files+=$(find . -name "*.lst" -type f)
+     output_dir=$(dirname "$ISOFILE")
+     for squashfs in $(find . -name *.squashfs) ; do
+        media_path="$(dirname "$squashfs")"
+        filename="$(basename "$squashfs")"
+        target="$output_dir/$filename"
+        if [ -f "$target" ] && [ ! -n "$FORCE" ] ; then
+           echo >&2 "Warning: $target already exists, and -force not specified, not overwriting"
+        else
+           mv $squashfs $target
+           OUTPUT_FILES+=("$target")
+        fi
+        sed -i -e "s#^\(^.*$media_path.*\)\($URI\)\(.*$\)#\1$URI/$filename\3#g" $bootloader_files
+
+   done
+  fi
+# }}}
+
 # copy specified directory to cd {{{
   if [ -n "$DIR" ] ; then
      echo >&2 "Copying ${DIR} to generated iso"
@@ -167,6 +207,21 @@ Options:
   rm -rf "$WRKDIR/cddir" "$WRKDIR/grub_tmp"
   [[ $WRKDIR_EXISTED = 'false' ]] && rmdir "$WRKDIR"
   echo "Generated $ISOFILE"
+  if [ -n "$URI" ] ; then
+     echo "
+Information:
+==============
+You requested to generate a small iso image. Your generated
+iso image $ISOFILE does _not_ contain the squashfs files from
+the source iso images.
+
+You have to provide the extracted squashfs files under $URI.
+
+ISO image: $ISOFILE
+Squashfs files: ${OUTPUT_FILES[@]}
+URI: $URI
+"
+  fi
 # }}}
 
 ## EOF #########################################################################

@@ -57,7 +57,9 @@ Remove specified boot parameter from existing command line. Could be specified m
 
 Execute grml2usb with the specified parameters. For a list of valid parameters have a look at the link:http://grml.org/grml2usb/[grml2usb webpage] or the grml2usb manpage
 
+ *\-s <URI>*::
 
+Generate a small iso file which downloads the squashfs file from the specified URI. Due  to current limitations in busyboxs wget and DNS resolution, an URL can not contain a hostname but an IP only. This is useful if you want to boot systems which support booting iso image from your local system. Besides the iso image this command also copies the squashfs file to the output directory.
 
 Usage examples
 --------------
