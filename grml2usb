@@ -60,7 +60,7 @@ Run %prog --help for usage hints, further information via: man grml2usb"
 # pylint: disable-msg=W0603
 parser = OptionParser(usage=USAGE)
 parser.add_option("--bootoptions", dest="bootoptions",
-                  action="store", type="string",
+                  action="append", type="string",
                   help="use specified bootoptions as default")
 parser.add_option("--bootloader-only", dest="bootloaderonly", action="store_true",
                   help="do not copy files but just install a bootloader")
@@ -1593,10 +1593,10 @@ def get_bootoptions(grml_flavour):
     @grml_flavour: name of the grml_flavour
     """
     # do NOT write "None" in kernel cmdline
-    if options.bootoptions is None:
+    if not options.bootoptions:
         bootopt = ""
     else:
-        bootopt = options.bootoptions
+        bootopt = " ".join(options.bootoptions)
     bootopt = bootopt.replace("%flavour", grml_flavour)
     return bootopt
 

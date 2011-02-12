@@ -52,7 +52,8 @@ The following options are supported:
   *\--bootoptions=...*::
 
 Use specified bootoptions as default. To use flavour name as a argument for a
-boot parameter use %flavour which will be expanded to the flavour name.
+boot parameter use %flavour which will be expanded to the flavour name. To add
+multiple bootoptions you can specify the option multiple time.
 
   *\--bootloader-only*::
 
@@ -646,6 +647,7 @@ file instead of the one provided by the ISO.
 ///////////////////////////////////////////////////////////////////////////////////////
 
   # grml2usb --bootoptions="lang=de ssh=mysecret" grml_2009.10.iso /dev/sdX1
+  # grml2usb --bootoptions="lang=de" --bootoptions="ssh=mysecret" grml_2009.10.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1 and use "lang=de ssh=mysecret" as
 default bootoptions.
