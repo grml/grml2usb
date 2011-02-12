@@ -83,13 +83,22 @@ Options:
      echo "Error: specified parameter for -c is not a directory" >&2
      exit 1
   fi
-
-  shift $(($OPTIND - 1))
 # }}}
 
 # we need root permissions for executing grml2usb {{{
   if [[ $(id -u) != 0 ]]; then
     echo >&2 "Error: please run $0 as root."
+    exit 1
+  fi
+# }}}
+
+# check for grml2usb {{{
+  if [ ! -x "$(which $GRML2USB)" ] || [ ! -x "$GRML2USB" ] ; then
+    echo >&2 "Error: Could not find grml2usb"
+    if [ -x "./$GRML2USB" ] ; then
+      echo >&2 "If you executed grml2iso from the grml2usb repository use"
+      echo >&2 "GRML2USB=./grml2usb $0 $*"
+    fi
     exit 1
   fi
 # }}}
@@ -113,8 +122,12 @@ Options:
 # }}}}
 
 # execute grml2usb with all ISOs you'd like to install {{{
+  # remove all parameters
+  shift $(($OPTIND - 1))
+
   $GRML2USB "${REMOVE_OPTS[@]}" ${ADD_OPTS:+"$ADD_OPTS"} "$@" "$WRKDIR/cddir"
 # }}}
+
 
 # move syslinux to isolinux {{{
   mv "$WRKDIR"/cddir/boot/syslinux "$WRKDIR"/cddir/boot/isolinux
