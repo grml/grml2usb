@@ -39,15 +39,15 @@ fi
     echo >&2 "
 Options:
      -b Boot Params      Additional boot parameters passed to grml2usb
-     -c Directory        Copy files from directory to generated iso
+     -c Directory        Copy files from directory to generated ISO
      -f                  Force overwrite of existing target.iso
      -r BootParam        Remove specified boot params.
                          Could be specfied multiple times.
      -p <grml2usb param> Add the specified parameter to the grml2usb
                          commandline. For a list of valid parameters have
                          a look at the grml2usb manpage.
-                         Could be specfied multiple times.
-     -s URI              Generate a small iso file which downloads the squashfs
+                         Can be specified multiple times.
+     -s URI              Generate a small ISO file which downloads the squashfs
                          file from the specified URI. Please note that due to
                          restrictions in the bootprocess only IPs are allowed.
                          Supported protocols are: http and ftp
@@ -56,8 +56,8 @@ Options:
      $0 -s http://192.168.23.42:8000/grml/ -o small.iso grml64_2010.12.iso
 
      Will generate a file small.iso which tries to download the squashfs file from
-     http://192.168.23.42:8000/grml/ The squashfs file is located in the output
-     directory as the iso file.
+     http://192.168.23.42:8000/grml/ - the squashfs file is placed in the same
+     output directory as the ISO file.
 "
     [ -n "$1" ] && exit $1 || exit 1
   }
@@ -147,7 +147,6 @@ Options:
   $GRML2USB "${GRML2USB_OPTS[@]}" "$@" "$WRKDIR/cddir"
 # }}}
 
-
 # move syslinux to isolinux {{{
   mv "$WRKDIR"/cddir/boot/syslinux "$WRKDIR"/cddir/boot/isolinux
 
@@ -156,7 +155,7 @@ Options:
   echo "include hd.cfg" >> boot/isolinux/grmlmain.cfg
 # }}}
 
-# adjust iso for small output if necessary [{{
+# adjust ISO for small output if necessary {{{
   if [ -n "$URI" ] ; then
      bootloader_files=$(find . -name "*.cfg" -type f)
      bootloader_files+=" "
@@ -180,7 +179,7 @@ Options:
 
 # copy specified directory to cd {{{
   if [ -n "$DIR" ] ; then
-     echo >&2 "Copying ${DIR} to generated iso"
+     echo >&2 "Copying ${DIR} to generated ISO"
      rsync -a ${DIR}/ .
   fi
 
@@ -200,7 +199,6 @@ Options:
   dd if=/dev/zero bs=1 count=1 seek=$ofs of="$ISOFILE" 2>/dev/null
 # }}}
 
-
 # cleanup {{{
   cd "$ORIG_DIR"
   sync
@@ -211,9 +209,9 @@ Options:
      echo "
 Information:
 ==============
-You requested to generate a small iso image. Your generated
-iso image $ISOFILE does _not_ contain the squashfs files from
-the source iso images.
+You requested to generate a small ISO image. Your generated
+ISO image $ISOFILE does _not_ contain the squashfs files from
+the source ISO images.
 
 You have to provide the extracted squashfs files under $URI.
 
