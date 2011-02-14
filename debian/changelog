@@ -1,3 +1,19 @@
+grml2usb (0.9.31) unstable; urgency=low
+
+  [ Ulrich Dangel ]
+  * [f5e949b] Support mkisofs or genisoimage in grml2iso. Updated
+    debian/control accordingly.
+  * [a9ab0bf] Print warning if grml2usb is not found in grml2iso.
+  * [d85b3e3] Support arbitrary grml2usb options in grml2iso.
+  * [cc12ab6] Allow multiple --bootoptions for grml2usb. This makes
+    scripting a lot easier.
+  * [161f2d5] Support generating small iso images with grml2iso.
+
+  [ Michael Prokop ]
+  * [1980861] Typo fixes and minor formating corrections.
+
+ -- Michael Prokop <mika@grml.org>  Mon, 14 Feb 2011 10:39:07 +0100
+
 grml2usb (0.9.30) unstable; urgency=low
 
   * [35b606b] fix broken grub command terminal_output (should be
