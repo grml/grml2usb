@@ -574,6 +574,14 @@ use the bootloader grub instead using grml2usb's '--grub' option.
 [NOTE]
 FAT32 is supported since syslinux version 3.0.
 
+[[hdt-hangs]]
+Addons -> Hardware Detection Tool freezes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This usually means that the machine you ran grml2usb on had syslinux 3.x
+installed. The version of hdt (Hardware detection tool) shipping with Grml
+2010.12 and newer requires syslinux 4.x.
+
 [[cool-idea]]
 I think I've got a really cool idea!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
