@@ -1279,9 +1279,11 @@ def copy_addons(iso_mount, target):
     # memtest86+ image
     handle_addon_copy('memtest', addons, iso_mount)
 
-    # gpxe.lkrn
+    # gpxe.lkrn: got replaced by ipxe
     handle_addon_copy('gpxe.lkrn', addons, iso_mount)
 
+    # ipxe.lkrn
+    handle_addon_copy('ipxe.lkrn', addons, iso_mount)
 
 def glob_and_copy(filepattern, dst):
     """Glob on specified filepattern and copy the result to dst
