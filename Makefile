@@ -54,6 +54,7 @@ clean:
 	rm -rf html-stamp man-stamp grml2usb.tar.gz grml2usb.tgz grml2usb.tgz.md5.asc
 
 codecheck:
+	pyflakes grml2usb
 	pylint --include-ids=y --max-line-length=120 grml2usb
 	# pylint --include-ids=y --disable-msg-cat=C0301 --disable-msg-cat=W0511 grml2usb
 	# pylint --reports=n --include-ids=y --disable-msg-cat=C0301 grml2usb
