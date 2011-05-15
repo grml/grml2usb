@@ -1230,16 +1230,18 @@ def copy_grml_files(iso_mount, target):
             exec_rsync(grml_file, grml_webimg_target + myfile)
 
 
-def handle_addon_copy(filename, dst, iso_mount):
+def handle_addon_copy(filename, dst, iso_mount, ignore_errors=False):
     """handle copy of optional addons
 
     @filename: filename of the addon
     @dst: destination directory
     @iso_mount: location of the iso mount
+    @ignore_errors: don't report missing files
     """
     file_location = search_file(filename, iso_mount)
     if file_location is None:
-        logging.warn("Warning: %s not found (that's fine if you don't need it)",  filename)
+        if not ignore_errors:
+            logging.warn("Warning: %s not found (that's fine if you don't need it)",  filename)
     else:
         exec_rsync(file_location, dst)
 
@@ -1280,7 +1282,7 @@ def copy_addons(iso_mount, target):
     handle_addon_copy('memtest', addons, iso_mount)
 
     # gpxe.lkrn: got replaced by ipxe
-    handle_addon_copy('gpxe.lkrn', addons, iso_mount)
+    handle_addon_copy('gpxe.lkrn', addons, iso_mount, ignore_errors=True)
 
     # ipxe.lkrn
     handle_addon_copy('ipxe.lkrn', addons, iso_mount)
