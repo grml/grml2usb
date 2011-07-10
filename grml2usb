@@ -1205,7 +1205,7 @@ def copy_grml_files(iso_mount, target):
     for myfile in copy_files:
         grml_file = search_file(myfile, iso_mount)
         if grml_file is None:
-            logging.warn("Warning: myfile %s could not be found - can not install it", myfile)
+            logging.warn("Warning: file %s could not be found - can not install it", myfile)
         else:
             exec_rsync(grml_file, grml_target + myfile)
 
@@ -1215,7 +1215,7 @@ def copy_grml_files(iso_mount, target):
     for myfile in 'index.html', 'style.css':
         grml_file = search_file(myfile, iso_mount)
         if grml_file is None:
-            logging.warn("Warning: myfile %s could not be found - can not install it")
+            logging.warn("Warning: file %s could not be found - can not install it", myfile)
         else:
             exec_rsync(grml_file, grml_web_target + myfile)
 
@@ -1225,7 +1225,7 @@ def copy_grml_files(iso_mount, target):
     for myfile in 'button.png', 'favicon.png', 'linux.jpg', 'logo.png':
         grml_file = search_file(myfile, iso_mount)
         if grml_file is None:
-            logging.warn("Warning: myfile %s could not be found - can not install it")
+            logging.warn("Warning: file %s could not be found - can not install it", myfile)
         else:
             exec_rsync(grml_file, grml_webimg_target + myfile)
 
