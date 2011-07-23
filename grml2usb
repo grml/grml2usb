@@ -479,107 +479,6 @@ menuentry "%(grml_flavour)s-forensic   - do not touch harddisks during hw recogn
        'flavour_filename': grml_flavour.replace('-', ''),
        'uid': UUID, 'bootoptions': bootoptions } )
 
-
-def generate_flavour_specific_grub1_config(grml_flavour, install_partition, bootoptions):
-    """Generate grub1 configuration for use via menu.lst
-
-    @grml_flavour: name of grml flavour the configuration should be generated for
-    @install_partition: partition number for use in (hd0,X)
-    @bootoptions: additional bootoptions that should be used by default"""
-
-    local_datestamp = DATESTAMP
-
-    return("""\
-## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
-title %(grml_flavour)s
-kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ bootid=%(uid)s %(bootoptions)s
-initrd (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/initrd.gz
-
-## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
-title %(grml_flavour)s-persistent
-kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce vga=791 quiet persistent live-media-path=/live/%(grml_flavour)s/ bootid=%(uid)s %(bootoptions)s
-initrd (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/initrd.gz
-
-## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
-title %(grml_flavour)s2ram
-kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ toram=%(grml_flavour)s.squashfs bootid=%(uid)s %(bootoptions)s
-initrd (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/initrd.gz
-
-## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
-title %(grml_flavour)s-debug
-kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ debug initcall_debug bootid=%(uid)s %(bootoptions)s
-initrd (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/initrd.gz
-
-## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
-title %(grml_flavour)s-x
-kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ startx=wm-ng bootid=%(uid)s %(bootoptions)s
-initrd (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/initrd.gz
-
-## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
-title %(grml_flavour)s-nofb
-kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal video=ofonly bootid=%(uid)s %(bootoptions)s
-initrd (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/initrd.gz
-
-## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
-title %(grml_flavour)s-failsafe
-kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal noautoconfig atapicd noapic noacpi acpi=off nomodules nofirewire noudev nousb nohotplug noapm nopcmcia nosmp maxcpus=0 noscsi noagp nodma ide=nodma noswap nofstab nosound nogpm nosyslog nodhcp nocpu nodisc nomodem xmodule=vesa noraid nolvm noresume selinux=0 edd=off pci=nomsi bootid=%(uid)s %(bootoptions)s
-initrd (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/initrd.gz
-
-## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
-title %(grml_flavour)s-forensic
-kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce vga=791 quiet live-media-path=/live/%(grml_flavour)s/ nofstab noraid nolvm noautoconfig noswap raid=noautodetect forensic readonly bootid=%(uid)s %(bootoptions)s
-initrd (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/initrd.gz
-
-## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
-title %(grml_flavour)s-serial
-kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal video=vesafb:off console=tty1 console=ttyS0,9600n8 bootid=%(uid)s %(bootoptions)s
-initrd (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/initrd.gz
-
-""" % {'grml_flavour': grml_flavour, 'local_datestamp': local_datestamp,
-       'flavour_filename': grml_flavour.replace('-', ''), 'uid': UUID,
-       'bootoptions': bootoptions, 'install_partition': install_partition } )
-
-
-def generate_main_grub1_config(grml_flavour, install_partition, bootoptions):
-    """Generate grub1 configuration for use via menu.lst
-
-    @grml_flavour: name of grml flavour the configuration should be generated for"""
-
-    local_datestamp = DATESTAMP
-
-    return("""\
-## main grub1 configuration - generated by grml2usb [main config generated at: %(local_datestamp)s]
-# misc options:
-timeout 30
-# color red/blue green/black
-splashimage=(hd0,%(install_partition)s)/boot/grub/splash.xpm.gz
-foreground  = 000000
-background  = FFCC33
-
-# define entries:
-title %(grml_flavour)s  - Default boot (using 1024x768 framebuffer)
-kernel (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/linux26 apm=power-off vga=791 quiet boot=live nomce live-media-path=/live/%(grml_flavour)s/ bootid=%(uid)s %(bootoptions)s
-initrd (hd0,%(install_partition)s)/boot/release/%(flavour_filename)s/initrd.gz
-
-title Memory test (memtest86+)
-kernel (hd0,%(install_partition)s)/boot/addons/memtest
-
-title Grub - all in one image
-kernel (hd0,%(install_partition)s)/boot/addons/memdisk
-initrd (hd0,%(install_partition)s)/boot/addons/allinone.img
-
-title FreeDOS
-kernel (hd0,%(install_partition)s)/boot/addons/memdisk
-initrd (hd0,%(install_partition)s)/boot/addons/balder10.imz
-
-title MirOS BSD
-kernel (hd0,%(install_partition)s)/boot/addons/bsd4grml/ldbsd.com
-
-""" % {'grml_flavour': grml_flavour, 'local_datestamp': local_datestamp,
-       'flavour_filename': grml_flavour.replace('-', ''), 'uid': UUID,
-       'bootoptions': bootoptions, 'install_partition': install_partition } )
-
-
 def generate_isolinux_splash(grml_flavour):
     """Generate bootsplash for isolinux/syslinux
 
@@ -1491,55 +1390,6 @@ def modify_grub_config(filename):
 
         fileinput.close()
 
-def handle_grub1_config(grml_flavour, install_partition, grub_target, bootopt):
-    """Main handler for generating grub1 configuration
-
-    @grml_flavour: name of grml flavour the configuration should be generated for
-    @install_partition: partition number for use in (hd0,X)
-    @grub_target: path of grub's configuration files
-    @bootoptions: additional bootoptions that should be used by default"""
-
-    # grub1 config
-    grub1_cfg = grub_target + 'menu.lst'
-    logging.debug("Creating grub1 configuration file (menu.lst)")
-
-    # install main configuration only *once*, no matter how many ISOs we have:
-    if os.path.isfile(grub1_cfg):
-        string = open(grub1_cfg).readline()
-        main_identifier = re.compile(".*main config generated at: %s.*" % re.escape(str(DATESTAMP)))
-        if not re.match(main_identifier, string):
-            grub1_config_file = open(grub1_cfg, 'w')
-            grub1_config_file.write(generate_main_grub1_config(grml_flavour, install_partition, bootopt))
-            grub1_config_file.close()
-    else:
-        grub1_config_file = open(grub1_cfg, 'w')
-        grub1_config_file.write(generate_main_grub1_config(grml_flavour, install_partition, bootopt))
-        grub1_config_file.close()
-
-    grub_flavour_config = True
-    if os.path.isfile(grub1_cfg):
-        string = open(grub1_cfg).readlines()
-        flavour = re.compile("grml2usb for %s: %s" % (re.escape(grml_flavour), re.escape(str(DATESTAMP))))
-        for line in string:
-            if flavour.match(line):
-                grub_flavour_config = False
-
-    if grub_flavour_config:
-        grub1_config_file = open(grub1_cfg, 'a')
-        grub1_config_file.write(generate_flavour_specific_grub1_config(grml_flavour, install_partition, bootopt))
-        grub1_config_file.close()
-
-    modify_grub_config(grub1_cfg)
-
-    # make sure grub.conf isn't a symlink but a plain file instead,
-    # otherwise it will break on FAT16 filesystems
-    # this works around grub-install of (at least) Fedora 10
-    if os.path.isfile(grub1_cfg):
-        grubconf = grub_target + 'grub.conf'
-        if not os.path.islink(grubconf):
-            import shutil
-            shutil.copyfile(grub1_cfg, grub_target + 'grub.conf')
-
 def handle_grub2_config(grml_flavour, grub_target, bootopt):
     """Main handler for generating grub2 configuration
 
@@ -1616,19 +1466,8 @@ def handle_grub_config(grml_flavour, device, target):
 
     grub_target = target + '/boot/grub/'
 
-    if os.path.isdir(device):
-        install_grub1_partition = None
-    else:
-        if device[-1:].isdigit():
-            install_grub1_partition = int(device[-1:]) - 1
-        else:
-            raise CriticalException("error validating partition schema (raw device?)")
-
-
     bootopt = get_bootoptions(grml_flavour)
 
-    # write menu.lst
-    handle_grub1_config(grml_flavour, install_grub1_partition, grub_target, bootopt)
     # write grub.cfg
     handle_grub2_config(grml_flavour, grub_target, bootopt)
 
