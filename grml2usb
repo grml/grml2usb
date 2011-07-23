@@ -1884,7 +1884,7 @@ def install(image, device):
         register_tmpfile(iso_mountpoint)
         remove_image_mountpoint = True
         try:
-            mount(image, iso_mountpoint, ["-o", "loop", "-t", "iso9660"])
+            mount(image, iso_mountpoint, ["-o", "loop,ro", "-t", "iso9660"])
         except CriticalException, error:
             logging.critical("Fatal: %s", error)
             sys.exit(1)
