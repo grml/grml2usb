@@ -1980,10 +1980,6 @@ def main():
             if int(device[-1:]) > 4 or device[-2:].isdigit():
                 logging.critical("Fatal: installation on partition number >4 not supported. (BIOS won't support it.)")
                 sys.exit(1)
-        elif os.path.exists(device):
-            logging.critical("Fatal: installation on raw device not supported. (BIOS won't support it.)")
-            sys.exit(1)
-
 
     # provide upgrade path
     handle_compat_warning(device)
@@ -1996,7 +1992,11 @@ def main():
         install(iso, device)
 
     # install mbr
-    if not options.skipmbr and not os.path.isdir(device):
+    is_superfloppy = not device[-1:].isdigit()
+    if is_superfloppy:
+        logging.info("Detected superfloppy format - not installing MBR")
+
+    if not options.skipmbr and not os.path.isdir(device) and not is_superfloppy:
         handle_mbr(device)
 
     handle_bootloader(device)
