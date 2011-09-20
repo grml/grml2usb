@@ -9,7 +9,9 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-build: build-stamp
+build: build-arch build-indep
+build-arch: build-stamp
+build-indep: build-stamp
 
 build-stamp:
 	dh_testdir
@@ -45,11 +47,11 @@ install: build
 	cp -a          grub/                  debian/grml2usb/usr/share/grml2usb/
 
 # Build architecture-dependent files here.
-binary-arch: build install
+binary-arch: build-arch install
 # We have nothing to do by default.
 
 # Build architecture-independent files here.
-binary-indep: build install
+binary-indep: build-indep install
 	dh_testdir
 	dh_testroot
 	dh_installchangelogs
