@@ -112,7 +112,7 @@ Options:
 # }}}
 
 # check for grml2usb {{{
-  if [ ! -x "$(which $GRML2USB)" ] || [ ! -x "$GRML2USB" ] ; then
+  if [ ! -x "$(which $GRML2USB)" ] && [ ! -x "$GRML2USB" ] ; then
     echo >&2 "Error: Could not find grml2usb"
     if [ -x "./$GRML2USB" ] ; then
       echo >&2 "If you executed grml2iso from the grml2usb repository use"
