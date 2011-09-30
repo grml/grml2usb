@@ -7,15 +7,10 @@ Upstream Author: Michael Prokop <mika@grml.org>
 
 Copyright:
 
-   grub/splash.xpm.gz and grub/grml.png: Copyright by Martin Ahammer / grml-team
+   grml2usb:
 
-   images/: taken from asciidoc Debian package,
-            Copyright 2008 by Stuart Rackham <srackham@methods.co.nz>
-
-   mbr/mbr.S: Copyright (c) 2009 Thorsten Glaser <tg@mirbsd.org>,
-              licensing information available in mbr/mbr.S
-
-   This software is copyright (c) 2009++ by Michael Prokop.
+   This software is Copyright (c) 2006-2011 by Michael Prokop and
+   others.
 
    This package is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -30,6 +25,39 @@ Copyright:
    along with this package; if not, write to the Free Software
    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301,
    USA.
+
+
+   grub/splash.xpm.gz and grub/grml.png:
+
+   Copyright by Martin Ahammer / grml-team
+
+
+   images/icons/:
+
+   Copyright 2008 by Stuart Rackham <srackham@methods.co.nz>
+   (Taken from AsciiDoc.)
+   AsciiDoc is free software and is licenced under the terms of the
+   GNU General Public License version 2.
+
+
+   mbr/mbr.S:
+
+   Copyright (c) 2009 Thorsten Glaser <tg@mirbsd.org>
+   Provided that these terms and disclaimer and all copyright notices
+   are retained or reproduced in an accompanying document, permission
+   is granted to deal in this work without restriction, including un-
+   limited rights to use, publicly perform, distribute, sell, modify,
+   merge, give away, or sublicence.
+
+   This work is provided "AS IS" and WITHOUT WARRANTY of any kind, to
+   the utmost extent permitted by applicable law, neither express nor
+   implied; without malicious intent or gross negligence. In no event
+   may a licensor, author or contributor be held liable for indirect,
+   direct, other damage, loss, or other issues arising in any way out
+   of dealing in the work, even if advised of the possibility of such
+   damage or existence of a defect, except proven that it results out
+   of said person's immediate fault when using the work as intended.
+
 
 On Debian GNU/Linux systems, the complete text of the GNU General
 Public License can be found in `/usr/share/common-licenses/GPL-2'.
