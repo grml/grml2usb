@@ -1,5 +1,5 @@
 Source: grml2usb
-Section: grml
+Section: admin
 Priority: optional
 Maintainer: Michael Prokop <mika@grml.org>
 Build-Depends: debhelper (>= 7)

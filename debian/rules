@@ -57,8 +57,6 @@ binary-indep: build-indep install
 	dh_installman grml2usb.8 grml2iso.8
 	dh_strip
 	dh_compress
-	mkdir -p debian/grml2usb/usr/share/lintian/overrides/
-	cp -av debian/overrides debian/grml2usb/usr/share/lintian/overrides/grml2usb
 	dh_fixperms
 	dh_installdeb
 	dh_shlibdeps
