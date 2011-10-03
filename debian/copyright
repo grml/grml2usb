@@ -12,9 +12,6 @@ Copyright:
    images/: taken from asciidoc Debian package,
             Copyright 2008 by Stuart Rackham <srackham@methods.co.nz>
 
-   lilo/: taken from the lilo Debian package, see lilo/COPYING for
-          licensing information
-
    mbr/mbr.S: Copyright (c) 2009 Thorsten Glaser <tg@mirbsd.org>,
               licensing information available in mbr/mbr.S
 

@@ -67,12 +67,6 @@ install -m 644 \${BASE}/splash.xpm.gz /usr/share/grml2usb/grub/splash.xpm.gz
 printf "  - /usr/share/grml2usb/grub/grml.png\n"
 install -m 644 \${BASE}/grml.png      /usr/share/grml2usb/grub/grml.png
 
-[ -d /usr/share/grml2usb/lilo ] || mkdir -p /usr/share/grml2usb/lilo
-printf "  - /usr/share/grml2usb/lilo/lilo.static.amd64\n"
-install -m 755 \${BASE}/lilo.static.amd64 /usr/share/grml2usb/lilo/lilo.static.amd64
-printf "  - /usr/share/grml2usb/lilo/lilo.static.i386\n"
-install -m 755 \${BASE}/lilo.static.i386  /usr/share/grml2usb/lilo/lilo.static.i386
-
 [ -d /usr/share/grml2usb/mbr ] || mkdir -p /usr/share/grml2usb/mbr
 printf "  - /usr/share/grml2usb/mbr/mbrmgr\n"
 install -m 644 \${BASE}/mbrmgr /usr/share/grml2usb/mbr/mbrmgr
@@ -104,8 +98,6 @@ for file in \\
   /usr/sbin/grml2iso \\
   /usr/share/grml2usb/grub/splash.xpm.gz \\
   /usr/share/grml2usb/grub/grml.png \\
-  /usr/share/grml2usb/lilo/lilo.static.amd64 \\
-  /usr/share/grml2usb/lilo/lilo.static.i386 \\
   /usr/share/grml2usb/mbr/mbrmgr \\
   /usr/share/grml2usb/mbr/mbrldr \\
   /usr/share/man/man8/grml2usb.8.gz \\
@@ -127,8 +119,8 @@ gzip -9 --to-stdout grml2usb-$VERSION/grml2iso.8.txt > grml2usb-$VERSION/grml2is
 rm grml2usb-$VERSION/grml2usb.8.txt
 rm grml2usb-$VERSION/grml2iso.8.txt
 
-# binaries, grub, lilo
-cp grml2usb grml2usb-compat grml2iso mbr/mbrldr mbr/mbrmgr grub/* lilo/lilo.static.* grml2usb-$VERSION/
+# binaries, grub
+cp grml2usb grml2usb-compat grml2iso mbr/mbrldr mbr/mbrmgr grub/* grml2usb-$VERSION/
 
 tar zcf grml2usb.tgz "${DIR}"
 

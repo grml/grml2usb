@@ -19,7 +19,7 @@ for dev in /dev/sd* /dev/hd* ; do
 done
 
 # TODO:
-# * handling of --bootoptions=BOOTOPTIONS and --lilo-binary=LILOBIN
+# * handling of --bootoptions=BOOTOPTIONS
 # * $devices should also list directories as valid target
 # * as output before :device:.... ISO files and/or /live/image should be suggested
 
@@ -31,7 +31,6 @@ arguments=(
   '--dry-run[avoid executing commands]'
   '--fat16[format specified partition with FAT16]'
   '--force[force any actions requiring manual interaction]'
-  '--lilo-binary=LILOBIN[lilo executable to be used for installing MBR]:'
   '--mbr-manager[enable interactive boot manager menu in MBR]'
   '--quiet[do not output anything but just errors on console]'
   '--skip-addons[do not install /boot/addons/ files]'

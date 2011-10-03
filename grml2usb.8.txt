@@ -110,14 +110,6 @@ option *--initrd* as well. (Be aware when using multiboot setup.)
 [Notice: not implemented yet.]
 //////////////////////////////////////////////////////////////////////////
 
-  *\--lilo-binary=...*::
-
-Use specified lilo executable for installing master boot record (MBR) when using
-the '--syslinux-mbr' option. By default any system wide (from $PATH) lilo
-executable is taken.  If there can not be find any lilo executable the
-statically compiled version of the grml2usb Debian package (see
-/usr/share/grml2usb/lilo/lilo.static.[amd64|i386]) is taken.
-
   *\--mbr-menu*::
 
 Install master boot record (MBR) with integrated boot menu: interactively choose
@@ -171,8 +163,7 @@ Install syslinux' master boot record (MBR, which is booting from the partition
 with the "active" flag set) instead of the default one.  If you encounter any
 problems with the default MBR you can try using the syslinux MBR instead. If
 that works for you please <<author,let us know>> so we can adjust our default
-MBR accordingly. Note: When using the '--syslinux-mbr' option lilo is executed
-before the MBR is installed so the according partitions are set active.
+MBR accordingly.
 
 //////////////////////////////////////////////////////////////////////////
   *\--squashfs=*::

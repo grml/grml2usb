@@ -35,7 +35,7 @@ install: build
 	dh_testdir
 	dh_testroot
 	dh_clean -k
-	dh_installdirs usr/share/grml2usb/lilo usr/share/grml2usb/grub usr/share/grml2usb/mbr
+	dh_installdirs usr/share/grml2usb/grub usr/share/grml2usb/mbr
 
 	# Add here commands to install the package into debian/grml2usb.
 	install -m 755 grml2usb               debian/grml2usb/usr/sbin/grml2usb
@@ -43,7 +43,6 @@ install: build
 	install -m 755 grml2iso               debian/grml2usb/usr/sbin/grml2iso
 	install -m 644 mbr/mbrmgr             debian/grml2usb/usr/share/grml2usb/mbr/mbrmgr
 	install -m 644 mbr/mbrldr             debian/grml2usb/usr/share/grml2usb/mbr/mbrldr
-	cp -a          lilo/                  debian/grml2usb/usr/share/grml2usb/
 	cp -a          grub/                  debian/grml2usb/usr/share/grml2usb/
 
 # Build architecture-dependent files here.

@@ -1,3 +1,0 @@
-apt-get source lilo # version 22.8-7
-cd lilo-22.8
-make alles

@@ -77,8 +77,6 @@ parser.add_option("--grub", dest="grub", action="callback",
                   help="install grub bootloader instead of (default) syslinux")
 parser.add_option("--grub-mbr", dest="grubmbr", action="store_true",
                   help="install grub into MBR instead of (default) PBR")
-parser.add_option("--lilo-binary", dest="lilobin",  action="store", type="string",
-                  help="lilo executable to be used for installing MBR")
 parser.add_option("--mbr-menu", dest="mbrmenu", action="store_true",
                   help="enable interactive boot menu in MBR")
 parser.add_option("--quiet", dest="quiet", action="store_true",
@@ -649,52 +647,7 @@ def install_bootloader(device):
             sys.exit(1)
 
 
-def execute_lilo(lilo, device):
-    """execute lilo for activating the partitions in the MBR
-
-    @lilo: path of lilo executable
-    @device: device where lilo should be executed on"""
-
-    # to support -A for extended partitions:
-    logging.info("Activating partitions in MBR via lilo")
-    logging.debug("%s -S /dev/null -M %s ext", lilo, device)
-    proc = subprocess.Popen([lilo, "-S", "/dev/null", "-M", device, "ext"])
-    proc.wait()
-    if proc.returncode != 0:
-        raise Exception("error executing lilo")
-
-    # activate partition:
-    logging.debug("%s -S /dev/null -A %s 1", lilo, device)
-    proc = subprocess.Popen([lilo, "-S", "/dev/null", "-A", device, "1"])
-    proc.wait()
-    if proc.returncode != 0:
-        raise Exception("error executing lilo")
-
-
-def install_syslinux_mbr(device):
-    """install syslinux's master boot record (MBR) on the specified device
-
-    @device: device where MBR of syslinux should be installed to"""
-
-    # make sure we have syslinux available
-    if not which("syslinux") and not options.copyonly:
-        raise Exception("syslinux not available (either install it or consider using the --grub option)")
-
-    # lilo's mbr is broken, use the one from syslinux instead:
-    if not os.path.isfile("/usr/lib/syslinux/mbr.bin"):
-        raise Exception("/usr/lib/syslinux/mbr.bin can not be read")
-
-    logging.info("Installing syslinux MBR")
-    logging.debug("cat /usr/lib/syslinux/mbr.bin > %s", device)
-    try:
-        retcode = subprocess.call("cat /usr/lib/syslinux/mbr.bin > "+ device, shell=True)
-        if retcode < 0:
-            logging.critical("Error copying MBR to device (%s)", retcode)
-    except OSError, error:
-        logging.critical("Execution failed: %s", error)
-
-
-def install_mir_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
+def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     """install 'mbr' master boot record (MBR) on a device
 
     Retrieve the partition table from "device", install an MBR from the
@@ -722,10 +675,11 @@ def install_mir_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
 
     if not os.path.isfile(mbrtemplate):
         logging.critical("Error: %s can not be read.", mbrtemplate)
-        raise CriticalException("Error installing MBR (either try --syslinux-mbr or install missing file?)")
+        raise CriticalException("Error installing MBR (either try --syslinux-mbr or install missing file \"%s\"?)" % mbrtemplate)
 
-    if (partition < 0) or (partition > 3):
-        raise ValueError("partition must be between 0 and 3")
+    if partition is not None and ((partition < 0) or (partition > 3)):
+        logging.warn("Cannot activate partition %d" % partition)
+        partition = None
 
     if ismirbsdmbr:
         nmbrbytes = 439
@@ -753,18 +707,19 @@ def install_mir_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     if len(mbrcode) < 512:
         raise EOFError("MBR size (%d) < 512" % len(mbrcode))
 
-    if ismirbsdmbr:
-        mbrcode = mbrcode[0:439] + chr(partition) + \
-                mbrcode[440:510] + "\x55\xAA"
-    else:
-        actives = ["\x00", "\x00", "\x00", "\x00"]
-        actives[partition] = "\x80"
-        mbrcode = mbrcode[0:446] + actives[0] + \
-                mbrcode[447:462] + actives[1] + \
-                mbrcode[463:478] + actives[2] + \
-                mbrcode[479:494] + actives[3] + \
-                mbrcode[495:510] + "\x55\xAA"
-
+    if partition is not None:
+        if ismirbsdmbr:
+            mbrcode = mbrcode[0:439] + chr(partition) + \
+                    mbrcode[440:510] + "\x55\xAA"
+        else:
+            actives = ["\x00", "\x00", "\x00", "\x00"]
+            actives[partition] = "\x80"
+            mbrcode = mbrcode[0:446] + actives[0] + \
+                    mbrcode[447:462] + actives[1] + \
+                    mbrcode[463:478] + actives[2] + \
+                    mbrcode[479:494] + actives[3] + \
+                    mbrcode[495:510] + "\x55\xAA"
+    
     tmpf.file.seek(0)
     tmpf.file.truncate()
     tmpf.file.write(mbrcode)
@@ -777,39 +732,6 @@ def install_mir_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     if proc.returncode != 0:
         raise Exception("error executing dd (third run)")
     del tmpf
-
-
-def handle_syslinux_mbr(device):
-    """Install syslinux master boot record on given device
-
-    @device: device where MBR should be installed to"""
-
-    if not is_writeable(device):
-        raise IOError("device not writeable for user")
-
-    # try to use system's lilo
-    if which("lilo"):
-        lilo = which("lilo")
-    else:
-        # otherwise fall back to our static version
-        from platform import architecture
-        if architecture()[0] == '64bit':
-            lilo = GRML2USB_BASE + '/lilo/lilo.static.amd64'
-        else:
-            lilo = GRML2USB_BASE + '/lilo/lilo.static.i386'
-    # finally prefer a specified lilo executable
-    if options.lilobin:
-        lilo = options.lilobin
-
-    if not is_exe(lilo):
-        raise Exception("lilo executable can not be execute")
-
-    if options.dryrun:
-        logging.info("Would install MBR running lilo and using syslinux.")
-        return 0
-
-    execute_lilo(lilo, device)
-    install_syslinux_mbr(device)
 
 
 def is_writeable(device):
@@ -1800,23 +1722,24 @@ def handle_mbr(device):
     if device[-1:].isdigit():
         mbr_device = re.match(r'(.*?)\d*$', device).group(1)
         partition_number = int(device[-1:]) - 1
-        skip_install_mir_mbr = False
+    else:
+        logging.warn("Could not detect partition number, not activating partition")
+        partition_number = None
 
     # if we get e.g. /dev/loop1 as device we don't want to put the MBR
     # into /dev/loop of course, therefore use /dev/loop1 as mbr_device
     if mbr_device == "/dev/loop":
         mbr_device = device
         logging.info("Detected loop device - using %s as MBR device therefore", mbr_device)
-        skip_install_mir_mbr = True
+
+    mbrcode = GRML2USB_BASE + '/mbr/mbrldr'
+    if options.syslinuxmbr:
+        mbrcode = '/usr/lib/syslinux/mbr.bin'
+    elif options.mbrmenu:
+        mbrcode = GRML2USB_BASE + '/mbr/mbrldr'
 
     try:
-        if options.syslinuxmbr:
-            handle_syslinux_mbr(mbr_device)
-        elif not skip_install_mir_mbr:
-            if options.mbrmenu:
-                install_mir_mbr(GRML2USB_BASE + '/mbr/mbrmgr', mbr_device, partition_number, True)
-            else:
-                install_mir_mbr(GRML2USB_BASE + '/mbr/mbrldr', mbr_device, partition_number, False)
+        install_mbr(mbrcode, mbr_device, partition_number, True)
     except IOError, error:
         logging.critical("Execution failed: %s", error)
         sys.exit(1)
