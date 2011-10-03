@@ -55,9 +55,6 @@ printf "Installing files:\n"
 printf "  - /usr/sbin/grml2usb\n"
 install -m 755 \${BASE}/grml2usb /usr/sbin/grml2usb
 
-printf "  - /usr/sbin/grml2usb-compat\n"
-install -m 755 \${BASE}/grml2usb-compat /usr/sbin/grml2usb-compat
-
 printf "  - /usr/sbin/grml2iso\n"
 install -m 755 \${BASE}/grml2iso /usr/sbin/grml2iso
 
@@ -94,7 +91,6 @@ fi
 
 for file in \\
   /usr/sbin/grml2usb \\
-  /usr/sbin/grml2usb-compat \\
   /usr/sbin/grml2iso \\
   /usr/share/grml2usb/grub/splash.xpm.gz \\
   /usr/share/grml2usb/grub/grml.png \\
@@ -120,7 +116,7 @@ rm grml2usb-$VERSION/grml2usb.8.txt
 rm grml2usb-$VERSION/grml2iso.8.txt
 
 # binaries, grub
-cp grml2usb grml2usb-compat grml2iso mbr/mbrldr mbr/mbrmgr grub/* grml2usb-$VERSION/
+cp grml2usb grml2iso mbr/mbrldr mbr/mbrmgr grub/* grml2usb-$VERSION/
 
 tar zcf grml2usb.tgz "${DIR}"
 

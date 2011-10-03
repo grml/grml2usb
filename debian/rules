@@ -39,7 +39,6 @@ install: build
 
 	# Add here commands to install the package into debian/grml2usb.
 	install -m 755 grml2usb               debian/grml2usb/usr/sbin/grml2usb
-	install -m 755 grml2usb-compat        debian/grml2usb/usr/sbin/grml2usb-compat
 	install -m 755 grml2iso               debian/grml2usb/usr/sbin/grml2iso
 	install -m 644 mbr/mbrmgr             debian/grml2usb/usr/share/grml2usb/mbr/mbrmgr
 	install -m 644 mbr/mbrldr             debian/grml2usb/usr/share/grml2usb/mbr/mbrldr
@@ -56,7 +55,6 @@ binary-indep: build-indep install
 	dh_installchangelogs
 	dh_installdocs TODO
 	dh_installman grml2usb.8 grml2iso.8
-	dh_link /usr/share/man/man8/grml2usb.8 /usr/share/man/man8/grml2usb-compat.8
 	dh_strip
 	dh_compress
 	mkdir -p debian/grml2usb/usr/share/lintian/overrides/
