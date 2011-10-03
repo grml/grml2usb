@@ -1,3 +1,23 @@
+grml2usb (0.9.35) unstable; urgency=low
+
+  * [19b2fe7] Support USB keys with superfloppy format
+  * [e8fb17b] grml2iso: fix check for grml2usb
+  * [e1ad166] Loop-mount ISO with read-only option
+  * [e5ae97f] Remove grml2usb-compat
+  * [5d028a0] Remove grub1 support
+  * [7874f97] Remove static lilo binaries and lilo support
+
+  Packaging changes:
+  * [ecfce70] Use dh_prep, bump debhelper compat level to 7
+  * [1b22f2a] Set debian/source/format to 3.0 (native)
+  * [7a142d9] Fix debian-rules-missing-recommended-target lintian warning
+  * [c26aae4] No longer mention mkisofs in debian/control
+  * [fdb81b1] Add debian/control headers Origin, Bugs
+  * [154f7d7] Switch section to admin, from grml
+  * [7e48792] Update Maintainer/Uploaders to Team
+
+ -- Christian Hofstaedtler <ch@grml.org>  Mon, 03 Oct 2011 23:06:42 +0200
+
 grml2usb (0.9.34) unstable; urgency=low
 
   * [def6424] Fix warning message for missing files.
