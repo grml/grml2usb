@@ -1,3 +1,12 @@
+grml2usb (0.9.35) unstable; urgency=low
+
+  Starting with this release, grml2usb-compat is no longer included.
+
+  The dependency on lilo has been dropped, from now on only primary
+  partitions will be flagged bootable.
+
+ -- Christian Hofstaedtler <ch@grml.org>  Mon, 3 Oct 2011 22:56:35 +0200
+
 grml2usb (0.9.13) unstable; urgency=low
 
   * This release makes syslinux the default bootloader again.
