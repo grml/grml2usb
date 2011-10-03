@@ -1,3 +1,11 @@
+grml2usb (0.10.0) unstable; urgency=low
+
+  Target Debian unstable:
+  * Build only on i386 and amd64.
+  * Remove Grml Origin and Bugs entries
+
+ -- Christian Hofstaedtler <ch@grml.org>  Mon, 03 Oct 2011 23:27:14 +0200
+
 grml2usb (0.9.35) unstable; urgency=low
 
   * [19b2fe7] Support USB keys with superfloppy format
