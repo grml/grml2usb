@@ -2,7 +2,7 @@ Source: grml2usb
 Section: grml
 Priority: optional
 Maintainer: Michael Prokop <mika@grml.org>
-Build-Depends: debhelper (>= 5)
+Build-Depends: debhelper (>= 7)
 Build-Depends-Indep: asciidoc, xsltproc, docbook-xsl
 Standards-Version: 3.9.2
 Homepage: http://grml.org/grml2usb/
