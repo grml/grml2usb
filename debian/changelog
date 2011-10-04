@@ -1,3 +1,11 @@
+grml2usb (0.10.1) unstable; urgency=low
+
+  Packaging fixes:
+  * [05f4996] Fix FTBFS on i386: must build arch package in binary-arch
+  * [ba108d8] Reword/reformat some text in debian/copyright
+
+ -- Christian Hofstaedtler <christian@hofstaedtler.name>  Tue, 04 Oct 2011 10:07:42 +0200
+
 grml2usb (0.10.0) unstable; urgency=low
 
   Target Debian unstable:
