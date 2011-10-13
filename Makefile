@@ -15,7 +15,7 @@ man-stamp: grml2usb.8.txt grml2iso.8.txt
 	# grml2usb:
 	asciidoc -d manpage -b docbook grml2usb.8.txt
 	sed -i 's/<emphasis role="strong">/<emphasis role="bold">/' grml2usb.8.xml
-	xsltproc /usr/share/xml/docbook/stylesheet/nwalsh/manpages/docbook.xsl grml2usb.8.xml
+	xsltproc --novalid --nonet /usr/share/xml/docbook/stylesheet/nwalsh/manpages/docbook.xsl grml2usb.8.xml
 	# ugly hack to avoid duplicate empty lines in manpage
 	# notice: docbook-xsl 1.71.0.dfsg.1-1 is broken! make sure you use 1.68.1.dfsg.1-0.2!
 	cp grml2usb.8 grml2usb.8.tmp
@@ -26,7 +26,7 @@ man-stamp: grml2usb.8.txt grml2iso.8.txt
 	# grml2iso:
 	asciidoc -d manpage -b docbook grml2iso.8.txt
 	sed -i 's/<emphasis role="strong">/<emphasis role="bold">/' grml2iso.8.xml
-	xsltproc /usr/share/xml/docbook/stylesheet/nwalsh/manpages/docbook.xsl grml2iso.8.xml
+	xsltproc --novalid --nonet /usr/share/xml/docbook/stylesheet/nwalsh/manpages/docbook.xsl grml2iso.8.xml
 	# ugly hack to avoid duplicate empty lines in manpage
 	# notice: docbook-xsl 1.71.0.dfsg.1-1 is broken! make sure you use 1.68.1.dfsg.1-0.2!
 	cp grml2iso.8 grml2iso.8.tmp

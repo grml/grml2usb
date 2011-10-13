@@ -13,7 +13,7 @@ doc_man: man-stamp
 man-stamp: mbr.8.txt
 	asciidoc -d manpage -b docbook mbr.8.txt
 	sed -i 's/<emphasis role="strong">/<emphasis role="bold">/' mbr.8.xml
-	xsltproc /usr/share/xml/docbook/stylesheet/nwalsh/manpages/docbook.xsl mbr.8.xml
+	xsltproc --novalid --nonet /usr/share/xml/docbook/stylesheet/nwalsh/manpages/docbook.xsl mbr.8.xml
 	# ugly hack to avoid duplicate empty lines in manpage
 	# notice: docbook-xsl 1.71.0.dfsg.1-1 is broken! make sure you use 1.68.1.dfsg.1-0.2!
 	cp mbr.8 mbr.8.tmp
