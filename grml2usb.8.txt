@@ -373,22 +373,6 @@ It is *NOT* enough to have just the grml2usb script itself without the according
 files provided either via the Debian package, the git tree or the file
 grml2usb.tgz.
 
-[[grml2hd-vs-grml2usb]]
-What's the difference between grml2hd and grml2usb?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-grml2hd installs a running grml system to a harddisk. When rebooting the
-harddisk installation can be modified and changes will find their way to the
-harddisk immediately.  grml2usb copies just the compressed chroot filesystem
-(being the squashfs file), some further informational files and a bootloader to
-your device. This way you don't need as much space as with a harddisk
-installation (just a USB device with >=ISO size) and when rebooting the system
-your changes will be lost (unless you are using the persistency feature, see
-link:http://wiki.grml.org/doku.php?id=persistency[http://wiki.grml.org/doku.php?id=persistency]).
-Think of using a better CD version: booting is (usually) faster, you don't need
-to burn a new CD when a new ISO version arrives (just install the new ISO using
-grml2usb) and you can carry additional files on a writable medium with yourself.
-
 [[dd]]
 Why can't I just dd the ISO to a USB device?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
