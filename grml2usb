@@ -1150,10 +1150,18 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
     grub_target = target + '/boot/grub/'
     execute(mkdir, grub_target)
 
-
     logo = search_file('logo.16', iso_mount)
     exec_rsync(logo, syslinux_target + 'logo.16')
 
+    bootx64_efi = search_file('bootx64.efi', iso_mount)
+    if bootx64_efi:
+        mkdir(target + '/efi/boot/')
+        exec_rsync(bootx64_efi, target + '/efi/boot/bootx64.efi')
+
+    efi_img = search_file('efi.img', iso_mount)
+    if efi_img:
+        mkdir(target + '/boot/')
+        exec_rsync(efi_img, target + '/boot/efi.img')
 
     for ffile in ['f%d' % number for number in range(1, 11) ]:
         search_and_copy(ffile, iso_mount, syslinux_target + ffile)
