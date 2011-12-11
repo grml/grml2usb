@@ -461,6 +461,12 @@ menuentry "%(grml_flavour)s-nofb       - disable framebuffer" {
 }
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
+menuentry "%(grml_flavour)s-nokms      - disable Kernel Mode-Setting" {
+    linux  /boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ bootid=%(uid)s %(bootoptions)s radeon.modeset=0 i915.modeset=0 nouveau.modeset=0 nomodeset
+    initrd /boot/release/%(flavour_filename)s/initrd.gz
+}
+
+## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s-failsafe   - disable hardware detection" {
     linux /boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce quiet live-media-path=/live/%(grml_flavour)s/ vga=normal noautoconfig atapicd noapic noacpi acpi=off nomodules nofirewire noudev nousb nohotplug noapm nopcmcia nosmp maxcpus=0 noscsi noagp nodma ide=nodma noswap nofstab nosound nogpm nosyslog nodhcp nocpu nodisc nomodem xmodule=vesa noraid nolvm noresume selinux=0 edd=off pci=nomsi bootid=%(uid)s %(bootoptions)s
     initrd /boot/release/%(flavour_filename)s/initrd.gz
