@@ -1,3 +1,11 @@
+grml2usb (0.11.1) unstable; urgency=low
+
+  [ Christian Hofstaedtler ]
+  * [2534968] Add nokms option to grub menu
+  * [e9f7cff] sync grub.cfg menu entries with grml-live templates
+
+ -- Michael Prokop <mika@grml.org>  Sun, 11 Dec 2011 21:28:12 +0100
+
 grml2usb (0.11.0) unstable; urgency=low
 
   * [b1bf09c] Install boot files required for [U]EFI boot
