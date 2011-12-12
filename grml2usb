@@ -467,12 +467,6 @@ menuentry "%(grml_flavour)s - forensic mode" {
 }
 
 ## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
-menuentry "%(grml_flavour)s - disable hardware detection" {
-    linux /boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce live-media-path=/live/%(grml_flavour)s/ vga=normal noautoconfig atapicd noapic noacpi acpi=off nomodules nofirewire noudev nousb nohotplug noapm nopcmcia nosmp maxcpus=0 noscsi noagp nodma ide=nodma noswap nofstab nosound nogpm nosyslog nodhcp nocpu nodisc nomodem xmodule=vesa noraid nolvm noresume selinux=0 edd=off pci=nomsi bootid=%(uid)s %(bootoptions)s
-    initrd /boot/release/%(flavour_filename)s/initrd.gz
-}
-
-## flavour specific configuration for %(grml_flavour)s [grml2usb for %(grml_flavour)s: %(local_datestamp)s]
 menuentry "%(grml_flavour)s - enable debugging options" {
     set gfxpayload=1024x768x16,1024x768
     linux /boot/release/%(flavour_filename)s/linux26 apm=power-off boot=live nomce live-media-path=/live/%(grml_flavour)s/ debug bootid=%(uid)s initcall_debug %(bootoptions)s
