@@ -1,3 +1,14 @@
+grml2usb (0.11.2) unstable; urgency=low
+
+  [ Christian Hofstaedtler ]
+  * [bd2f924] Remove 'quiet' from standard boot options
+  * [4f47c04] Remove failsafe boot menu entry
+
+  [ Michael Prokop ]
+  * [a1ca17b] Add UEFI boot support to grml2iso
+
+ -- Michael Prokop <mika@grml.org>  Thu, 15 Dec 2011 14:35:58 +0100
+
 grml2usb (0.11.1) unstable; urgency=low
 
   [ Christian Hofstaedtler ]
