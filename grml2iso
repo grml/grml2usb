@@ -21,13 +21,15 @@
 # work directory for creating the filesystem
   [ -n "$WRKDIR" ]   || WRKDIR='/tmp/grml2iso.tmp'
 # support mkisofs as well as genisoimage
-  if which mkisofs >/dev/null 2>&1; then
-    MKISOFS='mkisofs'
-  elif which genisoimage >/dev/null 2>&1; then
-    MKISOFS='genisoimage'
-  else
-    echo >&2 "Error: neither mkisofs nor genisoimage available - can not create ISO."
-    exit 1
+if which xorriso >/dev/null 2>&1 ; then
+  MKISOFS='xorriso -as mkisofs'
+elif which mkisofs >/dev/null 2>&1; then
+  MKISOFS='mkisofs'
+elif which genisoimage >/dev/null 2>&1; then
+  MKISOFS='genisoimage'
+else
+  echo >&2 "Error: neither mkisofs nor genisoimage available - can not create ISO."
+  exit 1
 fi
 # }}}
 
@@ -124,8 +126,6 @@ Options:
 
 # variables {{{
   ORIG_DIR="$(pwd)"
-  # note: grub-pc_1.96+20090603-1 seems to be b0rken
-  GRUB_VERSION="grub-pc_1.96+20080724-16"
 
 # normalise path
   case $ISOFILE in
@@ -153,6 +153,29 @@ Options:
   cd "$WRKDIR/cddir"
   echo "menu label ^Isolinux prompt" > boot/isolinux/promptname.cfg
   echo "include hd.cfg" >> boot/isolinux/grmlmain.cfg
+# }}}
+
+# efi boot {{{
+  # default, independent of UEFI support
+  BOOT_ARGS="-no-emul-boot -boot-load-size 4 -boot-info-table -b boot/isolinux/isolinux.bin -c boot/isolinux/boot.cat"
+
+  case "$MKISOFS" in
+    xorriso*)
+      echo "Using xorriso for ISO generation."
+      if ! dpkg --compare-versions $(dpkg-query -W -f='${Version}\n' xorriso 2>/dev/null) gt-nl 1.1.6-1 ; then
+        echo "Disabling (U)EFI boot support since xorriso version is not recent enough."
+      else
+        echo "xorriso with -eltorito-alt-boot support present"
+
+        if ! [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
+          echo "File /boot/efi.img not found, not extending boot arguments for (U)EFI boot."
+        else
+          echo "/boot/efi.img found, extending boot arguments for (U)EFI boot."
+          BOOT_ARGS="$BOOT_ARGS -boot-info-table -eltorito-alt-boot -e boot/efi.img -no-emul-boot"
+        fi
+      fi
+      ;;
+  esac
 # }}}
 
 # adjust ISO for small output if necessary {{{
@@ -186,9 +209,7 @@ Options:
 # }}}
 
 # generate the CD/DVD ISO {{{
-  $MKISOFS -V 'grml-multiboot' -l -r -J -no-pad \
-    -no-emul-boot -boot-load-size 4 -boot-info-table \
-    -b boot/isolinux/isolinux.bin -c boot/isolinux/boot.cat \
+  $MKISOFS -V 'grml-multiboot' -l -r -J -no-pad $BOOT_ARGS \
     -o "$ISOFILE" .
 # }}}
 
