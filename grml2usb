@@ -1202,27 +1202,12 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
 
     search_and_copy('hidden.cfg', iso_mount + source_dir, syslinux_target + "new_" + 'hidden.cfg')
 
-
-    grub_target = target + '/boot/grub/'
-    execute(mkdir, grub_target)
-
-    if not os.path.isfile(GRML2USB_BASE + "/grub/splash.xpm.gz"):
-        logging.critical("Error: %s/grub/splash.xpm.gz can not be read.", GRML2USB_BASE)
-        logging.critical("Please make sure you've installed the grml2usb (Debian) package!")
-        raise
-    else:
-        exec_rsync(GRML2USB_BASE + '/grub/splash.xpm.gz', grub_target + 'splash.xpm.gz')
-
-    # grml splash in grub
-    copy_if_exist(GRML2USB_BASE + "/grub/grml.png", grub_target + 'grml.png')
-
-    # font file for graphical bootsplash in grub
-    copy_if_exist('/usr/share/grub/ascii.pf2', grub_target + 'ascii.pf2')
-
-    # always copy grub content as it might be useful
-
+    # copy all grub files from ISO
     glob_and_copy(iso_mount + '/boot/grub/*.mod', grub_target)
+    glob_and_copy(iso_mount + '/boot/grub/*.lst', grub_target)
     glob_and_copy(iso_mount + '/boot/grub/*.img', grub_target)
+    glob_and_copy(iso_mount + '/boot/grub/*.pf2', grub_target) # fonts for splash
+    glob_and_copy(iso_mount + '/boot/grub/*.png', grub_target) # splash image
     glob_and_copy(iso_mount + '/boot/grub/stage*', grub_target)
 
 def install_iso_files(grml_flavour, iso_mount, device, target):
