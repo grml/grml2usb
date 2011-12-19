@@ -1320,20 +1320,15 @@ def handle_grub2_config(grml_flavour, grub_target, bootopt):
     global GRML_DEFAULT
 
     # install main configuration only *once*, no matter how many ISOs we have:
-    grub_flavour_is_default = False
+    install_main_config = True
     if os.path.isfile(grub2_cfg):
         string = open(grub2_cfg).readline()
         main_identifier = re.compile(".*main config generated at: %s.*" % re.escape(str(DATESTAMP)))
-        if not re.match(main_identifier, string):
-            grub2_config_file = open(grub2_cfg, 'w')
-            GRML_DEFAULT = grml_flavour
-            grub_flavour_is_default = True
-            grub2_config_file.write(generate_main_grub2_config(grml_flavour, bootopt))
-            grub2_config_file.close()
-    else:
+        if re.match(main_identifier, string):
+            install_main_config = False
+    if install_main_config:
         grub2_config_file = open(grub2_cfg, 'w')
         GRML_DEFAULT = grml_flavour
-        grub_flavour_is_default = True
         grub2_config_file.write(generate_main_grub2_config(grml_flavour, bootopt))
         grub2_config_file.close()
 
@@ -1349,7 +1344,7 @@ def handle_grub2_config(grml_flavour, grub_target, bootopt):
     if grub_flavour_config:
         grub2_config_file = open(grub2_cfg, 'a')
         # display only if the grml flavour isn't the default
-        if not grub_flavour_is_default:
+        if GRML_DEFAULT != grml_flavour:
             GRML_FLAVOURS.add(grml_flavour)
         grub2_config_file.write(generate_flavour_specific_grub2_config(grml_flavour, bootopt))
         grub2_config_file.close()
