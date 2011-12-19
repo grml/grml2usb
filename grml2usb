@@ -952,19 +952,19 @@ def copy_system_files(grml_flavour, iso_mount, target):
     if os.path.isdir(iso_mount + '/boot/release'):
         prefix = release_path + '/'
 
-    kernel = search_file(prefix + 'linux26', iso_mount)
+    kernel = search_file(prefix + 'vmlinuz', iso_mount)
+    initrd = search_file(prefix + 'initrd.img', iso_mount)
     if kernel is None:
-        logging.critical("Fatal kernel not found")
-        raise CriticalException("error locating kernel file")
-    else:
-        exec_rsync(kernel, release_target + '/linux26')
+        # compat for releases < 2011.12
+        kernel = search_file(prefix + 'linux26', iso_mount)
+        initrd = search_file(prefix + 'initrd.gz', iso_mount)
 
-    initrd = search_file(prefix + 'initrd.gz', iso_mount)
-    if initrd is None:
-        logging.critical("Fatal: initrd not found")
-        raise CriticalException("error locating initrd file")
-    else:
-        exec_rsync(initrd, release_target + '/initrd.gz')
+    if kernel is None or initrd is None:
+        logging.critical("Fatal: kernel or initrd not found")
+        raise CriticalException("error locating kernel or initrd file")
+
+    exec_rsync(kernel, release_target + '/')
+    exec_rsync(initrd, release_target + '/')
 
 
 def update_grml_versions(iso_mount, target):
