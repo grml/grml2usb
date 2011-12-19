@@ -9,6 +9,8 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
+VERSION:=$(shell dpkg-parsechangelog | awk '/Version: / { print $$2 }')
+
 build: build-arch build-indep
 build-arch: build-stamp
 build-indep: build-stamp
@@ -16,7 +18,7 @@ build-indep: build-stamp
 build-stamp:
 	dh_testdir
 
-	# Add here commands to compile the package.
+	egrep -q "PROG_VERSION='\*\*\*UNRELEASED\*\*\*'" grml2usb || (echo "PROG_VERSION in grml2usb wrong." && exit 2)
 	$(MAKE)
 	cd mbr && $(MAKE) && cd ..
 	touch build-stamp
@@ -39,6 +41,7 @@ install: build
 
 	# Add here commands to install the package into debian/grml2usb.
 	install -m 755 grml2usb               debian/grml2usb/usr/sbin/grml2usb
+	sed -i -e "s/PROG_VERSION='\*\*\*UNRELEASED\*\*\*'/PROG_VERSION='$(VERSION)'/" debian/grml2usb/usr/sbin/grml2usb
 	install -m 755 grml2iso               debian/grml2usb/usr/sbin/grml2iso
 	install -m 644 mbr/mbrmgr             debian/grml2usb/usr/share/grml2usb/mbr/mbrmgr
 	install -m 644 mbr/mbrldr             debian/grml2usb/usr/share/grml2usb/mbr/mbrldr

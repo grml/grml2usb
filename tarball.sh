@@ -8,8 +8,7 @@
 
 set -e
 
-VERSION="$(awk '/^PROG_VERSION/ { print $3}' grml2usb | tr -d \")"
-
+VERSION=$(dpkg-parsechangelog | awk '/Version: / { print $2 }')
 DIR="grml2usb-${VERSION}"
 [ -d "$DIR" ] || mkdir "$DIR"
 
@@ -117,6 +116,7 @@ rm grml2usb-$VERSION/grml2iso.8.txt
 
 # binaries, grub
 cp grml2usb grml2iso mbr/mbrldr mbr/mbrmgr grub/* grml2usb-$VERSION/
+sed -i -e "s/PROG_VERSION='\*\*\*UNRELEASED\*\*\*'/PROG_VERSION='${VERSION}'/" grml2usb-$VERSION/grml2usb
 
 tar zcf grml2usb.tgz "${DIR}"
 
