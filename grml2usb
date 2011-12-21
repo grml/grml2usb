@@ -1492,7 +1492,7 @@ def add_syslinux_entry(filename, grml_flavour):
     data.close()
 
 def modify_filenames(grml_flavour, target, filenames):
-    """Replace the standarf filenames with the new ones
+    """Replace the standard filenames with the new ones
 
     @grml_flavour: grml-flavour strin
     @target: directory where the files are located
@@ -1569,7 +1569,7 @@ def handle_syslinux_config(grml_flavour, target):
     entry = 'include %s\n' % new_default
     defaults_file = '%s/defaults.cfg' % syslinux_target
     new_default_with_path = "%s/%s" % (syslinux_target, new_default)
-    new_grml_cfg = "%s/%s_grml.cfg" % ( syslinux_target, flavour_filename)
+    new_grml_cfg = "%s/%s_grml.cfg" % (syslinux_target, flavour_filename)
 
     if os.path.isfile(defaults_file):
 
