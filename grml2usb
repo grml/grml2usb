@@ -1295,7 +1295,7 @@ def modify_grub_config(filename):
         for regex in options.removeoption:
             regexe.append(re.compile(r'%s' % regex))
 
-        option_re = re.compile(r'(.*/boot/release/.*linux26.*)')
+        option_re = re.compile(r'(.*/boot/release/.*(linux26|vmlinuz).*)')
 
         for line in fileinput.input(filename, inplace=1):
             if regexe and option_re.search(line):
@@ -1443,7 +1443,7 @@ def adjust_syslinux_bootoptions(src, flavour):
     regexe = []
     option_re = None
     if options.removeoption:
-        option_re = re.compile(r'/boot/release/.*/initrd.gz')
+        option_re = re.compile(r'/boot/release/.*/(initrd.gz|initrd.img)')
 
         for regex in options.removeoption:
             regexe.append(re.compile(r'%s' % regex))
