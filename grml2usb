@@ -1005,6 +1005,9 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
         logging.critical("       ... either use grml releases >=2009.10 or switch to an older grml2usb version.")
         raise
 
+    if not os.path.exists(iso_mount + '/boot/grub/footer.cfg'):
+        logging.warning("Warning: Grml releases older than 2011.12 support only one flavour in grub.")
+
     for expr in name, 'distri.cfg', \
         defaults_file, 'grml.png', 'hd.cfg', 'isolinux.cfg', 'isolinux.bin', \
         'isoprompt.cfg', 'options.cfg', \
