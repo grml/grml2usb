@@ -943,28 +943,19 @@ def copy_system_files(grml_flavour, iso_mount, target):
     else:
         exec_rsync(filesystem_module, squashfs_target + 'filesystem.module')
 
-
-    release_path = 'boot/release/' + grml_flavour.replace('-', '')
-    release_target = target + "/" + release_path
-    execute(mkdir, release_target)
-
-    prefix = ""
-    if os.path.isdir(iso_mount + '/boot/release'):
-        prefix = release_path + '/'
-
-    kernel = search_file(prefix + 'vmlinuz', iso_mount)
-    initrd = search_file(prefix + 'initrd.img', iso_mount)
+    kernel = search_file('vmlinuz', iso_mount)
     if kernel is None:
         # compat for releases < 2011.12
-        kernel = search_file(prefix + 'linux26', iso_mount)
-        initrd = search_file(prefix + 'initrd.gz', iso_mount)
+        kernel = search_file('linux26', iso_mount)
 
-    if kernel is None or initrd is None:
-        logging.critical("Fatal: kernel or initrd not found")
-        raise CriticalException("error locating kernel or initrd file")
+    if kernel is None:
+        logging.critical("Fatal: kernel not found")
+        raise CriticalException("error locating kernel file")
 
-    exec_rsync(kernel, release_target + '/')
-    exec_rsync(initrd, release_target + '/')
+    source = os.path.dirname(kernel) + '/'
+    dest = target + '/' + os.path.dirname(kernel).replace(iso_mount,'') + '/'
+    execute(mkdir, dest)
+    exec_rsync(source, dest)
 
 
 def update_grml_versions(iso_mount, target):
@@ -1295,7 +1286,7 @@ def modify_grub_config(filename):
         for regex in options.removeoption:
             regexe.append(re.compile(r'%s' % regex))
 
-        option_re = re.compile(r'(.*/boot/release/.*(linux26|vmlinuz).*)')
+        option_re = re.compile(r'(.*/boot/.*(linux26|vmlinuz).*)')
 
         for line in fileinput.input(filename, inplace=1):
             if regexe and option_re.search(line):
@@ -1431,8 +1422,7 @@ def adjust_syslinux_bootoptions(src, flavour):
     @flavour: grml flavour
     """
 
-    append_re = re.compile("^(\s*append.*/boot/release.*)$", re.I)
-    boot_re = re.compile("/boot/([a-zA-Z0-9_]+/)+([a-zA-Z0-9._]+)")
+    append_re = re.compile("^(\s*append.*/boot/.*)$", re.I)
     # flavour_re = re.compile("(label.*)(grml\w+)")
     default_re = re.compile("(default.cfg)")
     bootid_re = re.compile("bootid=[\w_-]+")
@@ -1443,13 +1433,12 @@ def adjust_syslinux_bootoptions(src, flavour):
     regexe = []
     option_re = None
     if options.removeoption:
-        option_re = re.compile(r'/boot/release/.*/(initrd.gz|initrd.img)')
+        option_re = re.compile(r'/boot/.*/(initrd.gz|initrd.img)')
 
         for regex in options.removeoption:
             regexe.append(re.compile(r'%s' % regex))
 
     for line in fileinput.input(src, inplace=1):
-        line = boot_re.sub(r'/boot/release/%s/\2 ' % flavour.replace('-', ''), line)
         # line = flavour_re.sub(r'\1 %s-\2' % flavour, line)
         line = default_re.sub(r'%s-\1' % flavour, line)
         line = bootid_re.sub('', line)
