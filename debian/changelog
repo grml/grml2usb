@@ -1,3 +1,19 @@
+grml2usb (0.11.3) unstable; urgency=low
+
+  [ Christian Hofstaedtler ]
+  * [894eef9] Use grub splash image from ISO
+  * [fdc186c] Remove hardcoded version from grml2usb
+  * [bd89fc4] Cleanup grub.cfg install logic
+  * [569dfb3] Add support for new kernel/initrd filenames
+  * [5818eec] Fix add/remove bootoptions with new kernel/initrd names
+  * [6817350] Fix typo
+  * [b82aaee] Mimic /boot/%SHORT_NAME% like on the ISO
+  * [100193b] Use grub config from ISO instead of writing a new one
+  * [feca364] Warn that older versions can't do multi-flavour grub
+  * [6b93ccd] Load loop kernel module [Closes: issue1097]
+
+ -- Michael Prokop <mika@grml.org>  Thu, 22 Dec 2011 23:55:08 +0100
+
 grml2usb (0.11.2) unstable; urgency=low
 
   [ Christian Hofstaedtler ]
