@@ -1624,6 +1624,11 @@ def check_programs():
         logging.critical("Fatal: rsync not available, can not continue - sorry.")
         sys.exit(1)
 
+def load_loop():
+    """Runs modprobe loop and throws away it's output"""
+    proc = subprocess.Popen(["modprobe", "loop"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc.wait()
+
 def main():
     """Main function [make pylint happy :)]"""
 
@@ -1641,6 +1646,8 @@ def main():
     check_uid_root()
 
     check_options(options)
+
+    load_loop()
 
     logging.info("Executing grml2usb version %s", PROG_VERSION)
 
