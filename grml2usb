@@ -827,46 +827,24 @@ def update_grml_versions(iso_mount, target):
     else:
         return False
 
-def copy_grml_files(iso_mount, target):
+def copy_grml_files(grml_flavour, iso_mount, target):
     """copy some minor grml files to a given target
 
+    @grml_flavour: the current grml_flavour
     @iso_mount: path where a grml ISO is mounted on
     @target: path where grml's main files should be copied to"""
 
     grml_target = target + '/grml/'
     execute(mkdir, grml_target)
 
-    copy_files = [ 'grml-cheatcodes.txt', 'LICENSE.txt', 'md5sums', 'README.txt' ]
-    # handle grml-version
-    if not update_grml_versions(iso_mount, target):
-        copy_files.append('grml-version')
-
-    for myfile in copy_files:
-        grml_file = search_file(myfile, iso_mount)
-        if grml_file is None:
-            logging.warn("Warning: file %s could not be found - can not install it", myfile)
-        else:
-            exec_rsync(grml_file, grml_target + myfile)
-
-    grml_web_target = grml_target + '/web/'
-    execute(mkdir, grml_web_target)
-
-    for myfile in 'index.html', 'style.css':
-        grml_file = search_file(myfile, iso_mount)
-        if grml_file is None:
-            logging.warn("Warning: file %s could not be found - can not install it", myfile)
-        else:
-            exec_rsync(grml_file, grml_web_target + myfile)
-
-    grml_webimg_target = grml_web_target + '/images/'
-    execute(mkdir, grml_webimg_target)
-
-    for myfile in 'button.png', 'favicon.png', 'linux.jpg', 'logo.png':
-        grml_file = search_file(myfile, iso_mount)
-        if grml_file is None:
-            logging.warn("Warning: file %s could not be found - can not install it", myfile)
-        else:
-            exec_rsync(grml_file, grml_webimg_target + myfile)
+    grml_prefixe = ["GRML", "grml"]
+    for prefix in grml_prefixe:
+      filename = "{0}/{1}/{2}".format(iso_mount, prefix, grml_flavour)
+      if os.path.exists(filename):
+        exec_rsync(filename, grml_target)
+        break
+    else:
+      logging.warn("Warning: could not find flavour directory for %s ", grml_flavour)
 
 
 def handle_addon_copy(filename, dst, iso_mount, ignore_errors=False):
@@ -1042,7 +1020,7 @@ def install_iso_files(grml_flavour, iso_mount, device, target):
         logging.info("Copying files. This might take a while....")
         try:
             copy_system_files(grml_flavour, iso_mount, target)
-            copy_grml_files(iso_mount, target)
+            copy_grml_files(grml_flavour, iso_mount, target)
         except CriticalException, error:
             logging.critical("Execution failed: %s", error)
             sys.exit(1)
