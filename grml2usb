@@ -768,19 +768,24 @@ def copy_system_files(grml_flavour, iso_mount, target):
     else:
         exec_rsync(filesystem_module, squashfs_target + 'filesystem.module')
 
-    kernel = search_file('vmlinuz', iso_mount)
-    if kernel is None:
-        # compat for releases < 2011.12
-        kernel = search_file('linux26', iso_mount)
+    cleaned_flavour = re.sub(r'[,._-]', '', grml_flavour)
 
-    if kernel is None:
-        logging.critical("Fatal: kernel not found")
-        raise CriticalException("error locating kernel file")
+    if os.path.isdir(iso_mount + '/boot/' + cleaned_flavour):
+        exec_rsync(iso_mount + '/boot/' + cleaned_flavour, target + '/boot')
+    else:
+        kernel = search_file('vmlinuz', iso_mount)
+        if kernel is None:
+            # compat for releases < 2011.12
+            kernel = search_file('linux26', iso_mount)
 
-    source = os.path.dirname(kernel) + '/'
-    dest = target + '/' + os.path.dirname(kernel).replace(iso_mount,'') + '/'
-    execute(mkdir, dest)
-    exec_rsync(source, dest)
+        if kernel is None:
+            logging.critical("Fatal: kernel not found")
+            raise CriticalException("error locating kernel file")
+
+        source = os.path.dirname(kernel) + '/'
+        dest = target + '/' + os.path.dirname(kernel).replace(iso_mount,'') + '/'
+        execute(mkdir, dest)
+        exec_rsync(source, dest)
 
 
 def update_grml_versions(iso_mount, target):
