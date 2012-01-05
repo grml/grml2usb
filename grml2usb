@@ -1635,7 +1635,7 @@ def main():
     check_programs()
 
     # specified arguments
-    device = args[len(args) - 1]
+    device = os.path.realpath(args[len(args) - 1])
     isos = args[0:len(args) - 1]
 
     if not os.path.isdir(device):
