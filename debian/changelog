@@ -1,3 +1,15 @@
+grml2usb (0.11.4) unstable; urgency=low
+
+  [ Ulrich Dangel ]
+  * [35feaad] Copy complete Grml flavour directory instead of explicit
+    specifying files
+
+  [ Michael Prokop ]
+  * [7c0195d] Make sure we don't fail in device check when using
+    /dev/disk-by-label/* - Thanks to Bernhard Tittelbach
+
+ -- Michael Prokop <mika@grml.org>  Mon, 09 Jan 2012 16:37:18 +0100
+
 grml2usb (0.11.3) unstable; urgency=low
 
   [ Christian Hofstaedtler ]
