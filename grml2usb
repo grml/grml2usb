@@ -376,7 +376,7 @@ menu begin grml %(grml_flavour)s
     include %(grml_flavour)s_grml.cfg
     menu hide
 menu end
-""" % {'grml_flavour': grml_flavour, 'display_name' : grml_flavour.replace('_', '-') } )
+""" % {'grml_flavour': grml_flavour, 'display_name' : get_flavour_filename(grml_flavour) } )
 
 
 def install_grub(device):
@@ -740,6 +740,11 @@ def get_uuid(target):
         execute(mkdir, conf_target)
         return write_uuid(uuid_file_name)
 
+def get_shortname(grml_flavour):
+    """Get shortname based from grml_flavour name. The rules applied are the same as in grml-live
+    @grml_flavour: flavour name which shold be translated to shortname"""
+
+    return re.sub(r'[,._-]', '', grml_flavour)
 
 def copy_system_files(grml_flavour, iso_mount, target):
     """copy grml's main files (like squashfs, kernel and initrd) to a given target
@@ -768,10 +773,10 @@ def copy_system_files(grml_flavour, iso_mount, target):
     else:
         exec_rsync(filesystem_module, squashfs_target + 'filesystem.module')
 
-    cleaned_flavour = re.sub(r'[,._-]', '', grml_flavour)
 
-    if os.path.isdir(iso_mount + '/boot/' + cleaned_flavour):
-        exec_rsync(iso_mount + '/boot/' + cleaned_flavour, target + '/boot')
+    shortname = get_shortname(grml_flavour)
+    if os.path.isdir(iso_mount + '/boot/' + shortname):
+        exec_rsync(iso_mount + '/boot/' + shortname, target + '/boot')
     else:
         kernel = search_file('vmlinuz', iso_mount)
         if kernel is None:
@@ -1121,7 +1126,8 @@ def handle_grub_config(grml_flavour, device, target):
         for regex in options.removeoption:
             remove_regexes.append(re.compile(regex))
 
-    for filename in glob.glob(grub_target + grml_flavour + '*.cfg'):
+    shortname = get_shortname(grml_flavour)
+    for filename in glob.glob(grub_target + shortname + '*.cfg'):
         for line in fileinput.input(filename, inplace=1):
             line = line.rstrip("\r\n")
             if option_re.search(line):
@@ -1247,7 +1253,7 @@ def modify_filenames(grml_flavour, target, filenames):
     @target: directory where the files are located
     @filenames: list of filenames to alter
     """
-    grml_filename = grml_flavour.replace('-', '_')
+    grml_filename = get_flavour_filename(grml_flavour)
     for filename in filenames:
         old_filename = "%s/%s" % (target, filename)
         new_filename = "%s/%s_%s" % (target, grml_filename, filename)
@@ -1291,7 +1297,7 @@ def handle_syslinux_config(grml_flavour, target):
     prompt_name.close()
 
     initial_syslinux_config(syslinux_target)
-    flavour_filename = grml_flavour.replace('-', '_')
+    flavour_filename = get_flavour_filename(grml_flavour)
 
     if search_file('default.cfg', syslinux_target):
         modify_filenames(grml_flavour, syslinux_target, ['grml.cfg', 'default.cfg'])
