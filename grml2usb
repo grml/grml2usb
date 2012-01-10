@@ -1121,7 +1121,7 @@ def handle_grub_config(grml_flavour, device, target):
         for regex in options.removeoption:
             remove_regexes.append(re.compile(regex))
 
-    for filename in glob.glob(grub_target + '*.cfg'):
+    for filename in glob.glob(grub_target + grml_flavour + '*.cfg'):
         for line in fileinput.input(filename, inplace=1):
             line = line.rstrip("\r\n")
             if option_re.search(line):
