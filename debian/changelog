@@ -1,3 +1,16 @@
+grml2usb (0.11.5) unstable; urgency=low
+
+  The "grml96 support ♫♫♫" release
+
+  [ Ulrich Dangel ]
+  * [eb087c0] Support multiple flavours on a cd
+  * [4608131] Modify grub config files for the specified flavour instead
+    of all grub config files
+  * [c6af951] Streamline grml_flavour modification
+  * [c421fb3] Only modify live-media-path for current flavour
+
+ -- Michael Prokop <mika@grml.org>  Wed, 11 Jan 2012 16:10:51 +0100
+
 grml2usb (0.11.4) unstable; urgency=low
 
   [ Ulrich Dangel ]
