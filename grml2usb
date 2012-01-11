@@ -1536,7 +1536,8 @@ def handle_compat_warning(device):
     @device: device that should be checked"""
 
     # make sure we can replace old grml2usb script and warn user when using old way of life:
-    if device.startswith("/mnt/external") or device.startswith("/mnt/usb") and not options.force:
+    if device.startswith("/media/external") or device.startswith("/media/usb") or \
+        device.startswith("/mnt/external") or device.startswith("/mnt/usb") and not options.force:
         print "Warning: the semantics of grml2usb has changed."
         print "Instead of using grml2usb /path/to/iso %s you might" % device
         print "want to use grml2usb /path/to/iso /dev/... instead."

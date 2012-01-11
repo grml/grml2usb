@@ -81,10 +81,10 @@ Create a new iso and remove existing boot parameters quiet and vga=791.
 Create multiboot ISO /srv/grml.iso with grml_2009.05.iso and
 grml64-medium_2009.05.iso using /srv/git/grml2usb as grml2usb script.
 
-  # WRKDIR=/mnt/test/grml-tmp grml2iso -o /mnt/test/grml.iso grml_2009.05.iso grml64_2009.05.iso
+  # WRKDIR=/media/test/grml-tmp grml2iso -o /media/test/grml.iso grml_2009.05.iso grml64_2009.05.iso
 
-Use /mnt/test/grml-tmp as working directory for creating the multiboot ISO
-/mnt/test/grml.iso with grml_2009.05.iso and grml64_2009.05.iso.
+Use /media/test/grml-tmp as working directory for creating the multiboot ISO
+/media/test/grml.iso with grml_2009.05.iso and grml64_2009.05.iso.
 
   # grml2iso -p --skip-addons -o /srv/grml.iso /srv/grml-small_2009.10.iso /srv/grml64-small_2009.10.iso
 
