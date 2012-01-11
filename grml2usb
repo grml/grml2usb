@@ -1127,13 +1127,15 @@ def handle_grub_config(grml_flavour, device, target):
             remove_regexes.append(re.compile(regex))
 
     shortname = get_shortname(grml_flavour)
-    for filename in glob.glob(grub_target + shortname + '*.cfg'):
+    for filename in glob.glob(grub_target + '*.cfg'):
         for line in fileinput.input(filename, inplace=1):
             line = line.rstrip("\r\n")
             if option_re.search(line):
                 line = bootid_re.sub('', line)
-                line = live_media_path_re.sub('', line)
-                line = line.rstrip() + r' live-media-path=/live/%s/ bootid=%s %s ' % (grml_flavour, UUID, bootopt)
+                if shortname in filename:
+                    line = live_media_path_re.sub('', line)
+                    line = line.rstrip() + ' live-media-path=/live/%s/ ' % (grml_flavour)
+                line = line.rstrip() + r' bootid=%s %s ' % (UUID, bootopt)
                 for regex in remove_regexes:
                     line = regex.sub(' ', line)
             print line
