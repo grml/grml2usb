@@ -203,9 +203,42 @@ Options:
 # copy specified directory to cd {{{
   if [ -n "$DIR" ] ; then
      echo >&2 "Copying ${DIR} to generated ISO"
-     rsync -a ${DIR}/ .
+     for param in GRML_NAME VERSION RELEASENAME DATE SHORT_NAME \
+         VERSION BOOTID RELEASE_INFO ; do
+       EXCLUDE_PARAM="$EXCLUDE_PARAM --exclude **%${param}%**"
+     done
+     rsync -a ${DIR}/ $EXCLUDE_PARAM .
   fi
 
+  # adjust files from overlay directory
+  for GRML_VERSION_FILE in $(find . -name grml-version) ; do
+    GRML_NAME=$(awk '{print $1}' "$GRML_VERSION_FILE")
+    VERSION=$(awk '{print $2}' "$GRML_VERSION_FILE")
+    RELEASENAME=$(sed 's/.*- \(.*\).*\[.*/\1/' "$GRML_VERSION_FILE")
+    DATE=$(sed 's/.*\[\(.*\)].*/\1/' "$GRML_VERSION_FILE")
+    SHORT_NAME="$(echo $GRML_NAME | tr -d ',./;\- ')"
+    RELEASE_INFO="$GRML_NAME $VERSION - $RELEASENAME"
+    BOOTID=$(cat conf/bootid.txt)
+
+    for param in GRML_NAME VERSION RELEASENAME DATE SHORT_NAME \
+        RELEASE_INFO BOOTID  ; do
+      value="$(eval echo '$'"$param")"
+
+      # copy parameterized files from the overlay directory
+      for file in $(find ${DIR} -name "*%$param%*") ; do
+        file=${file##$DIR/}
+        target_dir="$(dirname ${file})"
+        mkdir -p "$target_dir" || true
+        cp -r ${DIR}/${file} ./${target_dir}/"$(basename ${file/\%${param}\%/$value})"
+      done
+
+      # adjust config files
+      for file in ./boot/isolinux/*.cfg ./boot/isolinux/*.msg \
+        ./boot/grub/*.cfg ; do
+        sed -i "s/%$param%/$value/g" ${file} 2>/dev/null || true
+      done
+    done
+  done
 # }}}
 
 # generate the CD/DVD ISO {{{
