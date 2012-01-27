@@ -212,13 +212,14 @@ Options:
   # adjust files from overlay directory
   for GRML_VERSION_FILE in $(find . -name grml-version) ; do
     GRML_NAME=$(awk '{print $1}' "$GRML_VERSION_FILE")
-    VERSION=$(awk '{print $2}' "$GRML_VERSION_FILE")
+    VERSION=$(awk '{print $2}' "$GRML_VERSION_FILE" | tr -d '[]')
     RELEASENAME=$(sed 's/.*- \(.*\).*\[.*/\1/' "$GRML_VERSION_FILE")
     DATE=$(sed 's/.*\[\(.*\)].*/\1/' "$GRML_VERSION_FILE")
     SHORT_NAME="$(echo $GRML_NAME | tr -d ',./;\- ')"
+    RELEASE_INFO="$(echo $GRML_NAME | tr -d ',./;\- ')"
     BOOTID=$(cat conf/bootid.txt)
 
-    for param in SHORT_NAME VERSION BOOTID ; do
+    for param in GRML_NAME SHORT_NAME VERSION BOOTID DATE RELEASE_INFO ; do
       value="$(eval echo '$'"$param")"
 
       # copy parameterized files from the overlay directory
