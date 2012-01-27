@@ -1,3 +1,15 @@
+grml2usb (0.11.6) unstable; urgency=low
+
+  The "custom bootsplash without remastering ☕☕☕" release
+
+  [ Ulrich Dangel ]
+  * [f956c82] grml2iso: Canonicalize overlay directory
+  * [7494e3f] grml2iso: Support template parameters in overlay directory.
+    For now only GRML_NAME, VERSION, RELEASENAME, DATE, SHORT_NAME,
+    RELEASE_INFO and BOOTID are supported.
+
+ -- Michael Prokop <mika@grml.org>  Fri, 27 Jan 2012 12:29:21 +0100
+
 grml2usb (0.11.5) unstable; urgency=low
 
   The "grml96 support ♫♫♫" release
