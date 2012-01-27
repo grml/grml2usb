@@ -78,7 +78,7 @@ Options:
     case $name in
       o)   ISOFILE="$OPTARG";;
       b)   GRML2USB_OPTS+=(--bootoptions="$OPTARG");;
-      c)   DIR="$OPTARG";;
+      c)   DIR="$(readlink -f "$OPTARG")";;
       f)   FORCE='true';;
       r)   GRML2USB_OPTS+=(--remove-bootoption="$OPTARG");;
       p)   GRML2USB_OPTS+=("$OPTARG");;
