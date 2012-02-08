@@ -248,8 +248,8 @@ Options:
 
 # pad the output ISO to multiples of 256 KiB for partition table support {{{
   siz=$($getfilesize "$ISOFILE")
-  cyls=$(echo "$siz / 512 / 32 / 16 + 1" | bc)  # C=$cyls H=16 S=32
-  ofs=$(echo "$cyls * 16 * 32 * 512 - 1" | bc)  # padding offset (size - 1)
+  cyls=$(($siz / 512 / 32 / 16 + 1))  # C=$cyls H=16 S=32
+  ofs=$(($cyls * 16 * 32 * 512 - 1))  # padding offset (size - 1)
   dd if=/dev/zero bs=1 count=1 seek=$ofs of="$ISOFILE" 2>/dev/null
 # }}}
 
