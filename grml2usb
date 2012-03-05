@@ -546,7 +546,7 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
                     mbrcode[463:478] + actives[2] + \
                     mbrcode[479:494] + actives[3] + \
                     mbrcode[495:510] + "\x55\xAA"
-    
+
     tmpf.file.seek(0)
     tmpf.file.truncate()
     tmpf.file.write(mbrcode)
@@ -914,6 +914,36 @@ def copy_addons(iso_mount, target):
     # ipxe.lkrn
     handle_addon_copy('ipxe.lkrn', addons, iso_mount)
 
+
+def build_loopbackcfg(target):
+    """Generate GRUB's loopback.cfg based on existing config files.
+
+    @target: target directory
+    """
+
+    grub_dir='/boot/grub/'
+    mkdir(os.path.join(target, grub_dir))
+
+    f = open(target + grub_dir + 'loopback.cfg','w')
+
+    f.write("# grml2usb generated grub2 configuration file\n")
+    f.write("source /boot/grub/header.cfg\n")
+
+    for defaults in glob.glob(target + os.path.sep + grub_dir + os.path.sep + "*_default.cfg"):
+        sourcefile = defaults.split(target + os.path.sep)[1]
+        logging.debug("Found source file" + sourcefile)
+        os.path.isfile(defaults) and f.write("source " + sourcefile + "\n")
+
+    for ops in glob.glob(target + os.path.sep + grub_dir + os.path.sep + "*_options.cfg"):
+        sourcefile = ops.split(target + os.path.sep)[1]
+        logging.debug("Found source file" + sourcefile)
+        os.path.isfile(ops) and f.write("source " + sourcefile + "\n")
+
+    f.write("source /boot/grub/adddons.cfg\n")
+    f.write("source /boot/grub/footer.cfg\n")
+    f.close()
+
+
 def glob_and_copy(filepattern, dst):
     """Glob on specified filepattern and copy the result to dst
 
@@ -972,13 +1002,6 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
     for ffile in ['f%d' % number for number in range(1, 11) ]:
         search_and_copy(ffile, iso_mount, syslinux_target + ffile)
 
-    loopback_cfg = search_file("loopback.cfg", iso_mount)
-    if loopback_cfg:
-        directory = os.path.dirname(loopback_cfg)
-        directory = directory.replace(iso_mount, "")
-        mkdir(os.path.join(target, directory))
-        exec_rsync(loopback_cfg, target + os.path.sep + directory)
-
     # avoid the "file is read only, overwrite anyway (y/n) ?" question
     # of mtools by syslinux ("mmove -D o -D O s:/ldlinux.sys $target_file")
     if os.path.isfile(syslinux_target + 'ldlinux.sys'):
@@ -1013,6 +1036,10 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
 
     # copy all grub files from ISO
     glob_and_copy(iso_mount + '/boot/grub/*', grub_target)
+
+    # finally (after all GRUB files have been been installed) build static loopback.cfg
+    build_loopbackcfg(target)
+
 
 def install_iso_files(grml_flavour, iso_mount, device, target):
     """Copy files from ISO to given target
