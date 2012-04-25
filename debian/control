@@ -14,7 +14,13 @@ Package: grml2usb
 Architecture: i386 amd64
 Depends: ${shlibs:Depends}, ${misc:Depends}, syslinux | grub-pc, python, rsync, mtools
 Recommends: syslinux, xorriso | genisoimage
-Description: install grml system / ISO to usb device
- This script installs a grml ISO to an USB device to be able
- to boot from it.  Make sure you have at least one grml ISO
+Description: install Grml system / ISO to usb device
+ The grml2usb script installs a Grml ISO to an USB device to be
+ able to boot from it.  Make sure you have at least one Grml ISO
  or a running grml system (/live/image) available.
+ .
+ The grml2iso script allows you to create either a multiboot Grml
+ ISO or a customized ISO (like custom boot options, boot splash
+ or additional files). Using grml2iso gives you the option to
+ slightly customize a Grml ISO without having to digg into
+ remastering with grml-live.
