@@ -45,8 +45,9 @@ online: all
 tarball: all
 	./tarball.sh
 
-tarball-online: tarball
-	scp grml2usb.tgz grml2usb.tgz.md5.asc grml:/var/www/grml/grml2usb/
+prepare-release:
+	./tarball.sh --no-gpg
+
 
 clean:
 	rm -rf grml2usb.8.html grml2usb.8.xml grml2usb.8

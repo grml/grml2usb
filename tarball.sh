@@ -122,8 +122,17 @@ tar zcf grml2usb.tgz "${DIR}"
 
 rm -rf "${DIR}"
 md5sum grml2usb.tgz > grml2usb.tgz.md5
-gpg --clearsign grml2usb.tgz.md5
-rm grml2usb.tgz.md5
-echo "Generated grml2usb.tgz and grml2usb.tgz.md5.asc of grml2usb $VERSION"
+
+case "$1" in
+  --no-gpg)
+    echo "Not signing grml2usb.tgz.md5 as requested via --no-gpg."
+    echo "Do not forget to run gpg --clearsign grml2usb.tgz.md5 before uploading."
+    ;;
+  *)
+    gpg --clearsign grml2usb.tgz.md5
+    rm grml2usb.tgz.md5
+    echo "Generated grml2usb.tgz and grml2usb.tgz.md5.asc of grml2usb $VERSION"
+    ;;
+esac
 
 ## END OF FILE #################################################################
