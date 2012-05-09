@@ -1,3 +1,19 @@
+grml2usb (0.12.0) unstable; urgency=low
+
+  [ Michael Prokop ]
+  * [f1cfc39] grml2iso: use shell for calculation instead of using bc
+  * [2223843] Rebuild loopback.cfg with present configuration files
+  * [5df5aeb] Bump Standards-Version to 3.9.3
+  * [09149d7] Drop oudated tarball-online make target and support
+    prepare-release instead
+  * [607fd41] pep8 cleanups
+  * [c2d87f6] Adjust PROG_VERSION code in debian/rules for pep8 cleanup
+
+  [ Evgeni Golov ]
+  * [3505897] fix manpage markup
+
+ -- Michael Prokop <mika@grml.org>  Wed, 09 May 2012 12:58:46 +0200
+
 grml2usb (0.11.6) unstable; urgency=low
 
   The "custom bootsplash without remastering ☕☕☕" release
