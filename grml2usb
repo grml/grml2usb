@@ -121,7 +121,7 @@ if not os.path.isdir(GRML2USB_BASE):
 
 
 class CriticalException(Exception):
-    """Throw critical exception if the exact error is not known but fatal."
+    """Throw critical exception if the exact error is not known but fatal.
 
     @Exception: message"""
     pass
@@ -260,14 +260,15 @@ def get_defaults_file(iso_mount, flavour, name):
     return ('', '')
 
 
-def search_file(filename, search_path='/bin' + os.pathsep + '/usr/bin'):
+def search_file(filename, search_path='/bin' + os.pathsep + '/usr/bin', lst_return=False):
     """Given a search path, find file
 
     @filename: name of file to search for
-    @search_path: path where searching for the specified filename"""
-    file_found = 0
+    @search_path: path where searching for the specified filename
+    @lst_return: return list of matching files instead one file"""
     paths = search_path.split(os.pathsep)
     current_dir = ''  # make pylint happy :)
+    retval = []
 
     def match_file(cwd):
         """Helper function ffor testing if specified file exists in cwd
@@ -279,15 +280,19 @@ def search_file(filename, search_path='/bin' + os.pathsep + '/usr/bin'):
     for path in paths:
         current_dir = path
         if match_file(current_dir):
-            file_found = 1
-            break
+            retval.append(os.path.abspath(os.path.join(current_dir, filename)))
+            if not lst_return:
+                break
         # pylint: disable-msg=W0612
         for current_dir, directories, files in os.walk(path):
             if match_file(current_dir):
-                file_found = 1
-                break
-    if file_found:
-        return os.path.abspath(os.path.join(current_dir, filename))
+                retval.append(os.path.abspath(os.path.join(current_dir, filename)))
+                if not lst_return:
+                    break
+    if lst_return:
+        return retval
+    elif retval:
+        return retval[0]
     else:
         return None
 
@@ -1105,26 +1110,28 @@ def identify_grml_flavour(mountpath):
     @mountpath: path where the grml ISO is mounted to
     @return: name of grml-flavour"""
 
-    version_file = search_file('grml-version', mountpath)
+    version_files = search_file('grml-version', mountpath, lst_return=True)
 
-    if version_file == "":
+    if not version_files:
         logging.critical("Error: could not find grml-version file.")
         raise
 
     flavours = []
-    tmpfile = None
-    try:
-        tmpfile = open(version_file, 'r')
-        for line in tmpfile.readlines():
-            flavours.append(get_flavour(line))
-    except TypeError, e:
-        raise
-    except Exception, e:
-        logging.critical("Unexpected error: %s", e)
-        raise
-    finally:
-        if tmpfile:
-            tmpfile.close()
+    logging.debug("version_files = %s", version_files)
+    for version_file in version_files:
+        tmpfile = None
+        try:
+            tmpfile = open(version_file, 'r')
+            for line in tmpfile.readlines():
+                flavours.append(get_flavour(line))
+        except TypeError, e:
+            raise
+        except Exception, e:
+            logging.critical("Unexpected error: %s", e)
+            raise
+        finally:
+            if tmpfile:
+                tmpfile.close()
 
     return flavours
 
