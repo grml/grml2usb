@@ -902,22 +902,15 @@ def copy_addons(iso_mount, target):
     # grub all-in-one image
     handle_addon_copy('allinone.img', addons, iso_mount)
 
-    # bsd imag
+    # bsd image
     handle_addon_copy('bsd4grml', addons, iso_mount)
 
+    # DOS image
     handle_addon_copy('balder10.imz', addons, iso_mount)
 
-    # install hdt and pci.ids only when using syslinux (grub doesn't support it)
-    if options.syslinux:
-        # hdt (hardware detection tool) image
-        hdtimg = search_file('hdt.c32', iso_mount)
-        if hdtimg:
-            exec_rsync(hdtimg, addons + '/hdt.c32')
-
-        # pci.ids file
-        picids = search_file('pci.ids', iso_mount)
-        if picids:
-            exec_rsync(picids, addons + '/pci.ids')
+    # syslinux + pci.ids for hdt
+    for expr in '*.c32', 'pci.ids':
+        glob_and_copy(iso_mount + '/boot/addons/' + expr, addons)
 
     # memdisk image
     handle_addon_copy('memdisk', addons, iso_mount)
