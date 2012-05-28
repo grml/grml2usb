@@ -1,3 +1,10 @@
+grml2usb (0.12.2) unstable; urgency=low
+
+  * [f3a85ac] copy_addons: install all *.c32 addons in /boot/addons/
+    (fixing broken addon entries in grml96 ISOs)
+
+ -- Michael Prokop <mika@grml.org>  Mon, 28 May 2012 17:16:40 +0200
+
 grml2usb (0.12.1) unstable; urgency=low
 
   * [7c076d1] Support multiple flavours inside one ISO. Thanks to Ulrich
