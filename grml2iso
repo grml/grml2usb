@@ -44,7 +44,7 @@ Options:
      -c Directory        Copy files from directory to generated ISO
      -f                  Force overwrite of existing target.iso
      -r BootParam        Remove specified boot params.
-                         Could be specfied multiple times.
+                         Can be specified multiple times.
      -p <grml2usb param> Add the specified parameter to the grml2usb
                          commandline. For a list of valid parameters have
                          a look at the grml2usb manpage.
