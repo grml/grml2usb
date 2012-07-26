@@ -108,6 +108,8 @@ parser.add_option("--syslinux", dest="syslinux", action="callback", default=True
                   help="install syslinux bootloader (deprecated as it's the default)")
 parser.add_option("--syslinux-mbr", dest="syslinuxmbr", action="store_true",
                   help="install syslinux master boot record (MBR) instead of default")
+parser.add_option("--tmpdir", dest="tmpdir", default="/tmp",
+                  help="directory to be used for temporary files")
 parser.add_option("--verbose", dest="verbose", action="store_true",
                   help="enable verbose mode")
 parser.add_option("-v", "--version", dest="version", action="store_true",
@@ -1429,7 +1431,7 @@ def install(image, device):
         logging.info("Using %s as install base", image)
     else:
         logging.info("Using ISO %s", image)
-        iso_mountpoint = tempfile.mkdtemp(prefix="grml2usb")
+        iso_mountpoint = tempfile.mkdtemp(prefix="grml2usb", dir=options.tmpdir)
         register_tmpfile(iso_mountpoint)
         remove_image_mountpoint = True
         try:
