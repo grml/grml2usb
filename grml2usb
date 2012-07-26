@@ -40,6 +40,7 @@ GRML_FLAVOURS = set()  # which flavours are being installed?
 GRML_DEFAULT = None
 UUID = None
 SYSLINUX_LIBS = "/usr/lib/syslinux/"
+TEMP_DIR = "/tmp"
 
 
 def syslinux_warning(option, opt, value, opt_parser):
@@ -108,6 +109,8 @@ parser.add_option("--syslinux", dest="syslinux", action="callback", default=True
                   help="install syslinux bootloader (deprecated as it's the default)")
 parser.add_option("--syslinux-mbr", dest="syslinuxmbr", action="store_true",
                   help="install syslinux master boot record (MBR) instead of default")
+parser.add_option("--tmpdir", dest="tmpdir", default="/tmp",
+                  help="filesystem path to use to create temporary directories in")
 parser.add_option("--verbose", dest="verbose", action="store_true",
                   help="enable verbose mode")
 parser.add_option("-v", "--version", dest="version", action="store_true",
@@ -160,6 +163,11 @@ def cleanup():
     # ignore: RuntimeError: Set changed size during iteration
     except RuntimeError:
         logging.debug('caught expection RuntimeError, ignoring')
+
+def set_temp_dir(directory):
+      """Set path to create temporary directories in"""
+      global TEMP_DIR
+      TEMP_DIR = directory
 
 
 def register_tmpfile(path):
@@ -1429,7 +1437,7 @@ def install(image, device):
         logging.info("Using %s as install base", image)
     else:
         logging.info("Using ISO %s", image)
-        iso_mountpoint = tempfile.mkdtemp(prefix="grml2usb")
+        iso_mountpoint = tempfile.mkdtemp(prefix="grml2usb", dir=TEMP_DIR)
         register_tmpfile(iso_mountpoint)
         remove_image_mountpoint = True
         try:
@@ -1677,6 +1685,9 @@ def main():
 
     # log handling
     handle_logging()
+
+    # temporary directories
+    set_temp_dir(args.tmpdir)
 
     # make sure we have the appropriate permissions
     check_uid_root()
