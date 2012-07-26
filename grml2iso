@@ -19,6 +19,7 @@
 # path to the grml2usb script you'd like to use
   [ -n "$GRML2USB" ] || GRML2USB='grml2usb'
 # work directory for creating the filesystem
+  [ -n "$TMPDIR" ]   && WRKDIR="${TMPDIR}/grml2iso.tmp"
   [ -n "$WRKDIR" ]   || WRKDIR='/tmp/grml2iso.tmp'
 # support mkisofs as well as genisoimage
 if which xorriso >/dev/null 2>&1 ; then
@@ -53,6 +54,8 @@ Options:
                          file from the specified URI. Please note that due to
                          restrictions in the bootprocess only IPs are allowed.
                          Supported protocols are: http and ftp
+     -t Directory        Directory that should be used for temporary files
+                         during build. Defaults to /tmp/grml2iso.tmp if unset.
 
      Examples:
      $0 -s http://192.168.23.42:8000/grml/ -o small.iso grml64_2010.12.iso
@@ -74,7 +77,7 @@ Options:
   FORCE=''
   URI=''
   typeset -a GRML2USB_OPTS
-  while getopts fb:c:o:r:p:s: name; do
+  while getopts fb:c:o:r:p:s:t: name; do
     case $name in
       o)   ISOFILE="$OPTARG";;
       b)   GRML2USB_OPTS+=(--bootoptions="$OPTARG");;
@@ -83,12 +86,17 @@ Options:
       r)   GRML2USB_OPTS+=(--remove-bootoption="$OPTARG");;
       p)   GRML2USB_OPTS+=("$OPTARG");;
       s)   URI="$OPTARG";;
+      t)   WRKDIR="$OPTARG";;
       ?)   usage 2;;
     esac
   done
   # test for specified URI
   if [ -n "$URI" ] ; then
     GRML2USB_OPTS+=(--bootoptions="fetch=$URI")
+  fi
+
+  if [ -n "$WRKDIR" ] ; then
+    GRML2USB_OPTS+=(--tmpdir="$WRKDIR")
   fi
 
 # make sure -o is specified
