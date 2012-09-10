@@ -1,3 +1,14 @@
+grml2usb (0.13.0) unstable; urgency=low
+
+  [ Michael Prokop ]
+  * [927e586] grml2iso: fix typo + improve wording
+  * [178cb6a] grml2iso: support -t to set temporary working directory
+
+  [ Lukas Prokop ]
+  * [752b503] grml2usb: introduce option --tmpdir
+
+ -- Michael Prokop <mika@grml.org>  Mon, 10 Sep 2012 09:13:25 +0200
+
 grml2usb (0.12.2) unstable; urgency=low
 
   * [f3a85ac] copy_addons: install all *.c32 addons in /boot/addons/
