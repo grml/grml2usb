@@ -1,3 +1,9 @@
+grml2usb (0.13.1) unstable; urgency=low
+
+  * [720b859] grml2iso: make ISOs dd-able through isohybrid
+
+ -- Michael Prokop <mika@grml.org>  Tue, 11 Sep 2012 12:16:04 +0200
+
 grml2usb (0.13.0) unstable; urgency=low
 
   [ Michael Prokop ]
