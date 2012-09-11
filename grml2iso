@@ -32,6 +32,11 @@ else
   echo >&2 "Error: neither mkisofs nor genisoimage available - can not create ISO."
   exit 1
 fi
+
+if ! which isohybrid >/dev/null 2>&1 ; then
+  echo "Error: isohybrid executable not found (install syslinux?)." >&2
+  exit 1
+fi
 # }}}
 
 # helper stuff {{{
@@ -259,6 +264,18 @@ Options:
   cyls=$(($siz / 512 / 32 / 16 + 1))  # C=$cyls H=16 S=32
   ofs=$(($cyls * 16 * 32 * 512 - 1))  # padding offset (size - 1)
   dd if=/dev/zero bs=1 count=1 seek=$ofs of="$ISOFILE" 2>/dev/null
+# }}}
+
+# make ISO dd-able {{{
+  if isohybrid --help | grep -q -- --uefi ; then
+    echo "isohybrid version supports --uefi option, enabling"
+    ISOHYBRID_OPTIONS=--uefi
+ else
+    echo "isohybrid version does NOT support --uefi option, disabling"
+  fi
+
+  echo "Creating dd-able ISO using isohybrid"
+  isohybrid $ISOHYBRID_OPTIONS "$ISOFILE"
 # }}}
 
 # cleanup {{{
