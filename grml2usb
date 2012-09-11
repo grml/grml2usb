@@ -1109,7 +1109,8 @@ def identify_grml_flavour(mountpath):
 
     if not version_files:
         logging.critical("Error: could not find grml-version file.")
-        raise
+        cleanup()
+        sys.exit(1)
 
     flavours = []
     logging.debug("version_files = %s", version_files)
