@@ -1459,7 +1459,7 @@ def install_grml(mountpoint, device):
 
     device_mountpoint = device
     if os.path.isdir(device):
-        logging.info("Specified device is not a directory, therefore not mounting.")
+        logging.info("Specified device is a directory, therefore not mounting.")
         remove_device_mountpoint = False
     else:
         device_mountpoint = tempfile.mkdtemp(prefix="grml2usb")
