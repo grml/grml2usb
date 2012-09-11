@@ -1,3 +1,15 @@
+grml2usb (0.13.2) unstable; urgency=low
+
+  [ Michael Prokop ]
+  * [7e6faf1] Fix logging message if operating on a directory
+  * [cf525c6] Exit with better error message if running with toram=... and
+    invoking with /live/image
+
+  [ Lukas Prokop ]
+  * [5251ce1] Fix error message.
+
+ -- Michael Prokop <mika@grml.org>  Tue, 11 Sep 2012 18:28:31 +0200
+
 grml2usb (0.13.1) unstable; urgency=low
 
   * [720b859] grml2iso: make ISOs dd-able through isohybrid
