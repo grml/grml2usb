@@ -1108,9 +1108,16 @@ def identify_grml_flavour(mountpath):
     version_files = search_file('grml-version', mountpath, lst_return=True)
 
     if not version_files:
-        logging.critical("Error: could not find grml-version file.")
-        cleanup()
-        sys.exit(1)
+        if mountpath.startswith("/live/image"):
+            logging.critical("Error: could not find grml-version file.")
+            logging.critical("Looks like your system is running from RAM but required files are not available.")
+            logging.critical("Please either boot without toram=... or use boot option toram instead of toram=...")
+            cleanup()
+            sys.exit(1)
+        else:
+            logging.critical("Error: could not find grml-version file.")
+            cleanup()
+            sys.exit(1)
 
     flavours = []
     logging.debug("version_files = %s", version_files)
