@@ -95,6 +95,7 @@ Options:
       ?)   usage 2;;
     esac
   done
+
   # test for specified URI
   if [ -n "$URI" ] ; then
     GRML2USB_OPTS+=(--bootoptions="fetch=$URI")
@@ -162,10 +163,16 @@ Options:
 
 # move syslinux to isolinux {{{
   mv "$WRKDIR"/cddir/boot/syslinux "$WRKDIR"/cddir/boot/isolinux
+  echo "menu label ^Isolinux prompt" > "$WRKDIR"/cddir/boot/isolinux/promptname.cfg
+  echo "include hd.cfg" >> "$WRKDIR"/cddir/boot/isolinux/grmlmain.cfg
+# }}}
 
+# change to $WRKDIR {{{
+  # make sure $WRKDIR is an absolute path, otherwise accessing files
+  # in it will fail later in the code path if user provided a
+  # relative directory
+  WRKDIR=$(realpath $WRKDIR)
   cd "$WRKDIR/cddir"
-  echo "menu label ^Isolinux prompt" > boot/isolinux/promptname.cfg
-  echo "include hd.cfg" >> boot/isolinux/grmlmain.cfg
 # }}}
 
 # efi boot {{{
