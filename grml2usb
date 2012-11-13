@@ -128,6 +128,12 @@ class CriticalException(Exception):
     @Exception: message"""
     pass
 
+class VerifyException(Exception):
+    """Throw critical exception if there is an fatal error when verifying something.
+
+    @Exception: message"""
+    pass
+
 
 # The following two functions help to operate on strings as
 # array (list) of bytes (octets). In Python 3000, the bytes
@@ -303,6 +309,18 @@ def check_uid_root():
     """Check for root permissions"""
     if not os.geteuid() == 0:
         sys.exit("Error: please run this script with uid 0 (root).")
+
+
+def check_boot_flag(device):
+    with open(device, 'r') as image:
+        data = image.read(512)
+        bootcode = data[440:]
+        if bootcode[6] == '\x80':
+            logging.debug("bootflag is enabled")
+        else:
+            logging.debug("bootflag is NOT enabled")
+            raise VerifyException("Device %s does not have the bootflag set. "
+                "Please enable it to be able to boot." % device)
 
 
 def mkfs_fat16(device):
@@ -1475,7 +1493,11 @@ def install_grml(mountpoint, device):
         remove_device_mountpoint = True
         try:
             check_for_fat(device)
+            check_boot_flag(device)
             mount(device, device_mountpoint, ['-o', 'utf8,iocharset=iso8859-1'])
+        except VerifyException, error:
+            logging.critical("Fatal: %s", error)
+            raise
         except CriticalException, error:
             try:
                 mount(device, device_mountpoint, "")
