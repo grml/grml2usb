@@ -1,3 +1,12 @@
+grml2usb (0.13.3) experimental; urgency=low
+
+  * [7705455] grml2iso: use absolute path for working directory to not
+    fail when user specified relative path
+  * [3f80e5a] Verify that the bootflag is enabled
+  * [922c039] Bump Standards-Version to 3.9.4
+
+ -- Michael Prokop <mika@grml.org>  Mon, 17 Dec 2012 13:21:39 +0100
+
 grml2usb (0.13.2) unstable; urgency=low
 
   [ Michael Prokop ]
