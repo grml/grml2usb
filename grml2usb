@@ -312,7 +312,12 @@ def check_uid_root():
 
 
 def check_boot_flag(device):
-    with open(device, 'r') as image:
+    if device[-1:].isdigit():
+        boot_dev = re.match(r'(.*?)\d*$', device).group(1)
+    else:
+        boot_dev = device
+
+    with open(boot_dev, 'r') as image:
         data = image.read(512)
         bootcode = data[440:]
         if bootcode[6] == '\x80':
@@ -320,7 +325,7 @@ def check_boot_flag(device):
         else:
             logging.debug("bootflag is NOT enabled")
             raise VerifyException("Device %s does not have the bootflag set. "
-                "Please enable it to be able to boot." % device)
+                "Please enable it to be able to boot." % boot_dev)
 
 
 def mkfs_fat16(device):
