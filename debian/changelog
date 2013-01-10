@@ -1,3 +1,12 @@
+grml2usb (0.13.4) experimental; urgency=low
+
+  * [aff3fa9] Add realpath to Depends as it's required by grml2iso
+  * [14e017c] Do not use partition for bootflag check but disk itself
+  * [0deeae3] Mention /lib/live/mount/medium for new live path + adjust
+    ISO versions
+
+ -- Michael Prokop <mika@grml.org>  Thu, 10 Jan 2013 14:08:09 +0100
+
 grml2usb (0.13.3) experimental; urgency=low
 
   * [7705455] grml2iso: use absolute path for working directory to not
