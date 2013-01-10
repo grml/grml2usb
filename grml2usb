@@ -60,10 +60,10 @@ def grub_option(option, opt, value, opt_parser):
     setattr(opt_parser.values, 'syslinux', False)
 
 # cmdline parsing
-USAGE = "Usage: %prog [options] <[ISO[s] | /live/image]> </dev/sdX#>\n\
+USAGE = "Usage: %prog [options] <[ISO[s] | /lib/live/mount/medium]> </dev/sdX#>\n\
 \n\
-%prog installs grml ISO[s] to an USB device to be able to boot from it.\n\
-Make sure you have at least one grml ISO or a running grml system (/live/image),\n\
+%prog installs Grml ISO[s] to an USB device to be able to boot from it.\n\
+Make sure you have at least one Grml ISO or a running Grml system (/lib/live/mount/medium),\n\
 grub or syslinux and root access.\n\
 \n\
 Run %prog --help for usage hints, further information via: man grml2usb"
@@ -1131,7 +1131,7 @@ def identify_grml_flavour(mountpath):
     version_files = search_file('grml-version', mountpath, lst_return=True)
 
     if not version_files:
-        if mountpath.startswith("/live/image"):
+        if mountpath.startswith("/lib/live/mount/medium"):
             logging.critical("Error: could not find grml-version file.")
             logging.critical("Looks like your system is running from RAM but required files are not available.")
             logging.critical("Please either boot without toram=... or use boot option toram instead of toram=...")
@@ -1485,7 +1485,7 @@ def install(image, device):
 def install_grml(mountpoint, device):
     """Main logic for copying files of the currently running grml system.
 
-    @mountpoin: directory where currently running live system resides (usually /live/image)
+    @mountpoint: directory where currently running live system resides (usually /lib/live/mount/medium)
     @device: partition where the specified ISO should be installed to"""
 
     device_mountpoint = device
