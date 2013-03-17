@@ -41,6 +41,9 @@ GRML_DEFAULT = None
 UUID = None
 SYSLINUX_LIBS = "/usr/lib/syslinux/"
 
+RE_PARTITION = re.compile(r'([a-z/]*?)(\d+)$')
+RE_P_PARTITION = re.compile(r'(.*?\d+)p(\d+)$')
+RE_LOOP_DEVICE = re.compile(r'/dev/loop\d+$')
 
 def syslinux_warning(option, opt, value, opt_parser):
     """A helper function for printing a warning about deprecated option
@@ -312,10 +315,7 @@ def check_uid_root():
 
 
 def check_boot_flag(device):
-    if device[-1:].isdigit():
-        boot_dev = re.match(r'(.*?)\d*$', device).group(1)
-    else:
-        boot_dev = device
+    boot_dev, x = get_device_from_partition(device)
 
     with open(boot_dev, 'r') as image:
         data = image.read(512)
@@ -437,10 +437,7 @@ def install_grub(device):
                 # If using --grub-mbr then make sure we install grub in MBR instead of PBR
                 if options.grubmbr:
                     logging.debug("Using option --grub-mbr ...")
-                    if device[-1:].isdigit():
-                        grub_device = re.match(r'(.*?)\d*$', device).group(1)
-                    else:
-                        grub_device = device
+                    grub_device, x = get_device_from_partition(device)
                 else:
                     grub_device = device
 
@@ -1116,6 +1113,19 @@ def install_iso_files(grml_flavour, iso_mount, device, target):
     proc.wait()
 
 
+def get_device_from_partition(partition):
+    device = partition
+    partition_number = None
+    if partition[-1].isdigit() and not RE_LOOP_DEVICE.match(partition):
+        m = RE_P_PARTITION.match(partition)
+        if not m:
+            m = RE_PARTITION.match(partition)
+        if m:
+            device = m.group(1)
+            partition_number = int(m.group(2)) - 1
+    return (device, partition_number)
+
+
 def get_flavour(flavour_str):
     """Returns the flavour of a grml version string
     """
@@ -1545,12 +1555,9 @@ def handle_mbr(device):
         logging.info("Would install MBR")
         return 0
 
-    if device[-1:].isdigit():
-        mbr_device = re.match(r'(.*?)\d*$', device).group(1)
-        partition_number = int(device[-1:]) - 1
-    else:
+    mbr_device, partition_number = get_device_from_partition(device)
+    if not partition_number:
         logging.warn("Could not detect partition number, not activating partition")
-        partition_number = None
 
     # if we get e.g. /dev/loop1 as device we don't want to put the MBR
     # into /dev/loop of course, therefore use /dev/loop1 as mbr_device
