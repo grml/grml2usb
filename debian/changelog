@@ -1,3 +1,11 @@
+grml2usb (0.13.5) experimental; urgency=low
+
+  [ Evgeni Golov ]
+  * [a17807b] fix detection of strange (xxxNpM) structures when finding
+    the device for a partition [Closes: issue1244]
+
+ -- Michael Prokop <mika@grml.org>  Mon, 18 Mar 2013 15:12:10 +0100
+
 grml2usb (0.13.4) experimental; urgency=low
 
   * [aff3fa9] Add realpath to Depends as it's required by grml2iso
