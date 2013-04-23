@@ -1472,7 +1472,7 @@ def install(image, device):
         logging.info("Using %s as install base", image)
     else:
         logging.info("Using ISO %s", image)
-        iso_mountpoint = tempfile.mkdtemp(prefix="grml2usb", dir=options.tmpdir)
+        iso_mountpoint = tempfile.mkdtemp(prefix="grml2usb", dir=os.path.abspath(options.tmpdir))
         register_tmpfile(iso_mountpoint)
         remove_image_mountpoint = True
         try:

@@ -91,7 +91,7 @@ Options:
       r)   GRML2USB_OPTS+=(--remove-bootoption="$OPTARG");;
       p)   GRML2USB_OPTS+=("$OPTARG");;
       s)   URI="$OPTARG";;
-      t)   WRKDIR="$OPTARG";;
+      t)   WRKDIR="$(readlink -f "$OPTARG")";;
       ?)   usage 2;;
     esac
   done
