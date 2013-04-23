@@ -129,7 +129,8 @@ Options:
 
 # check for grml2usb {{{
   if [ ! -x "$(which $GRML2USB)" ] && [ ! -x "$GRML2USB" ] ; then
-    echo >&2 "Error: Could not find grml2usb"
+    echo "Error: Could not find grml2usb executable. Is /usr/sbin missing in PATH?" >&2
+    echo "Tip: run GRML2USB=/usr/sbin/grml2usb grml2iso ... as workaround" >&2
     if [ -x "./$GRML2USB" ] ; then
       echo >&2 "If you executed grml2iso from the grml2usb repository use"
       echo >&2 "GRML2USB=./grml2usb $0 $*"
