@@ -170,7 +170,7 @@ def cleanup():
             os.unlink(tmpfile)
     # ignore: RuntimeError: Set changed size during iteration
     except RuntimeError:
-        logging.debug('caught expection RuntimeError, ignoring')
+        logging.debug('caught exception RuntimeError, ignoring')
 
 
 def register_tmpfile(path):
