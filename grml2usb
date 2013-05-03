@@ -1533,7 +1533,7 @@ def install_grml(mountpoint, device):
 
 
 def remove_mountpoint(mountpoint):
-    """remove a registred mountpoint
+    """remove a registered mountpoint
     """
 
     try:
