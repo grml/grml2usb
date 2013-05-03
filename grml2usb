@@ -1718,67 +1718,72 @@ def load_loop():
 def main():
     """Main function [make pylint happy :)]"""
 
-    if options.version:
-        print os.path.basename(sys.argv[0]) + " " + PROG_VERSION
-        sys.exit(0)
+    try:
+        if options.version:
+            print os.path.basename(sys.argv[0]) + " " + PROG_VERSION
+            sys.exit(0)
 
-    if len(args) < 2:
-        parser.error("invalid usage")
+        if len(args) < 2:
+            parser.error("invalid usage")
 
-    # log handling
-    handle_logging()
+        # log handling
+        handle_logging()
 
-    # make sure we have the appropriate permissions
-    check_uid_root()
+        # make sure we have the appropriate permissions
+        check_uid_root()
 
-    check_options(options)
+        check_options(options)
 
-    load_loop()
+        load_loop()
 
-    logging.info("Executing grml2usb version %s", PROG_VERSION)
+        logging.info("Executing grml2usb version %s", PROG_VERSION)
 
-    if options.dryrun:
-        logging.info("Running in simulation mode as requested via option dry-run.")
+        if options.dryrun:
+            logging.info("Running in simulation mode as requested via option dry-run.")
 
-    check_programs()
+        check_programs()
 
-    # specified arguments
-    device = os.path.realpath(args[len(args) - 1])
-    isos = args[0:len(args) - 1]
+        # specified arguments
+        device = os.path.realpath(args[len(args) - 1])
+        isos = args[0:len(args) - 1]
 
-    if not os.path.isdir(device):
-        if device[-1:].isdigit():
-            if int(device[-1:]) > 4 or device[-2:].isdigit():
-                logging.critical("Fatal: installation on partition number >4 not supported. (BIOS won't support it.)")
-                sys.exit(1)
+        if not os.path.isdir(device):
+            if device[-1:].isdigit():
+                if int(device[-1:]) > 4 or device[-2:].isdigit():
+                    logging.critical("Fatal: installation on partition number >4 not supported. (BIOS won't support it.)")
+                    sys.exit(1)
 
-    # provide upgrade path
-    handle_compat_warning(device)
+        # provide upgrade path
+        handle_compat_warning(device)
 
-    # check for vfat partition
-    handle_vfat(device)
+        # check for vfat partition
+        handle_vfat(device)
 
-    # main operation (like installing files)
-    for iso in isos:
-        install(iso, device)
+        # main operation (like installing files)
+        for iso in isos:
+            install(iso, device)
 
-    # install mbr
-    is_superfloppy = not device[-1:].isdigit()
-    if is_superfloppy:
-        logging.info("Detected superfloppy format - not installing MBR")
+        # install mbr
+        is_superfloppy = not device[-1:].isdigit()
+        if is_superfloppy:
+            logging.info("Detected superfloppy format - not installing MBR")
 
-    if not options.skipmbr and not os.path.isdir(device) and not is_superfloppy:
-        handle_mbr(device)
+        if not options.skipmbr and not os.path.isdir(device) and not is_superfloppy:
+            handle_mbr(device)
 
-    handle_bootloader(device)
+        handle_bootloader(device)
 
-    logging.info("Note: grml flavour %s was installed as the default booting system.", GRML_DEFAULT)
+        logging.info("Note: grml flavour %s was installed as the default booting system.", GRML_DEFAULT)
 
-    for flavour in GRML_FLAVOURS:
-        logging.info("Note: you can boot flavour %s using '%s' on the commandline.", flavour, flavour)
+        for flavour in GRML_FLAVOURS:
+            logging.info("Note: you can boot flavour %s using '%s' on the commandline.", flavour, flavour)
 
-    # finally be politely :)
-    logging.info("Finished execution of grml2usb (%s). Have fun with your grml system.", PROG_VERSION)
+        # finally be politely :)
+        logging.info("Finished execution of grml2usb (%s). Have fun with your grml system.", PROG_VERSION)
+
+    except Exception, error:
+        # ignore error, error message has already been registered with logging
+        sys.exit(1)
 
 
 if __name__ == "__main__":
