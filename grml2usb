@@ -1645,14 +1645,13 @@ def handle_logging():
     if options.verbose and options.quiet:
         parser.error("please use either verbose (--verbose) or quiet (--quiet) option")
 
+    FORMAT = "%(message)s"
     if options.verbose:
-        FORMAT = "Debug: %(asctime)-15s %(message)s"
+        FORMAT = "%(asctime)-15s %(message)s"
         logging.basicConfig(level=logging.DEBUG, format=FORMAT)
     elif options.quiet:
-        FORMAT = "Critical: %(message)s"
         logging.basicConfig(level=logging.CRITICAL, format=FORMAT)
     else:
-        FORMAT = "%(message)s"
         logging.basicConfig(level=logging.INFO, format=FORMAT)
 
 
