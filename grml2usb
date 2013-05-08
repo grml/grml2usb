@@ -311,7 +311,7 @@ def search_file(filename, search_path='/bin' + os.pathsep + '/usr/bin', lst_retu
 def check_uid_root():
     """Check for root permissions"""
     if not os.geteuid() == 0:
-        sys.exit("Error: please run this script with uid 0 (root).")
+        raise CriticalException("please run this script with uid 0 (root).")
 
 
 def check_boot_flag(device):
@@ -540,7 +540,7 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     if not os.path.isfile(mbrtemplate):
         logging.error('Error installing MBR (either try --syslinux-mbr or '
             'install missing file "%s"?)', mbrtemplate)
-        raise CriticalException("Error: %s can not be read.", mbrtemplate)
+        raise CriticalException("%s can not be read." % mbrtemplate)
 
     if partition is not None and ((partition < 0) or (partition > 3)):
         logging.warn("Cannot activate partition %d", partition)
@@ -1674,8 +1674,7 @@ def check_options(opts):
     @opts option dict from OptionParser
     """
     if opts.grubmbr and not opts.grub:
-        logging.critical("Error: --grub-mbr requires --grub option.")
-        sys.exit(1)
+        raise CriticalException("--grub-mbr requires --grub option.")
 
 
 def check_programs():
