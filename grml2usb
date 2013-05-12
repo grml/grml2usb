@@ -427,7 +427,7 @@ def install_grub(device):
     @device: partition where grub should be installed to"""
 
     if options.dryrun:
-        logging.info("Would execute %s [--root-directory=mount_point] %s now.", (GRUB_INSTALL, device))
+        logging.info("Would execute %s [--root-directory=mount_point] %s now.", GRUB_INSTALL, device)
     else:
         device_mountpoint = tempfile.mkdtemp(prefix="grml2usb")
         register_tmpfile(device_mountpoint)
