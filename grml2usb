@@ -40,6 +40,7 @@ GRML_FLAVOURS = set()  # which flavours are being installed?
 GRML_DEFAULT = None
 UUID = None
 SYSLINUX_LIBS = "/usr/lib/syslinux/"
+GRUB_INSTALL = "grub-install"
 
 RE_PARTITION = re.compile(r'([a-z/]*?)(\d+)$')
 RE_P_PARTITION = re.compile(r'(.*?\d+)p(\d+)$')
@@ -426,7 +427,7 @@ def install_grub(device):
     @device: partition where grub should be installed to"""
 
     if options.dryrun:
-        logging.info("Would execute grub-install [--root-directory=mount_point] %s now.", device)
+        logging.info("Would execute %s [--root-directory=mount_point] %s now.", (GRUB_INSTALL, device))
     else:
         device_mountpoint = tempfile.mkdtemp(prefix="grml2usb")
         register_tmpfile(device_mountpoint)
@@ -443,9 +444,9 @@ def install_grub(device):
 
                 logging.info("Installing grub as bootloader")
                 for opt in ["", "--force"]:
-                    logging.debug("grub-install --recheck %s --no-floppy --root-directory=%s %s",
-                                  opt, device_mountpoint, grub_device)
-                    proc = subprocess.Popen(["grub-install", "--recheck", opt, "--no-floppy",
+                    logging.debug("%s --recheck %s --no-floppy --root-directory=%s %s",
+                                  GRUB_INSTALL, opt, device_mountpoint, grub_device)
+                    proc = subprocess.Popen([GRUB_INSTALL, "--recheck", opt, "--no-floppy",
                                              "--root-directory=%s" % device_mountpoint, grub_device],
                                             stdout=file(os.devnull, "r+"))
                     proc.wait()
@@ -453,9 +454,9 @@ def install_grub(device):
                         break
 
                 if proc.returncode != 0:
-                    # raise Exception("error executing grub-install")
-                    logging.critical("Fatal: error executing grub-install "
-                                     + "(please check the grml2usb FAQ or drop the --grub option)")
+                    # raise Exception("error executing %s" % (GRUB_INSTALL))
+                    logging.critical("Fatal: error executing %s "
+                                     + "(please check the grml2usb FAQ or drop the --grub option)" % (GRUB_INSTALL))
                     logging.critical("Note:  if using grub2 consider using "
                                      + "the --grub-mbr option as grub considers PBR problematic.")
                     cleanup()
@@ -1685,12 +1686,16 @@ def check_options(opts):
 
 
 def check_programs():
+    global GRUB_INSTALL
     """check if all needed programs are installed"""
     if options.grub:
-        if not which("grub-install"):
-            logging.critical("Fatal: grub-install not available (please install the "
-                             + "grub package or drop the --grub option)")
-            sys.exit(1)
+        if not which(GRUB_INSTALL):
+            if which("grub2-install"):  # Fedora workaround
+                GRUB_INSTALL="grub2-install"
+            else:
+                logging.critical("Fatal: grub-install not available (please install the "
+                                 + "grub package or drop the --grub option)")
+                sys.exit(1)
 
     if options.syslinux:
         if not which("syslinux"):
