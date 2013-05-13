@@ -1556,7 +1556,7 @@ def handle_mbr(device):
         return 0
 
     mbr_device, partition_number = get_device_from_partition(device)
-    if not partition_number:
+    if partition_number is None:
         logging.warn("Could not detect partition number, not activating partition")
 
     # if we get e.g. /dev/loop1 as device we don't want to put the MBR
