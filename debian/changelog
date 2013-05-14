@@ -1,3 +1,22 @@
+grml2usb (0.13.7) unstable; urgency=low
+
+  The "towards jessie" release
+
+  [ Christian Hofstaedtler ]
+  * [87143a6] Remove obsolete DM-Upload-Allowed flag
+
+  [ Evgeni Golov ]
+  * [3fb00de] "if not" also triggers when value is 0, use
+    "if is None" instead
+
+  [ Lukas Prokop ]
+  * [7b409af] Fix typo.
+  * Rework error handling to avoid unnecessary backtraces,
+    commmits [26cf633] [7cef744] [6990c85] [5276a23] [cdb4aa4]
+    [a06f95e] and [fafa0d8]
+
+ -- Michael Prokop <mika@grml.org>  Tue, 14 May 2013 19:04:50 +0200
+
 grml2usb (0.13.6) experimental; urgency=low
 
   * [9e7a48d] grml2iso: make sure to exit properly if provided argument to
