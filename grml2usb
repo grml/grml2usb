@@ -318,9 +318,14 @@ def check_boot_flag(device):
     boot_dev, x = get_device_from_partition(device)
 
     with open(boot_dev, 'r') as image:
-        data = image.read(512)
+        data = image.read(520)
         bootcode = data[440:]
-        if bootcode[6] == '\x80':
+        gpt_header = "\x55\xaa\x45\x46\x49\x20\x50\x41\x52\x54" # original GPT header
+        gpt_data = bootcode[70:80]
+
+        if gpt_data == gpt_header:
+            logging.info("GPT detected, skipping bootflag check")
+        elif bootcode[6] == '\x80':
             logging.debug("bootflag is enabled")
         else:
             logging.debug("bootflag is NOT enabled")
