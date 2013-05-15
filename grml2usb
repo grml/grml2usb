@@ -40,6 +40,7 @@ GRML_FLAVOURS = set()  # which flavours are being installed?
 GRML_DEFAULT = None
 UUID = None
 SYSLINUX_LIBS = "/usr/lib/syslinux/"
+GPT_HEADER = "\x55\xaa\x45\x46\x49\x20\x50\x41\x52\x54" # original GPT header
 
 RE_PARTITION = re.compile(r'([a-z/]*?)(\d+)$')
 RE_P_PARTITION = re.compile(r'(.*?\d+)p(\d+)$')
@@ -318,9 +319,13 @@ def check_boot_flag(device):
     boot_dev, x = get_device_from_partition(device)
 
     with open(boot_dev, 'r') as image:
-        data = image.read(512)
+        data = image.read(520)
         bootcode = data[440:]
-        if bootcode[6] == '\x80':
+        gpt_data = bootcode[70:80]
+
+        if gpt_data == GPT_HEADER:
+            logging.info("GPT detected, skipping bootflag check")
+        elif bootcode[6] == '\x80':
             logging.debug("bootflag is enabled")
         else:
             logging.debug("bootflag is NOT enabled")
