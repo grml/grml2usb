@@ -1,3 +1,9 @@
+grml2usb (0.13.8) unstable; urgency=low
+
+  * [de40a5f] Skip check for bootflag if a GPT header is present
+
+ -- Michael Prokop <mika@grml.org>  Wed, 15 May 2013 14:54:21 +0200
+
 grml2usb (0.13.7) unstable; urgency=low
 
   The "towards jessie" release
