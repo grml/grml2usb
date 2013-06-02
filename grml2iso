@@ -179,6 +179,7 @@ Options:
 # efi boot {{{
   # default, independent of UEFI support
   BOOT_ARGS="-no-emul-boot -boot-load-size 4 -boot-info-table -b boot/isolinux/isolinux.bin -c boot/isolinux/boot.cat"
+  UEFI_ENABLE=true
 
   case "$MKISOFS" in
     xorriso*)
@@ -189,11 +190,18 @@ Options:
         echo "xorriso with -eltorito-alt-boot support present"
 
         if ! [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
-          echo "File /boot/efi.img not found, not extending boot arguments for (U)EFI boot."
+          echo "Warning: File /boot/efi.img not found, not extending boot arguments for (U)EFI boot."
+          UEFI_ENABLE=false
         else
           echo "/boot/efi.img found, extending boot arguments for (U)EFI boot."
           BOOT_ARGS="$BOOT_ARGS -boot-info-table -eltorito-alt-boot -e boot/efi.img -no-emul-boot"
         fi
+      fi
+      ;;
+    *)
+      if ! [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
+        echo "Warning: File /boot/efi.img not found."
+        UEFI_ENABLE=false
       fi
       ;;
   esac
@@ -275,15 +283,19 @@ Options:
 # }}}
 
 # make ISO dd-able {{{
-  if isohybrid --help | grep -q -- --uefi ; then
-    echo "isohybrid version supports --uefi option, enabling"
-    ISOHYBRID_OPTIONS=--uefi
- else
-    echo "isohybrid version does NOT support --uefi option, disabling"
-  fi
+  if ! $UEFI_ENABLE ; then
+    echo "Skipping check for --uefi option in isohybrid since /boot/efi.img does not exist."
+  else
+    if ! isohybrid --help | grep -q -- --uefi ; then
+      echo "isohybrid version does NOT support --uefi option, disabling"
+    else
+      echo "isohybrid version supports --uefi option"
+      ISOHYBRID_OPTIONS=--uefi
+    fi
 
-  echo "Creating dd-able ISO using isohybrid"
-  isohybrid $ISOHYBRID_OPTIONS "$ISOFILE"
+    echo "Creating dd-able ISO using isohybrid"
+    isohybrid $ISOHYBRID_OPTIONS "$ISOFILE"
+  fi
 # }}}
 
 # cleanup {{{
@@ -310,4 +322,4 @@ URI: $URI
 # }}}
 
 ## EOF #########################################################################
-# vim:foldmethod=marker ts=2 ft=sh ai expandtab tw=80 sw=3
+# vim:foldmethod=marker ts=2 ft=sh ai expandtab tw=80 sw=2
