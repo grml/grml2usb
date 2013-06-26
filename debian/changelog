@@ -1,3 +1,21 @@
+grml2usb (0.14.0) unstable; urgency=low
+
+  * [360c9e5] Use lowercase 'timeout' command in syslinux configuration
+    [Closes: issue1262] Thanks to Martin Šlouf for reporting this bug
+    including a workaround
+  * grml2iso related changes:
+    - [20752e3] skip --uefi option of isohybrid if ISO doesn't
+      ship /boot/efi.img
+    - [f3370b9] extend error message of required ISO generation
+      tools with xorriso
+    - [8e0bdf8] mention isolinux in 'isohybrid executable not
+      found' message, add isolinux to recommends
+    - [37fa9f8] disable UEFI mode by default, only enable for
+      xorriso under according prerequisites
+    - [86c00b8] make sure we have the sbin directories in our PATH
+
+ -- Michael Prokop <mika@grml.org>  Wed, 26 Jun 2013 17:27:18 +0200
+
 grml2usb (0.13.8) unstable; urgency=low
 
   * [de40a5f] Skip check for bootflag if a GPT header is present
