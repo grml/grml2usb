@@ -179,7 +179,7 @@ Options:
 # efi boot {{{
   # default, independent of UEFI support
   BOOT_ARGS="-no-emul-boot -boot-load-size 4 -boot-info-table -b boot/isolinux/isolinux.bin -c boot/isolinux/boot.cat"
-  UEFI_ENABLE=true
+  UEFI_ENABLE=false
 
   case "$MKISOFS" in
     xorriso*)
@@ -188,6 +188,7 @@ Options:
         echo "Disabling (U)EFI boot support since xorriso version is not recent enough."
       else
         echo "xorriso with -eltorito-alt-boot support present"
+        UEFI_ENABLE=true
 
         if ! [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
           echo "Warning: File /boot/efi.img not found, not extending boot arguments for (U)EFI boot."
@@ -199,10 +200,7 @@ Options:
       fi
       ;;
     *)
-      if ! [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
-        echo "Warning: File /boot/efi.img not found."
-        UEFI_ENABLE=false
-      fi
+      echo "Using $MKISOFS for ISO generation (lacking UEFI option), disabling (U)EFI boot support."
       ;;
   esac
 # }}}
@@ -284,7 +282,7 @@ Options:
 
 # make ISO dd-able {{{
   if ! $UEFI_ENABLE ; then
-    echo "Skipping check for --uefi option in isohybrid since /boot/efi.img does not exist."
+    echo "Skipping check for --uefi option in isohybrid since prerequisites are not fulfilled."
   else
     if ! isohybrid --help | grep -q -- --uefi ; then
       echo "isohybrid version does NOT support --uefi option, disabling"
