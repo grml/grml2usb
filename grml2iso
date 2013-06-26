@@ -7,6 +7,9 @@
 # License:       This file is licensed under the GPL v2 or any later version.
 ################################################################################
 
+# make sure we have the sbin directories in our PATH to find grml2usb ootb
+PATH="${PATH}:/sbin:/usr/local/sbin:/usr/sbin"
+
 # define function getfilesize before "set -e" {{{
   if stat --help >/dev/null 2>&1; then
     getfilesize='stat -c %s'        # GNU stat
