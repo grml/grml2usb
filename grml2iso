@@ -34,7 +34,7 @@ else
 fi
 
 if ! which isohybrid >/dev/null 2>&1 ; then
-  echo "Error: isohybrid executable not found (install syslinux?)." >&2
+  echo "Error: isohybrid executable not found (install syslinux/isolinux?)." >&2
   exit 1
 fi
 # }}}
