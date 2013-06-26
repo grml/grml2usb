@@ -29,7 +29,7 @@ elif which mkisofs >/dev/null 2>&1; then
 elif which genisoimage >/dev/null 2>&1; then
   MKISOFS='genisoimage'
 else
-  echo >&2 "Error: neither mkisofs nor genisoimage available - can not create ISO."
+  echo "Error: neither xorriso nor mkisofs nor genisoimage available - can not create ISO." >&2
   exit 1
 fi
 
