@@ -1567,7 +1567,20 @@ def handle_mbr(device):
 
     mbrcode = GRML2USB_BASE + '/mbr/mbrldr'
     if options.syslinuxmbr:
-        mbrcode = '/usr/lib/syslinux/mbr.bin'
+        mbrcode = ""
+        mbr_locations = ('/usr/lib/syslinux/mbr.bin',
+                         '/usr/share/syslinux/mbr.bin')
+        for mbrpath in mbr_locations:
+            if os.path.isfile(mbrpath):
+                mbrcode = mbrpath
+                break
+
+        if mbrcode is "":
+            str_locations = " or ".join(['"%s"' % l for l in mbr_locations])
+            logging.error('Cannot find syslinux MBR, install it at %s)',
+                          str_locations)
+            raise CriticalException("syslinux MBR  can not be found at %s."
+                                    % str_locations)
     elif options.mbrmenu:
         mbrcode = GRML2USB_BASE + '/mbr/mbrldr'
 
