@@ -48,7 +48,6 @@ tarball: all
 prepare-release:
 	./tarball.sh --no-gpg
 
-
 clean:
 	rm -rf grml2usb.8.html grml2usb.8.xml grml2usb.8
 	rm -rf grml2iso.8.html grml2iso.8.xml grml2iso.8
@@ -59,6 +58,7 @@ codecheck:
 	pylint --include-ids=y --max-line-length=120 grml2usb
 	# pylint --include-ids=y --disable-msg-cat=C0301 --disable-msg-cat=W0511 grml2usb
 	# pylint --reports=n --include-ids=y --disable-msg-cat=C0301 grml2usb
+	pep8 --repeat --ignore E125,E126,E127,E128,E501 grml2usb
 
 # graph:
 #	sudo pycallgraph grml2usb /grml/isos/grml-small_2008.11.iso /dev/sdb1
