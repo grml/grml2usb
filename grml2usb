@@ -105,6 +105,8 @@ parser.add_option("--remove-bootoption", dest="removeoption", action="append",
                   help="regex for removing existing bootoptions")
 parser.add_option("--skip-addons", dest="skipaddons", action="store_true",
                   help="do not install /boot/addons/ files")
+parser.add_option("--skip-bootflag", dest="skipbootflag", action="store_true",
+                  help="do not try to check whether the destination has the bootflag set")
 parser.add_option("--skip-grub-config", dest="skipgrubconfig", action="store_true",
                   help="skip generation of grub configuration files")
 parser.add_option("--skip-mbr", dest="skipmbr", action="store_true",
@@ -335,8 +337,27 @@ def check_uid_root():
         raise CriticalException("please run this script with uid 0 (root).")
 
 
+# for usage inside check_boot_flag
+def get_partition_for_path(path):
+    import parted
+
+    boot_dev, x = get_device_from_partition(path)
+
+    d = parted.getDevice(boot_dev)
+    disk = parted.Disk(d)
+    return disk.getPartitionByPath(path)
+
+
 def check_boot_flag(device):
     boot_dev, x = get_device_from_partition(device)
+
+    try:
+        part = get_partition_for_path(device)
+        if part.getFlag(parted.PARTITION_BOOT):
+            logging.debug("bootflag is enabled on %s" % device)
+            return
+    except ImportError, e:
+        logging.debug("could not import parted, falling back to old bootflag detection")
 
     with open(boot_dev, 'r') as image:
         data = image.read(520)
@@ -350,7 +371,7 @@ def check_boot_flag(device):
         else:
             logging.debug("bootflag is NOT enabled")
             raise VerifyException("Device %s does not have the bootflag set. "
-                "Please enable it to be able to boot." % boot_dev)
+                "Please enable it to be able to boot." % device)
 
 
 def mkfs_fat16(device):
@@ -1530,7 +1551,8 @@ def install_grml(mountpoint, device):
         remove_device_mountpoint = True
         try:
             check_for_fat(device)
-            check_boot_flag(device)
+            if not options.skipbootflag:
+                check_boot_flag(device)
             mount(device, device_mountpoint, ['-o', 'utf8,iocharset=iso8859-1'])
         except CriticalException as error:
             mount(device, device_mountpoint, "")

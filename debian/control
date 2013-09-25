@@ -19,6 +19,7 @@ Package: grml2usb
 Architecture: amd64 i386
 Depends: mtools,
          python,
+         python-parted,
          realpath,
          rsync,
          syslinux | grub-pc,
