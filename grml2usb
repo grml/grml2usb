@@ -317,8 +317,28 @@ def check_uid_root():
         raise CriticalException("please run this script with uid 0 (root).")
 
 
+# for usage inside check_boot_flag
+def get_partition_for_path(path):
+    import parted
+
+    boot_dev, x = get_device_from_partition(path)
+
+    d = parted.getDevice(boot_dev)
+    disk = parted.Disk(d)
+    return disk.getPartitionByPath(path)
+
+
 def check_boot_flag(device):
     boot_dev, x = get_device_from_partition(device)
+
+    try:
+        import parted
+        part = get_partition_for_path(device)
+        if part.getFlag(parted.PARTITION_BOOT):
+            logging.debug("bootflag is enabled on %s" % device)
+            return
+    except ImportError, e:
+        pass
 
     with open(boot_dev, 'r') as image:
         data = image.read(520)
@@ -332,7 +352,7 @@ def check_boot_flag(device):
         else:
             logging.debug("bootflag is NOT enabled")
             raise VerifyException("Device %s does not have the bootflag set. "
-                "Please enable it to be able to boot." % boot_dev)
+                "Please enable it to be able to boot." % device)
 
 
 def mkfs_fat16(device):
