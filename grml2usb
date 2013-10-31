@@ -978,7 +978,7 @@ def build_loopbackcfg(target):
         logging.debug("Found source file" + sourcefile)
         os.path.isfile(ops) and f.write("source " + sourcefile + "\n")
 
-    f.write("source /boot/grub/adddons.cfg\n")
+    f.write("source /boot/grub/addons.cfg\n")
     f.write("source /boot/grub/footer.cfg\n")
     f.close()
 
