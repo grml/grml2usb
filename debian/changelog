@@ -1,3 +1,15 @@
+grml2usb (0.14.2) unstable; urgency=low
+
+  [ Michael Prokop ]
+  * [bb87234] pep8 cleanups
+  * [1d2aba6] Fix typo in /boot/grub/addons.cfg filename. Thanks to
+    Michael Schierl for the hint
+
+  [ Christian Hofstaedtler ]
+  * [be8270f] Remove Recommends: isolinux, as the package is gone
+
+ -- Michael Prokop <mika@grml.org>  Thu, 31 Oct 2013 08:45:06 +0100
+
 grml2usb (0.14.1) unstable; urgency=low
 
   [ Till Maas ]
