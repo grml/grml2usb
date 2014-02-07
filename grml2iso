@@ -293,10 +293,10 @@ Options:
       echo "isohybrid version supports --uefi option"
       ISOHYBRID_OPTIONS=--uefi
     fi
-
-    echo "Creating dd-able ISO using isohybrid"
-    isohybrid $ISOHYBRID_OPTIONS "$ISOFILE"
   fi
+
+  echo "Creating dd-able ISO using isohybrid"
+  isohybrid $ISOHYBRID_OPTIONS "$ISOFILE"
 # }}}
 
 # cleanup {{{
