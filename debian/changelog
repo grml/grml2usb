@@ -1,3 +1,11 @@
+grml2usb (0.14.3) unstable; urgency=medium
+
+  * [dbf34c4] Bump Standards-Version to 3.9.5
+  * [6bf0be8] Fix logic of isohybrid execution if uefi option is not
+    supported
+
+ -- Michael Prokop <mika@grml.org>  Fri, 07 Feb 2014 18:38:25 +0100
+
 grml2usb (0.14.2) unstable; urgency=low
 
   [ Michael Prokop ]
