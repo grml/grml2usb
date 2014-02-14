@@ -1475,7 +1475,15 @@ def install(image, device):
     iso_mountpoint = image
     remove_image_mountpoint = False
     if os.path.isdir(image):
-        logging.info("Using %s as install base", image)
+        if options.force or os.path.exists(os.path.join(image, 'live')):
+            logging.info("Using %s as install base", image)
+        else:
+            q = raw_input("%s does not look like a grml system. "
+                "Do you really want to use this image? y/N " % image)
+            if q.lower() == 'y':
+                logging.info("Using %s as install base", image)
+            else:
+                logging.info("Skipping install base %s", image)
     else:
         logging.info("Using ISO %s", image)
         iso_mountpoint = tempfile.mkdtemp(prefix="grml2usb", dir=os.path.abspath(options.tmpdir))
