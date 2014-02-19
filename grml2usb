@@ -166,14 +166,17 @@ def cleanup():
     proc = subprocess.Popen(["sync"])
     proc.wait()
 
-    try:
-        for device in MOUNTED:
+    for device in MOUNTED:
+        try:
             unmount(device, "")
-        for tmpfile in TMPFILES:
+        except RuntimeError:
+            logging.debug('RuntimeError while umount %s, ignoring' % device)
+    for tmpfile in TMPFILES:
+        try:
             os.unlink(tmpfile)
-    # ignore: RuntimeError: Set changed size during iteration
-    except RuntimeError:
-        logging.debug('caught exception RuntimeError, ignoring')
+        except RuntimeError:
+            msg = 'RuntimeError while removing temporary %s, ignoring'
+            logging.debug(msg % tmpfile)
 
 
 def register_tmpfile(path):
