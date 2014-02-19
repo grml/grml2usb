@@ -170,14 +170,14 @@ def cleanup():
     proc = subprocess.Popen(["sync"])
     proc.wait()
 
-    for device in MOUNTED:
+    for device in MOUNTED.copy():
         try:
             unmount(device, "")
             logging.debug('Unmounted %s' % device)
         except RuntimeError:
             logging.debug('RuntimeError while umount %s, ignoring' % device)
 
-    for tmppath in TMPFILES:
+    for tmppath in TMPFILES.copy():
         try:
             if os.path.isdir(tmppath) and not os.path.islink(tmppath):
                 # symbolic links to directories are ignored
