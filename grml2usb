@@ -173,6 +173,7 @@ def cleanup():
     for device in MOUNTED:
         try:
             unmount(device, "")
+            logging.debug('Unmounted %s' % device)
         except RuntimeError:
             logging.debug('RuntimeError while umount %s, ignoring' % device)
 
