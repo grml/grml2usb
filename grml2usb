@@ -174,7 +174,7 @@ def cleanup():
         try:
             unmount(device, "")
             logging.debug('Unmounted %s' % device)
-        except RuntimeError:
+        except StandardError:
             logging.debug('RuntimeError while umount %s, ignoring' % device)
 
     for tmppath in TMPFILES.copy():
@@ -189,7 +189,7 @@ def cleanup():
                 os.unlink(tmppath)
                 logging.debug('temporary file %s deleted' % tmppath)
                 unregister_tmpfile(tmppath)
-        except RuntimeError:
+        except StandardError:
             msg = 'RuntimeError while removing temporary %s, ignoring'
             logging.debug(msg % tmppath)
 
