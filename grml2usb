@@ -28,6 +28,7 @@ import sys
 import tempfile
 import time
 import uuid
+import shutil
 
 # The line following this line is patched by debian/rules and tarball.sh.
 PROG_VERSION = '***UNRELEASED***'
@@ -161,6 +162,9 @@ def string2array(s):
 def cleanup():
     """Cleanup function to make sure there aren't any mounted devices left behind.
     """
+    def del_failed(fn, filepath, exc):
+        msg = "Deletion of %s failed in temporary folder %s"
+        logging.warn(msg % (filepath, path))
 
     logging.info("Cleaning up before exiting...")
     proc = subprocess.Popen(["sync"])
@@ -171,12 +175,22 @@ def cleanup():
             unmount(device, "")
         except RuntimeError:
             logging.debug('RuntimeError while umount %s, ignoring' % device)
-    for tmpfile in TMPFILES:
+
+    for tmppath in TMPFILES:
         try:
-            os.unlink(tmpfile)
+            if os.path.isdir(tmppath) and not os.path.islink(tmppath):
+                # symbolic links to directories are ignored
+                # without the check it will throw an OSError
+                shutil.rmtree(tmppath, onerror=del_failed)
+                logging.debug('temporary directory %s deleted' % tmppath)
+                unregister_tmpfile(tmppath)
+            elif os.path.isfile:
+                os.unlink(tmppath)
+                logging.debug('temporary file %s deleted' % tmppath)
+                unregister_tmpfile(tmppath)
         except RuntimeError:
             msg = 'RuntimeError while removing temporary %s, ignoring'
-            logging.debug(msg % tmpfile)
+            logging.debug(msg % tmppath)
 
 
 def register_tmpfile(path):
