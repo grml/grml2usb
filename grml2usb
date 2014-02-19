@@ -1797,7 +1797,7 @@ def main():
         for flavour in GRML_FLAVOURS:
             logging.info("Note: you can boot flavour %s using '%s' on the commandline.", flavour, flavour)
 
-        # finally be politely :)
+        # finally be polite :)
         logging.info("Finished execution of grml2usb (%s). Have fun with your grml system.", PROG_VERSION)
 
     except Exception, error:
