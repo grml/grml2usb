@@ -28,6 +28,7 @@ import sys
 import tempfile
 import time
 import uuid
+import shutil
 
 # The line following this line is patched by debian/rules and tarball.sh.
 PROG_VERSION = '***UNRELEASED***'
@@ -161,19 +162,36 @@ def string2array(s):
 def cleanup():
     """Cleanup function to make sure there aren't any mounted devices left behind.
     """
+    def del_failed(fn, filepath, exc):
+        msg = "Deletion of %s failed in temporary folder %s"
+        logging.warn(msg % (filepath, path))
 
     logging.info("Cleaning up before exiting...")
     proc = subprocess.Popen(["sync"])
     proc.wait()
 
-    try:
-        for device in MOUNTED:
+    for device in MOUNTED.copy():
+        try:
             unmount(device, "")
-        for tmpfile in TMPFILES:
-            os.unlink(tmpfile)
-    # ignore: RuntimeError: Set changed size during iteration
-    except RuntimeError:
-        logging.debug('caught exception RuntimeError, ignoring')
+            logging.debug('Unmounted %s' % device)
+        except StandardError:
+            logging.debug('RuntimeError while umount %s, ignoring' % device)
+
+    for tmppath in TMPFILES.copy():
+        try:
+            if os.path.isdir(tmppath) and not os.path.islink(tmppath):
+                # symbolic links to directories are ignored
+                # without the check it will throw an OSError
+                shutil.rmtree(tmppath, onerror=del_failed)
+                logging.debug('temporary directory %s deleted' % tmppath)
+                unregister_tmpfile(tmppath)
+            elif os.path.isfile:
+                os.unlink(tmppath)
+                logging.debug('temporary file %s deleted' % tmppath)
+                unregister_tmpfile(tmppath)
+        except StandardError:
+            msg = 'RuntimeError while removing temporary %s, ignoring'
+            logging.debug(msg % tmppath)
 
 
 def register_tmpfile(path):
@@ -1475,7 +1493,15 @@ def install(image, device):
     iso_mountpoint = image
     remove_image_mountpoint = False
     if os.path.isdir(image):
-        logging.info("Using %s as install base", image)
+        if options.force or os.path.exists(os.path.join(image, 'live')):
+            logging.info("Using %s as install base", image)
+        else:
+            q = raw_input("%s does not look like a grml system. "
+                "Do you really want to use this image? y/N " % image)
+            if q.lower() == 'y':
+                logging.info("Using %s as install base", image)
+            else:
+                logging.info("Skipping install base %s", image)
     else:
         logging.info("Using ISO %s", image)
         iso_mountpoint = tempfile.mkdtemp(prefix="grml2usb", dir=os.path.abspath(options.tmpdir))
@@ -1789,7 +1815,7 @@ def main():
         for flavour in GRML_FLAVOURS:
             logging.info("Note: you can boot flavour %s using '%s' on the commandline.", flavour, flavour)
 
-        # finally be politely :)
+        # finally be polite :)
         logging.info("Finished execution of grml2usb (%s). Have fun with your grml system.", PROG_VERSION)
 
     except Exception, error:
