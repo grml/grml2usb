@@ -1,3 +1,20 @@
+grml2usb (0.14.4) unstable; urgency=medium
+
+  [ Lukas Prokop ]
+  * [4be3d88] Ask user whether he really wants to use non-grml folder
+  * [2b2bf9e] Adverb is actually adjective.
+  * [411daf1] Silence errors the right way.
+  * [2700dd6] Implement folder cleanup support for TMPFILES
+    (Closes github issue #5)
+  * [1d3c9da] Provide log message for umounted device in cleanup()
+  * [b2b4887] Create copies of set before iteration
+  * [d33e012] Silent error for StandardError, not RuntimeError
+
+  [ Michael Prokop ]
+  * [e2a98b2] More consequently use "Grml" instead of "grml"
+
+ -- Michael Prokop <mika@grml.org>  Mon, 24 Feb 2014 16:02:11 +0100
+
 grml2usb (0.14.3) unstable; urgency=medium
 
   * [dbf34c4] Bump Standards-Version to 3.9.5
