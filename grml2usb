@@ -5,7 +5,7 @@
 grml2usb
 ~~~~~~~~
 
-This script installs a grml system (either a running system or ISO[s]) to a USB device
+This script installs a Grml system (either a running system or ISO[s]) to a USB device
 
 :copyright: (c) 2009, 2010, 2011 by Michael Prokop <mika@grml.org>
 :license: GPL v2 or any later version
@@ -1496,7 +1496,7 @@ def install(image, device):
         if options.force or os.path.exists(os.path.join(image, 'live')):
             logging.info("Using %s as install base", image)
         else:
-            q = raw_input("%s does not look like a grml system. "
+            q = raw_input("%s does not look like a Grml system. "
                 "Do you really want to use this image? y/N " % image)
             if q.lower() == 'y':
                 logging.info("Using %s as install base", image)
@@ -1525,7 +1525,7 @@ def install(image, device):
 
 
 def install_grml(mountpoint, device):
-    """Main logic for copying files of the currently running grml system.
+    """Main logic for copying files of the currently running Grml system.
 
     @mountpoint: directory where currently running live system resides (usually /lib/live/mount/medium)
     @device: partition where the specified ISO should be installed to"""
@@ -1816,7 +1816,7 @@ def main():
             logging.info("Note: you can boot flavour %s using '%s' on the commandline.", flavour, flavour)
 
         # finally be polite :)
-        logging.info("Finished execution of grml2usb (%s). Have fun with your grml system.", PROG_VERSION)
+        logging.info("Finished execution of grml2usb (%s). Have fun with your Grml system.", PROG_VERSION)
 
     except Exception, error:
         logging.critical("Fatal: %s", str(error))
