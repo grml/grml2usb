@@ -47,7 +47,7 @@ Use specified default bootoptions as default.
 
   *-f*::
 
-Force the program to run and overwrite an existing iso image.
+Force the program to run and overwrite an existing ISO image.
 
   *-r <boot param>*::
 
@@ -59,7 +59,12 @@ Execute grml2usb with the specified parameters. For a list of valid parameters h
 
   *-s <URI>*::
 
-Generate a small iso file which downloads the squashfs file from the specified URI. Due  to current limitations in busyboxs wget and DNS resolution, an URL can not contain a hostname but an IP only. This is useful if you want to boot systems which support booting iso image from your local system. Besides the iso image this command also copies the squashfs file to the output directory.
+Generate a small ISO file which downloads the squashfs file from the
+specified URI. Due  to current limitations in busyboxs wget and DNS
+resolution, an URL can not contain a hostname but an IP only. This is
+useful if you want to boot systems which support booting ISO image from
+your local system. Besides the iso image this command also copies the
+squashfs file to the output directory.
 
 Usage examples
 --------------
@@ -70,11 +75,12 @@ Create multiboot ISO /tmp/grml.iso with grml_2009.05.iso and grml64_2009.05.iso.
 
  # grml2iso -b 'lang=de ssh=passwd' -c /tmp/grml-content -o /srv/grml.iso /srv/grml/grml_2009.10.iso
 
-Create a new iso with additional boot parameters and copy the content from /tmp/grml-content to the generated iso image.
+Create a new ISO with additional boot parameters and copy the content
+from /tmp/grml-content to the generated ISO image.
 
   # grml2iso -r quiet -r vga=791 -o /srv/grml.iso /srv/grml-small_2009.10.iso
 
-Create a new iso and remove existing boot parameters quiet and vga=791.
+Create a new ISO and remove existing boot parameters quiet and vga=791.
 
   # GRML2USB=/srv/git/grml2usb grml2iso -o /srv/grml.iso /srv/grml/grml_2009.05.iso /srv/grml/grml64-medium_2009.05.iso
 
@@ -88,7 +94,7 @@ Use /mnt/test/grml-tmp as working directory for creating the multiboot ISO
 
   # grml2iso -p --skip-addons -o /srv/grml.iso /srv/grml-small_2009.10.iso /srv/grml64-small_2009.10.iso
 
-Don't copy the addons from the specified iso images
+Don't copy the addons from the specified ISO images
 
 
 Online Ressources
