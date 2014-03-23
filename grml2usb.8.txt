@@ -35,7 +35,7 @@ default MBR consider using '--syslinux-mbr' instead.
 Options
 -------
 
-The ISO[s] should be the path to one or multiple grml-ISOs and/or the path to
+ISO[s] should be the path to one or multiple grml-ISOs and/or the path to
 the currently running live-system (being /lib/live/mount/medium).
 
 The device either might be a device name like /dev/sdX1 or a directory. When
