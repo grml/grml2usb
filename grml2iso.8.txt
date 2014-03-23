@@ -3,7 +3,7 @@ grml2iso(8)
 
 Name
 ----
-grml2iso - create a multiboot grml ISO using grml2usb
+grml2iso - create a multiboot Grml ISO using grml2usb
 
 Synopsis
 --------
@@ -16,8 +16,8 @@ Important! The grml team does not take responsibility for loss of any data!
 Introduction
 ------------
 
-grml2iso allows you to create a multiboot grml ISO. You can specify
-two or more grml ISOs and will get one single multiboot ISO as a result.
+grml2iso allows you to create a multiboot Grml ISO. You can specify
+two or more Grml ISOs and will get one single multiboot ISO as a result.
 grml2iso requires and uses grml2usb for this task and installs grub2
 as bootmanager on the multiboot ISO.
 
@@ -32,14 +32,14 @@ of all specified ISOs.
 
   *-o <target.iso>*::
 
-This option is mandatory and specifies where the resulting multiboot grml ISO
+This option is mandatory and specifies where the resulting multiboot Grml ISO
 should be placed. Note that (to avoid any possible data loss) grml2iso will exit
 if the specified target.iso exists already.
 
   *-c <directory>*::
 
 The content of the specified directory will be copied to the resulting
-multiboot grml ISO.
+multiboot Grml ISO.
 
   *-b <boot params>*::
 

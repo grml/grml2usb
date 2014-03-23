@@ -3,23 +3,23 @@ grml2usb(8)
 
 Name
 ----
-grml2usb - install grml ISO(s) on usb device for booting
+grml2usb - install Grml ISO(s) on usb device for booting
 
 Synopsis
 --------
 grml2usb [ options ] <ISO[s]> <device>
 
 *******************************************************************************
-Important! The grml team does not take responsibility for loss of any data!
+Important! The Grml team does not take responsibility for loss of any data!
 *******************************************************************************
 
 [[introduction]]
 Introduction
 ------------
 
-grml2usb installs grml on a given partition of your usb device and makes it
-bootable. It provides multi-iso support, meaning you can specify several grml
-ISOs on the command line at once and select the grml flavour you would like to
+grml2usb installs Grml on a given partition of your usb device and makes it
+bootable. It provides multi-iso support, meaning you can specify several Grml
+ISOs on the command line at once and select the Grml flavour you would like to
 boot on the bootprompt then. Note that the *first* ISO specified on the grml2usb
 command line will become the default one (that's the one that will boot when
 just pressing enter on the bootprompt or wait until the boot timeout matches).
@@ -65,7 +65,7 @@ Copy files only but do *not* install a bootloader.
 
 Avoid executing commands, instead show what would be executed.
 Warning: please notice that the ISO has to be mounted anyway, otherwise
-identifying the grml flavour would not be possible.
+identifying the Grml flavour would not be possible.
 
   *\--fat16*::
 
@@ -170,7 +170,7 @@ Install specified squashfs file instead of the default.
 //////////////////////////////////////////////////////////////////////////
   *\--uninstall*::
 
-Uninstall grml ISO files.
+Uninstall Grml ISO files.
 [Notice: not implemented yet.]
 //////////////////////////////////////////////////////////////////////////
 
@@ -227,7 +227,7 @@ Directory layout on usb device
 
   grml/
     |-- grml2usb.txt         [not yet implemented]
-    |-- grml-cheatcodes.txt  [list of bootoptions for grml]
+    |-- grml-cheatcodes.txt  [list of bootoptions for Grml]
     |-- grml-version.txt     [file containing information about grml-version]
     |-- LICENSE.txt          [license information]
     |-- md5sums              [md5sums of original ISO]
@@ -377,14 +377,14 @@ grml2usb.tgz.
 Why can't I just dd the ISO to a USB device?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Well, you can. :) Starting with grml 2009.10 the ISOs are dd-able straight out-of-the-box.
+Well, you can. :) Starting with Grml 2009.10 the ISOs are dd-able straight out-of-the-box.
 
 [IMPORTANT]
 Note that ANY existing data on your USB device will be destroyed when
 using the dd approach.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-Grab a recent grml ISO and use
+Grab a recent Grml ISO and use
 link:http://syslinux.zytor.com/wiki/index.php/Doc/isolinux#HYBRID_CD-ROM.2FHARD_DISK_MODE[isohybrid
 from the syslinux project]:
 
@@ -616,9 +616,9 @@ Install specified ISO on device /dev/sdX1 remove vga=791 and nomce from existing
 
   # grml2usb --bootoptions="persistent-path=%flavour_name" grml64_2010.04.iso grml_2010.04.iso /dev/sdX1
 
-Install specified Isos on device /dev/sdx and add parameter persisten-path
+Install specified ISOs on device /dev/sdx and add parameter persisten-path
 to every menu entry. %flavour_name will be expanded to the flavour of the specific
-iso, e.g. grml64 and grml.
+iso, e.g. Grml64 and Grml.
 
 [[ressources]]
 Online Ressources

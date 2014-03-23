@@ -20,8 +20,6 @@ man-stamp: grml2usb.8.txt grml2iso.8.txt
 	# notice: docbook-xsl 1.71.0.dfsg.1-1 is broken! make sure you use 1.68.1.dfsg.1-0.2!
 	cp grml2usb.8 grml2usb.8.tmp
 	uniq grml2usb.8.tmp > grml2usb.8
-	# ugly hack to avoid '.sp' at the end of a sentence or paragraph:
-	#sed -i 's/\.sp//' grml2usb.8
 	rm grml2usb.8.tmp
 	# grml2iso:
 	asciidoc -d manpage -b docbook grml2iso.8.txt
@@ -31,8 +29,6 @@ man-stamp: grml2usb.8.txt grml2iso.8.txt
 	# notice: docbook-xsl 1.71.0.dfsg.1-1 is broken! make sure you use 1.68.1.dfsg.1-0.2!
 	cp grml2iso.8 grml2iso.8.tmp
 	uniq grml2iso.8.tmp > grml2iso.8
-	# ugly hack to avoid '.sp' at the end of a sentence or paragraph:
-	#sed -i 's/\.sp//' grml2iso.8
 	rm grml2iso.8.tmp
 	# we're done
 	touch man-stamp
