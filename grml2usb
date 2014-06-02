@@ -42,6 +42,7 @@ GRML_DEFAULT = None
 UUID = None
 SYSLINUX_LIBS = "/usr/lib/syslinux/"
 GPT_HEADER = "\x55\xaa\x45\x46\x49\x20\x50\x41\x52\x54"  # original GPT header
+GRUB_INSTALL = None
 
 RE_PARTITION = re.compile(r'([a-z/]*?)(\d+)$')
 RE_P_PARTITION = re.compile(r'(.*?\d+)p(\d+)$')
@@ -470,7 +471,7 @@ def install_grub(device):
                 for opt in ["", "--force"]:
                     logging.debug("grub-install --recheck %s --no-floppy --root-directory=%s %s",
                                   opt, device_mountpoint, grub_device)
-                    proc = subprocess.Popen(["grub-install", "--recheck", opt, "--no-floppy",
+                    proc = subprocess.Popen([GRUB_INSTALL, "--recheck", opt, "--no-floppy",
                                              "--root-directory=%s" % device_mountpoint, grub_device],
                                             stdout=file(os.devnull, "r+"))
                     proc.wait()
@@ -1725,7 +1726,8 @@ def check_options(opts):
 def check_programs():
     """check if all needed programs are installed"""
     if options.grub:
-        if not which("grub-install"):
+        GRUB_INSTALL = which("grub-install") or which("grub2-install")
+        if not GRUB_INSTALL:
             logging.critical("Fatal: grub-install not available (please install the "
                              + "grub package or drop the --grub option)")
             sys.exit(1)
