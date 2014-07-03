@@ -1,3 +1,22 @@
+grml2usb (0.14.5) unstable; urgency=medium
+
+  [ Andreas "Jimmy" Gredler ]
+  * [178c7f0] Fixed manpages
+  * [b214ea0] Minor change in manpage
+  * [efd19d8] Replaced all occurences of grml with Grml in the manpages
+  * [3176494] Replaced all occurences of iso or Iso with ISO(s) in the
+    manpages
+
+  [ Daniel Troeder ]
+  * [5b3b5f7] allow grub-install to be called grub2-install (used in
+    gentoo)
+
+  [ Michael Prokop ]
+  * [22a2cd3] docs: fix typo (persisten*t*-path and wrong uppercase usage
+    of Grml64/Grml in syslinux)
+
+ -- Michael Prokop <mika@grml.org>  Thu, 03 Jul 2014 12:48:16 +0200
+
 grml2usb (0.14.4) unstable; urgency=medium
 
   [ Lukas Prokop ]
