@@ -617,9 +617,9 @@ Install specified ISO on device /dev/sdX1 remove vga=791 and nomce from existing
 
   # grml2usb --bootoptions="persistent-path=%flavour_name" grml64_2010.04.iso grml_2010.04.iso /dev/sdX1
 
-Install specified ISOs on device /dev/sdx and add parameter persisten-path
+Install specified ISOs on device /dev/sdx and add parameter persistent-path
 to every menu entry. %flavour_name will be expanded to the flavour of the specific
-iso, e.g. Grml64 and Grml.
+iso, e.g. grml64 and grml.
 
 [[ressources]]
 Online Ressources
