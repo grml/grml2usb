@@ -13,6 +13,7 @@ This script installs a Grml system (either a running system or ISO[s]) to a USB 
 
 """
 
+from __future__ import print_function
 from optparse import OptionParser
 from inspect import isroutine, isclass
 import datetime
@@ -486,7 +487,7 @@ def install_grub(device):
                                      + "the --grub-mbr option as grub considers PBR problematic.")
                     cleanup()
                     sys.exit(1)
-            except CriticalException, error:
+            except CriticalException as error:
                 logging.critical("Fatal: %s", error)
                 cleanup()
                 sys.exit(1)
@@ -524,14 +525,14 @@ def install_bootloader(device):
     if options.grub:
         try:
             install_grub(device)
-        except CriticalException, error:
+        except CriticalException as error:
             logging.critical("Fatal: %s", error)
             cleanup()
             sys.exit(1)
     else:
         try:
             install_syslinux(device)
-        except CriticalException, error:
+        except CriticalException as error:
             logging.critical("Fatal: %s", error)
             cleanup()
             sys.exit(1)
@@ -883,9 +884,9 @@ def update_grml_versions(iso_mount, target):
             for line in fileinput.input([target_grml_version_file], inplace=1):
                 flavour = get_flavour(line)
                 if flavour in iso_versions.keys():
-                    print iso_versions.pop(flavour)
+                    print(iso_versions.pop(flavour))
                 else:
-                    print line.strip()
+                    print(line.strip())
             fileinput.close()
 
             target_file = open(target_grml_version_file, 'a')
@@ -1118,7 +1119,7 @@ def install_iso_files(grml_flavour, iso_mount, device, target):
         try:
             copy_system_files(grml_flavour, iso_mount, target)
             copy_grml_files(grml_flavour, iso_mount, target)
-        except CriticalException, error:
+        except CriticalException as error:
             logging.critical("Execution failed: %s", error)
             sys.exit(1)
 
@@ -1186,9 +1187,9 @@ def identify_grml_flavour(mountpath):
             tmpfile = open(version_file, 'r')
             for line in tmpfile.readlines():
                 flavours.append(get_flavour(line))
-        except TypeError, e:
+        except TypeError as e:
             raise
-        except Exception, e:
+        except Exception as e:
             raise
         finally:
             if tmpfile:
@@ -1248,7 +1249,7 @@ def handle_grub_config(grml_flavour, device, target):
                 line = line.rstrip() + r' bootid=%s %s ' % (UUID, bootopt)
                 for regex in remove_regexes:
                     line = regex.sub(' ', line)
-            print line
+            print(line)
         fileinput.close()
 
 
@@ -1471,7 +1472,7 @@ def handle_bootloader_config(grml_flavour, device, target):
     else:
         try:
             handle_syslinux_config(grml_flavour, target)
-        except CriticalException, error:
+        except CriticalException as error:
             logging.critical("Fatal: %s", error)
             sys.exit(1)
 
@@ -1480,7 +1481,7 @@ def handle_bootloader_config(grml_flavour, device, target):
     else:
         try:
             handle_grub_config(grml_flavour, device, target)
-        except CriticalException, error:
+        except CriticalException as error:
             logging.critical("Fatal: %s", error)
             sys.exit(1)
 
@@ -1510,7 +1511,7 @@ def install(image, device):
         remove_image_mountpoint = True
         try:
             mount(image, iso_mountpoint, ["-o", "loop,ro", "-t", "iso9660"])
-        except CriticalException, error:
+        except CriticalException as error:
             logging.critical("Fatal: %s", error)
             sys.exit(1)
 
@@ -1520,7 +1521,7 @@ def install(image, device):
         if remove_image_mountpoint:
             try:
                 remove_mountpoint(iso_mountpoint)
-            except CriticalException, error:
+            except CriticalException as error:
                 cleanup()
                 raise
 
@@ -1543,9 +1544,9 @@ def install_grml(mountpoint, device):
             check_for_fat(device)
             check_boot_flag(device)
             mount(device, device_mountpoint, ['-o', 'utf8,iocharset=iso8859-1'])
-        except VerifyException, error:
+        except VerifyException as error:
             raise
-        except CriticalException, error:
+        except CriticalException as error:
             mount(device, device_mountpoint, "")
     try:
         grml_flavours = identify_grml_flavour(mountpoint)
@@ -1569,7 +1570,7 @@ def remove_mountpoint(mountpoint):
         if os.path.isdir(mountpoint):
             os.rmdir(mountpoint)
             unregister_tmpfile(mountpoint)
-    except CriticalException, error:
+    except CriticalException as error:
         cleanup()
         raise
 
@@ -1614,10 +1615,10 @@ def handle_mbr(device):
 
     try:
         install_mbr(mbrcode, mbr_device, partition_number, True)
-    except IOError, error:
+    except IOError as error:
         logging.critical("Execution failed: %s", error)
         sys.exit(1)
-    except Exception, error:
+    except Exception as error:
         logging.critical("Execution failed: %s", error)
         sys.exit(1)
 
@@ -1635,7 +1636,7 @@ def handle_vfat(device):
             sys.exit(1)
 
         if options.force:
-            print "Forcing mkfs.fat16 on %s as requested via option --force." % device
+            print("Forcing mkfs.fat16 on %s as requested via option --force." % device)
         else:
             # make sure the user is aware of what he is doing
             f = raw_input("Are you sure you want to format the specified partition with fat16? y/N ")
@@ -1645,7 +1646,7 @@ def handle_vfat(device):
                 sys.exit(1)
         try:
             mkfs_fat16(device)
-        except CriticalException, error:
+        except CriticalException as error:
             logging.critical("Execution failed: %s", error)
             sys.exit(1)
 
@@ -1653,12 +1654,12 @@ def handle_vfat(device):
     if device is not None and not os.path.isdir(device) and options.syslinux:
         try:
             check_for_fat(device)
-        except CriticalException, error:
+        except CriticalException as error:
             logging.critical("Execution failed: %s", error)
             sys.exit(1)
 
     if not os.path.isdir(device) and not check_for_usbdevice(device) and not options.force:
-        print "Warning: the specified device %s does not look like a removable usb device." % device
+        print("Warning: the specified device %s does not look like a removable usb device." % device)
         f = raw_input("Do you really want to continue? y/N ")
         if f == "y" or f == "Y":
             pass
@@ -1673,10 +1674,10 @@ def handle_compat_warning(device):
 
     # make sure we can replace old grml2usb script and warn user when using old way of life:
     if device.startswith("/mnt/external") or device.startswith("/mnt/usb") and not options.force:
-        print "Warning: the semantics of grml2usb has changed."
-        print "Instead of using grml2usb /path/to/iso %s you might" % device
-        print "want to use grml2usb /path/to/iso /dev/... instead."
-        print "Please check out the grml2usb manpage for details."
+        print("Warning: the semantics of grml2usb has changed.")
+        print("Instead of using grml2usb /path/to/iso %s you might" % device)
+        print("want to use grml2usb /path/to/iso /dev/... instead.")
+        print("Please check out the grml2usb manpage for details.")
         f = raw_input("Do you really want to continue? y/N ")
         if f == "y" or f == "Y":
             pass
@@ -1759,7 +1760,7 @@ def main():
 
     try:
         if options.version:
-            print os.path.basename(sys.argv[0]) + " " + PROG_VERSION
+            print(os.path.basename(sys.argv[0]) + " " + PROG_VERSION)
             sys.exit(0)
 
         if len(args) < 2:
@@ -1820,7 +1821,7 @@ def main():
         # finally be polite :)
         logging.info("Finished execution of grml2usb (%s). Have fun with your Grml system.", PROG_VERSION)
 
-    except Exception, error:
+    except Exception as error:
         logging.critical("Fatal: %s", str(error))
         sys.exit(1)
 
