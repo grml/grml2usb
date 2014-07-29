@@ -2,17 +2,30 @@ Source: grml2usb
 Section: admin
 Priority: optional
 Maintainer: Grml Team <team@grml.org>
-Uploaders: Michael Prokop <mika@debian.org>, Alexander Wirt <formorer@debian.org>, Christian Hofstaedtler <christian@hofstaedtler.name>, Ulrich Dangel <mru@spamt.net>
-Build-Depends: debhelper (>= 7), asciidoc, xsltproc, docbook-xsl
+Uploaders: Michael Prokop <mika@debian.org>,
+           Alexander Wirt <formorer@debian.org>,
+           Christian Hofstaedtler <christian@hofstaedtler.name>,
+           Ulrich Dangel <mru@spamt.net>
+Build-Depends: asciidoc,
+               debhelper (>= 7),
+               docbook-xsl,
+               xsltproc
 Standards-Version: 3.9.5
 Homepage: http://grml.org/grml2usb/
 Vcs-git: git://git.grml.org/grml2usb.git
 Vcs-Browser: http://git.grml.org/?p=grml2usb.git
 
 Package: grml2usb
-Architecture: i386 amd64
-Depends: ${shlibs:Depends}, ${misc:Depends}, syslinux | grub-pc, python, rsync, mtools, realpath
-Recommends: syslinux, xorriso | genisoimage
+Architecture: amd64 i386
+Depends: mtools,
+         python,
+         realpath,
+         rsync,
+         syslinux | grub-pc,
+         ${misc:Depends},
+         ${shlibs:Depends}
+Recommends: syslinux,
+            xorriso | genisoimage
 Description: install Grml system / ISO to usb device
  This script installs a Grml ISO to an USB device to be able
  to boot from it.  Make sure you have at least one Grml ISO
