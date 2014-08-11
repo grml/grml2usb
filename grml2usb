@@ -1727,6 +1727,7 @@ def check_options(opts):
 def check_programs():
     """check if all needed programs are installed"""
     if options.grub:
+        global GRUB_INSTALL
         GRUB_INSTALL = which("grub-install") or which("grub2-install")
         if not GRUB_INSTALL:
             logging.critical("Fatal: grub-install not available (please install the "
