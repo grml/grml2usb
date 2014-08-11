@@ -134,14 +134,12 @@ class CriticalException(Exception):
     """Throw critical exception if the exact error is not known but fatal.
 
     @Exception: message"""
-    pass
 
 
 class VerifyException(Exception):
     """Throw critical exception if there is an fatal error when verifying something.
 
     @Exception: message"""
-    pass
 
 
 # The following two functions help to operate on strings as
@@ -458,40 +456,38 @@ def install_grub(device):
         device_mountpoint = tempfile.mkdtemp(prefix="grml2usb")
         register_tmpfile(device_mountpoint)
         try:
-            try:
-                mount(device, device_mountpoint, "")
+            mount(device, device_mountpoint, "")
 
-                # If using --grub-mbr then make sure we install grub in MBR instead of PBR
-                if options.grubmbr:
-                    logging.debug("Using option --grub-mbr ...")
-                    grub_device, x = get_device_from_partition(device)
-                else:
-                    grub_device = device
+            # If using --grub-mbr then make sure we install grub in MBR instead of PBR
+            if options.grubmbr:
+                logging.debug("Using option --grub-mbr ...")
+                grub_device, x = get_device_from_partition(device)
+            else:
+                grub_device = device
 
-                logging.info("Installing grub as bootloader")
-                for opt in ["", "--force"]:
-                    logging.debug("grub-install --recheck %s --no-floppy --root-directory=%s %s",
-                                  opt, device_mountpoint, grub_device)
-                    proc = subprocess.Popen([GRUB_INSTALL, "--recheck", opt, "--no-floppy",
-                                             "--root-directory=%s" % device_mountpoint, grub_device],
-                                            stdout=file(os.devnull, "r+"))
-                    proc.wait()
-                    if proc.returncode == 0:
-                        break
+            logging.info("Installing grub as bootloader")
+            for opt in ["", "--force"]:
+                logging.debug("grub-install --recheck %s --no-floppy --root-directory=%s %s",
+                              opt, device_mountpoint, grub_device)
+                proc = subprocess.Popen([GRUB_INSTALL, "--recheck", opt, "--no-floppy",
+                                         "--root-directory=%s" % device_mountpoint, grub_device],
+                                        stdout=file(os.devnull, "r+"))
+                proc.wait()
+                if proc.returncode == 0:
+                    break
 
-                if proc.returncode != 0:
-                    # raise Exception("error executing grub-install")
-                    logging.critical("Fatal: error executing grub-install "
-                                     + "(please check the grml2usb FAQ or drop the --grub option)")
-                    logging.critical("Note:  if using grub2 consider using "
-                                     + "the --grub-mbr option as grub considers PBR problematic.")
-                    cleanup()
-                    sys.exit(1)
-            except CriticalException as error:
-                logging.critical("Fatal: %s", error)
+            if proc.returncode != 0:
+                # raise Exception("error executing grub-install")
+                logging.critical("Fatal: error executing grub-install "
+                                 + "(please check the grml2usb FAQ or drop the --grub option)")
+                logging.critical("Note:  if using grub2 consider using "
+                                 + "the --grub-mbr option as grub considers PBR problematic.")
                 cleanup()
                 sys.exit(1)
-
+        except CriticalException as error:
+            logging.critical("Fatal: %s", error)
+            cleanup()
+            sys.exit(1)
         finally:
             unmount(device_mountpoint, "")
             os.rmdir(device_mountpoint)
@@ -1144,9 +1140,7 @@ def get_device_from_partition(partition):
     device = partition
     partition_number = None
     if partition[-1].isdigit() and not RE_LOOP_DEVICE.match(partition):
-        m = RE_P_PARTITION.match(partition)
-        if not m:
-            m = RE_PARTITION.match(partition)
+        m = RE_P_PARTITION.match(partition) or RE_PARTITION.match(partition)
         if m:
             device = m.group(1)
             partition_number = int(m.group(2)) - 1
@@ -1172,12 +1166,10 @@ def identify_grml_flavour(mountpath):
             logging.critical("Error: could not find grml-version file.")
             logging.critical("Looks like your system is running from RAM but required files are not available.")
             logging.critical("Please either boot without toram=... or use boot option toram instead of toram=...")
-            cleanup()
-            sys.exit(1)
         else:
             logging.critical("Error: could not find grml-version file.")
-            cleanup()
-            sys.exit(1)
+        cleanup()
+        sys.exit(1)
 
     flavours = []
     logging.debug("version_files = %s", version_files)
@@ -1187,10 +1179,6 @@ def identify_grml_flavour(mountpath):
             tmpfile = open(version_file, 'r')
             for line in tmpfile.readlines():
                 flavours.append(get_flavour(line))
-        except TypeError as e:
-            raise
-        except Exception as e:
-            raise
         finally:
             if tmpfile:
                 tmpfile.close()
@@ -1544,8 +1532,6 @@ def install_grml(mountpoint, device):
             check_for_fat(device)
             check_boot_flag(device)
             mount(device, device_mountpoint, ['-o', 'utf8,iocharset=iso8859-1'])
-        except VerifyException as error:
-            raise
         except CriticalException as error:
             mount(device, device_mountpoint, "")
     try:
@@ -1615,10 +1601,7 @@ def handle_mbr(device):
 
     try:
         install_mbr(mbrcode, mbr_device, partition_number, True)
-    except IOError as error:
-        logging.critical("Execution failed: %s", error)
-        sys.exit(1)
-    except Exception as error:
+    except (IOError, Exception) as error:
         logging.critical("Execution failed: %s", error)
         sys.exit(1)
 
@@ -1661,9 +1644,7 @@ def handle_vfat(device):
     if not os.path.isdir(device) and not check_for_usbdevice(device) and not options.force:
         print("Warning: the specified device %s does not look like a removable usb device." % device)
         f = raw_input("Do you really want to continue? y/N ")
-        if f == "y" or f == "Y":
-            pass
-        else:
+        if f.lower() != "y":
             sys.exit(1)
 
 
@@ -1679,9 +1660,7 @@ def handle_compat_warning(device):
         print("want to use grml2usb /path/to/iso /dev/... instead.")
         print("Please check out the grml2usb manpage for details.")
         f = raw_input("Do you really want to continue? y/N ")
-        if f == "y" or f == "Y":
-            pass
-        else:
+        if f.lower() != "y":
             sys.exit(1)
 
 
