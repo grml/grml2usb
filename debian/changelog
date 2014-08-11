@@ -1,3 +1,11 @@
+grml2usb (0.14.7) unstable; urgency=medium
+
+  * [1cb2e6a] Execute wrap-and-sort on debian directory
+  * [09300f0] Fix usage of grub-install command. Thanks to martin f krafft
+    <madduck@debian.org> for spotting the problem (Closes: #755768)
+
+ -- Michael Prokop <mika@grml.org>  Mon, 11 Aug 2014 22:09:27 +0200
+
 grml2usb (0.14.6) unstable; urgency=medium
 
   * [f434e19] Add support for Python 3
