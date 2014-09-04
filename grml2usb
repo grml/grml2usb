@@ -1584,6 +1584,7 @@ def handle_mbr(device):
     if options.syslinuxmbr:
         mbrcode = ""
         mbr_locations = ('/usr/lib/syslinux/mbr.bin',
+                         '/usr/lib/syslinux/bios/mbr.bin',
                          '/usr/share/syslinux/mbr.bin')
         for mbrpath in mbr_locations:
             if os.path.isfile(mbrpath):
