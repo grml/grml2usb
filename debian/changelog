@@ -1,3 +1,16 @@
+grml2usb (0.14.8) unstable; urgency=medium
+
+  [ Florian Apolloner ]
+  * [f993114] style fixes
+
+  [ joeran ]
+  * [2b664f3] Extend search paths for syslinux MBRs
+
+  [ Michael Prokop ]
+  * [a64597b] Bump Standards-Version to 3.9.6
+
+ -- Michael Prokop <mika@grml.org>  Thu, 02 Oct 2014 11:47:12 +0200
+
 grml2usb (0.14.7) unstable; urgency=medium
 
   * [1cb2e6a] Execute wrap-and-sort on debian directory
