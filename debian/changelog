@@ -1,3 +1,12 @@
+grml2usb (0.14.9) unstable; urgency=medium
+
+  * [2b2c97a] Use pyparted to check for bootflag
+    [Closes: issue1248] [Closes: #757993]
+    Thanks to Evgeni Golov <evgeni@grml.org> for further
+    improving my initial patch.
+
+ -- Michael Prokop <mika@grml.org>  Tue, 07 Oct 2014 08:43:38 +0200
+
 grml2usb (0.14.8) unstable; urgency=medium
 
   [ Florian Apolloner ]
