@@ -130,6 +130,10 @@ Do not install /boot/addons/ files (like dos, grub, memdisk,...).
 Remove specified bootoption (could be a regex) from existing boot options. Use
 multiple entries for removing different bootoptions at once.
 
+  *\--skip-bootflag*::
+
+Do not check for presence of bootflag on target device.
+
   *\--skip-grub-config*::
 
 Skip generation of grub configuration files. By default the configuration
