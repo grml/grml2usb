@@ -352,6 +352,7 @@ def check_boot_flag(device):
     boot_dev, x = get_device_from_partition(device)
 
     try:
+        import parted
         part = get_partition_for_path(device)
         if part.getFlag(parted.PARTITION_BOOT):
             logging.debug("bootflag is enabled on %s" % device)
