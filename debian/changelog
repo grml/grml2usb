@@ -1,3 +1,13 @@
+grml2usb (0.14.10) unstable; urgency=medium
+
+  [ Michael Prokop ]
+  * [3b84e56] Document --skip-bootflag cmdline option
+
+  [ Evgeni Golov ]
+  * [018de7b] Fix "global name 'parted' is not defined" error in grml2usb
+
+ -- Michael Prokop <mika@grml.org>  Mon, 13 Oct 2014 10:52:21 +0200
+
 grml2usb (0.14.9) unstable; urgency=medium
 
   * [2b2c97a] Use pyparted to check for bootflag
