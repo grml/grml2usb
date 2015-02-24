@@ -107,6 +107,8 @@ parser.add_option("--skip-addons", dest="skipaddons", action="store_true",
                   help="do not install /boot/addons/ files")
 parser.add_option("--skip-bootflag", dest="skipbootflag", action="store_true",
                   help="do not try to check whether the destination has the bootflag set")
+parser.add_option("--skip-usb-check", dest="skipusbcheck", action="store_true",
+                  help="skip check to verify whether given device is removable")
 parser.add_option("--skip-grub-config", dest="skipgrubconfig", action="store_true",
                   help="skip generation of grub configuration files")
 parser.add_option("--skip-mbr", dest="skipmbr", action="store_true",
@@ -1664,6 +1666,9 @@ def handle_vfat(device):
         except CriticalException as error:
             logging.critical("Execution failed: %s", error)
             sys.exit(1)
+
+    if options.skipusbcheck:
+        return
 
     if not os.path.isdir(device) and not check_for_usbdevice(device) and not options.force:
         print("Warning: the specified device %s does not look like a removable usb device." % device)
