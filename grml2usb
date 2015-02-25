@@ -493,7 +493,8 @@ def install_grub(device):
             for opt in ["", "--force"]:
                 logging.debug("grub-install --recheck %s --no-floppy --root-directory=%s %s",
                               opt, device_mountpoint, grub_device)
-                proc = subprocess.Popen([GRUB_INSTALL, "--recheck", opt, "--no-floppy",
+                proc = subprocess.Popen([GRUB_INSTALL, "--recheck", opt,
+                                         "--no-floppy", "--target=i386-pc",
                                          "--root-directory=%s" % device_mountpoint, grub_device],
                                         stdout=file(os.devnull, "r+"))
                 proc.wait()

@@ -22,7 +22,7 @@ Depends: mtools,
          python-parted,
          realpath,
          rsync,
-         syslinux | grub-pc,
+         syslinux | grub-pc | grub-efi-amd64,
          ${misc:Depends},
          ${shlibs:Depends}
 Recommends: syslinux,
