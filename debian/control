@@ -26,6 +26,7 @@ Depends: mtools,
          ${misc:Depends},
          ${shlibs:Depends}
 Recommends: syslinux,
+            syslinux-utils,
             xorriso | genisoimage
 Description: install Grml system / ISO to usb device
  This script installs a Grml ISO to an USB device to be able
