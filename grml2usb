@@ -107,14 +107,14 @@ parser.add_option("--skip-addons", dest="skipaddons", action="store_true",
                   help="do not install /boot/addons/ files")
 parser.add_option("--skip-bootflag", dest="skipbootflag", action="store_true",
                   help="do not try to check whether the destination has the bootflag set")
-parser.add_option("--skip-usb-check", dest="skipusbcheck", action="store_true",
-                  help="skip check to verify whether given device is removable")
 parser.add_option("--skip-grub-config", dest="skipgrubconfig", action="store_true",
                   help="skip generation of grub configuration files")
 parser.add_option("--skip-mbr", dest="skipmbr", action="store_true",
                   help="do not install a master boot record (MBR) on the device")
 parser.add_option("--skip-syslinux-config", dest="skipsyslinuxconfig", action="store_true",
                   help="skip generation of syslinux configuration files")
+parser.add_option("--skip-usb-check", dest="skipusbcheck", action="store_true",
+                  help="skip check to verify whether given device is removable")
 parser.add_option("--syslinux", dest="syslinux", action="callback", default=True,
                   callback=syslinux_warning,
                   help="install syslinux bootloader (deprecated as it's the default)")
