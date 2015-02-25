@@ -1668,6 +1668,7 @@ def handle_vfat(device):
             sys.exit(1)
 
     if options.skipusbcheck:
+        logging.info("Not checking for removable USB device as requested via option --skip-usb-check.")
         return
 
     if not os.path.isdir(device) and not check_for_usbdevice(device) and not options.force:
