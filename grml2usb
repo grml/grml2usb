@@ -1732,6 +1732,9 @@ def check_options(opts):
     if opts.grubmbr and not opts.grub:
         raise CriticalException("--grub-mbr requires --grub option.")
 
+    if opts.copyonly and opts.grub:
+        raise CriticalException("Cannot use --copy-only and --grub at the same time.")
+
 
 def check_programs():
     """check if all needed programs are installed"""
