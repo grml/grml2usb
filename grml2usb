@@ -645,6 +645,10 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
         raise Exception("error executing dd (third run)")
     del tmpf
 
+    # make sure we sync filesystems before returning
+    proc = subprocess.Popen(["sync"])
+    proc.wait()
+
 
 def is_writeable(device):
     """Check if the device is writeable for the current user
