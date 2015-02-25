@@ -1287,7 +1287,7 @@ def initial_syslinux_config(target):
 def add_entry_if_not_present(filename, entry):
     """Write entry into filename if entry is not already in the file
 
-    @filanme: name of the file
+    @filename: name of the file
     @entry: data to write to the file
     """
     data = open(filename, "a+")
