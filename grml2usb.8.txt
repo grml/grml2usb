@@ -150,6 +150,12 @@ Skip generation of syslinux configuration files. By default the configuration
 files for syslinux *and* grub will be written so you've a working configuration
 file no matter whether you're using grub or syslinux as bootloader.
 
+  *\--skip-usb-check*::
+
+Skip check to verify whether given device is a removable device.
+Some USB devices are known to report wrong information, when using
+such a device you can skip grml2usb's removable device check.
+
   *\--syslinux*::
 
 This option is deprecated and is being left only for backwards compatibility
