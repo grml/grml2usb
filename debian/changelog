@@ -1,3 +1,21 @@
+grml2usb (0.14.11) experimental; urgency=medium
+
+  [ Lukas Prokop ]
+  * [4a2ffdd] Introduce skip-usb-check
+  * [6868425] Disable usage of --copy-only and --grub at the same time
+
+  [ Michael Prokop ]
+  * [fa02a2b] Display information when using --skip-usb-check options
+  * [1fe44d6] Adjust sorting of cmdline options
+  * [7a6e10d] Sync filesystems before returning from MBR installation
+    (Closes: #779193)
+  * [371c60e] Add syslinux-utils to Recommends + adjust error message for
+    isohybrid
+  * [a3dde41] Support usage of grml2usb on EFI systems (Closes: #768906)
+  * [4a8972f] Document --skip-usb-check option
+
+ -- Michael Prokop <mika@grml.org>  Thu, 26 Feb 2015 14:34:59 +0100
+
 grml2usb (0.14.10) unstable; urgency=medium
 
   [ Michael Prokop ]
