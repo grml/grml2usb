@@ -20,7 +20,7 @@ Architecture: amd64 i386
 Depends: mtools,
          python,
          python-parted,
-         realpath,
+         coreutils (>= 8.23-1~) | realpath,
          rsync,
          syslinux | grub-pc | grub-efi-amd64,
          ${misc:Depends},
