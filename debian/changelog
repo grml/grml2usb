@@ -1,3 +1,15 @@
+grml2usb (0.14.12) unstable; urgency=medium
+
+  [ Lukas Prokop ]
+  * [a3065b8] Fix typo
+
+  [ Michael Prokop ]
+  * [6274d13] Realpath is provided by recent coreutils versions, adjust
+    Depends. Thanks to Ben Finney <ben+debian@benfinney.id.au> for
+    reporting (Closes: #780948)
+
+ -- Michael Prokop <mika@grml.org>  Sat, 06 Jun 2015 01:41:57 +0200
+
 grml2usb (0.14.11) experimental; urgency=medium
 
   [ Lukas Prokop ]
