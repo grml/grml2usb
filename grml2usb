@@ -134,6 +134,12 @@ if not os.path.isdir(GRML2USB_BASE):
     GRML2USB_BASE = os.path.dirname(os.path.realpath(__file__))
 
 
+class HodorException(Exception):
+    """Throw exception if the exact error is not known and not fatal.
+
+    @Exception: message"""
+
+
 class CriticalException(Exception):
     """Throw critical exception if the exact error is not known but fatal.
 
@@ -356,9 +362,13 @@ def check_boot_flag(device):
     try:
         import parted
         part = get_partition_for_path(device)
+        if part is None:
+            raise HodorException("parted could not find partition")
         if part.getFlag(parted.PARTITION_BOOT):
             logging.debug("bootflag is enabled on %s" % device)
             return
+    except HodorException, e:
+        logging.info("%s, falling back to old bootflag detection", e)
     except ImportError, e:
         logging.debug("could not import parted, falling back to old bootflag detection")
 
