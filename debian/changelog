@@ -1,3 +1,11 @@
+grml2usb (0.14.13) unstable; urgency=medium
+
+  [ Evgeni Golov ]
+  * [745f097] Catch parted returning None as the searched partition.
+    Thanks to to mika and Haudegen for debugging (Closes: #766964)
+
+ -- Michael Prokop <mika@grml.org>  Mon, 28 Sep 2015 18:18:14 +0200
+
 grml2usb (0.14.12) unstable; urgency=medium
 
   [ Lukas Prokop ]
