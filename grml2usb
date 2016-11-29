@@ -295,8 +295,7 @@ def get_defaults_file(iso_mount, flavour, name):
     """
     bootloader_dirs = ['/boot/isolinux/', '/boot/syslinux/']
     for directory in bootloader_dirs:
-        for name in name, \
-        "%s_%s" % (get_flavour_filename(flavour), name):
+        for name in name, "%s_%s" % (get_flavour_filename(flavour), name):
             if os.path.isfile(iso_mount + directory + name):
                 return (directory, name)
     return ('', '')
@@ -513,10 +512,10 @@ def install_grub(device):
 
             if proc.returncode != 0:
                 # raise Exception("error executing grub-install")
-                logging.critical("Fatal: error executing grub-install "
-                                 + "(please check the grml2usb FAQ or drop the --grub option)")
-                logging.critical("Note:  if using grub2 consider using "
-                                 + "the --grub-mbr option as grub considers PBR problematic.")
+                logging.critical("Fatal: error executing grub-install " +
+                                 "(please check the grml2usb FAQ or drop the --grub option)")
+                logging.critical("Note:  if using grub2 consider using " +
+                                 "the --grub-mbr option as grub considers PBR problematic.")
                 cleanup()
                 sys.exit(1)
         except CriticalException as error:
@@ -668,7 +667,6 @@ def is_writeable(device):
 
     if not device:
         return False
-        #raise Exception("no device for checking write permissions")
 
     if not os.path.exists(device):
         return False
@@ -688,8 +686,8 @@ def mount(source, target, mount_options):
 
     for x in file('/proc/mounts').readlines():
         if x.startswith(source):
-            raise CriticalException("Error executing mount: %s already mounted - " % source
-                                    + "please unmount before invoking grml2usb")
+            raise CriticalException("Error executing mount: %s already mounted - " % source +
+                                    "please unmount before invoking grml2usb")
 
     if os.path.isdir(source):
         logging.debug("Source %s is not a device, therefore not mounting.", source)
@@ -1117,9 +1115,9 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
         logging.warning("Warning: Grml releases older than 2011.12 support only one flavour in grub.")
 
     for expr in name, 'distri.cfg', \
-        defaults_file, 'grml.png', 'hd.cfg', 'isolinux.cfg', 'isolinux.bin', \
-        'isoprompt.cfg', 'options.cfg', \
-        'prompt.cfg', 'vesamenu.cfg', 'grml.png', '*.c32':
+      defaults_file, 'grml.png', 'hd.cfg', 'isolinux.cfg', 'isolinux.bin', \
+      'isoprompt.cfg', 'options.cfg', \
+      'prompt.cfg', 'vesamenu.cfg', 'grml.png', '*.c32':
         glob_and_copy(iso_mount + source_dir + expr, syslinux_target)
 
     for filename in glob.glob1(syslinux_target, "*.c32"):
@@ -1757,14 +1755,14 @@ def check_programs():
         global GRUB_INSTALL
         GRUB_INSTALL = which("grub-install") or which("grub2-install")
         if not GRUB_INSTALL:
-            logging.critical("Fatal: grub-install not available (please install the "
-                             + "grub package or drop the --grub option)")
+            logging.critical("Fatal: grub-install not available (please install the " +
+                             "grub package or drop the --grub option)")
             sys.exit(1)
 
     if options.syslinux:
         if not which("syslinux"):
-            logging.critical("Fatal: syslinux not available (please install the "
-                             + "syslinux package or use the --grub option)")
+            logging.critical("Fatal: syslinux not available (please install the " +
+                             "syslinux package or use the --grub option)")
             sys.exit(1)
 
     if not which("rsync"):
@@ -1861,5 +1859,5 @@ if __name__ == "__main__":
         logging.info("Received KeyboardInterrupt")
         cleanup()
 
-## END OF FILE #################################################################
+# END OF FILE ##################################################################
 # vim:foldmethod=indent expandtab ai ft=python tw=120 fileencoding=utf-8
