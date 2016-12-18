@@ -7,7 +7,7 @@ Uploaders: Michael Prokop <mika@debian.org>,
            Christian Hofstaedtler <zeha@debian.org>,
            Ulrich Dangel <mru@spamt.net>
 Build-Depends: asciidoc,
-               debhelper (>= 7),
+               debhelper (>= 10~),
                docbook-xsl,
                xsltproc
 Standards-Version: 3.9.8
