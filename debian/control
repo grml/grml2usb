@@ -13,7 +13,7 @@ Build-Depends: asciidoc,
 Standards-Version: 3.9.8
 Homepage: http://grml.org/grml2usb/
 Vcs-git: git://git.grml.org/grml2usb.git
-Vcs-Browser: http://git.grml.org/?p=grml2usb.git
+Vcs-Browser: https://git.grml.org/?p=grml2usb.git
 
 Package: grml2usb
 Architecture: amd64 i386
