@@ -1,3 +1,17 @@
+grml2usb (0.14.14) unstable; urgency=medium
+
+  [ Michael Prokop ]
+  * [97f73b0] Coding style fixes to make pep8 happy
+
+  [ Christian Hofstaedtler ]
+  * [0d13a49] Update my email address
+  * [019a392] Bump Standards-Version to 3.9.8 (no changes needed)
+  * [a6996e9] Bump debhelper compat level to 10
+  * [45e16e7] Use https URL in Vcs-Browser
+  * [b400d9c] Correct duplicate word in previous changelog entry
+
+ -- Michael Prokop <mika@grml.org>  Tue, 24 Jan 2017 21:47:41 +0100
+
 grml2usb (0.14.13) unstable; urgency=medium
 
   [ Evgeni Golov ]
