@@ -103,6 +103,8 @@ parser.add_option("--quiet", dest="quiet", action="store_true",
                   help="do not output anything but just errors on console")
 parser.add_option("--remove-bootoption", dest="removeoption", action="append",
                   help="regex for removing existing bootoptions")
+parser.add_option("--rw-blockdev", dest="rwblockdev", action="store_true",
+                  help="enforce read-write mode on involved block devices")
 parser.add_option("--skip-addons", dest="skipaddons", action="store_true",
                   help="do not install /boot/addons/ files")
 parser.add_option("--skip-bootflag", dest="skipbootflag", action="store_true",
@@ -250,6 +252,17 @@ def get_function_name(obj):
     if not (isroutine(obj) or isclass(obj)):
         obj = type(obj)
     return obj.__module__ + '.' + obj.__name__
+
+
+def set_rw(device):
+    if not options.rwblockdev:
+        return
+
+    logging.debug("executing: blockdev --setrw %s", device)
+    proc = subprocess.Popen(["blockdev", "--setrw", device])
+    proc.wait()
+    if proc.returncode != 0:
+        raise Exception("error executing blockdev on %s" % device)
 
 
 def execute(f, *exec_arguments):
@@ -498,6 +511,9 @@ def install_grub(device):
             else:
                 grub_device = device
 
+            set_rw(device)
+            set_rw(grub_device)
+
             logging.info("Installing grub as bootloader")
             for opt in ["", "--force"]:
                 logging.debug("grub-install --recheck %s --no-floppy --root-directory=%s %s",
@@ -536,6 +552,8 @@ def install_syslinux(device):
     if options.dryrun:
         logging.info("Would install syslinux as bootloader on %s", device)
         return 0
+
+    set_rw(device)
 
     # syslinux -d boot/isolinux /dev/sdb1
     logging.info("Installing syslinux as bootloader")
@@ -647,6 +665,8 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     tmpf.file.write(mbrcode)
     tmpf.file.close()
 
+    set_rw(device)
+
     logging.debug("executing: dd if='%s' of='%s' bs=512 count=1 conv=notrunc", tmpf.name, device)
     proc = subprocess.Popen(["dd", "if=%s" % tmpf.name, "of=%s" % device, "bs=512", "count=1",
                              "conv=notrunc"], stderr=file(os.devnull, "r+"))
@@ -658,6 +678,8 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     # make sure we sync filesystems before returning
     proc = subprocess.Popen(["sync"])
     proc.wait()
+
+    set_rw(device)
 
 
 def is_writeable(device):
@@ -692,6 +714,8 @@ def mount(source, target, mount_options):
     if os.path.isdir(source):
         logging.debug("Source %s is not a device, therefore not mounting.", source)
         return 0
+
+    set_rw(source)
 
     logging.debug("mount %s %s %s", mount_options, source, target)
     proc = subprocess.Popen(["mount"] + list(mount_options) + [source, target])
