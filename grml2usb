@@ -1840,8 +1840,7 @@ def main():
         if not os.path.isdir(device):
             if device[-1:].isdigit():
                 if int(device[-1:]) > 4 or device[-2:].isdigit():
-                    logging.critical("Fatal: installation on partition number >4 not supported. (BIOS won't support it.)")
-                    sys.exit(1)
+                    logging.warn("Warning: installing on partition number >4, booting *might* fail depending on your system.")
 
         # provide upgrade path
         handle_compat_warning(device)
