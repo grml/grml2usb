@@ -1,3 +1,12 @@
+grml2usb (0.15.1) experimental; urgency=medium
+
+  * [e4a7747] Don't fail hard if installing on partition number >4,
+    instead warn user [Closes: issue1353]
+  * [4630689] Option --rw-blockdev: ensure to set device to rw between
+    grub-install runs + don't set rw on source
+
+ -- Michael Prokop <mika@grml.org>  Wed, 24 May 2017 15:47:54 +0200
+
 grml2usb (0.15.0) experimental; urgency=medium
 
   The "¡Hola Alicante!" release
