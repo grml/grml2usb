@@ -1027,6 +1027,9 @@ def copy_addons(iso_mount, target):
     # ipxe.lkrn
     handle_addon_copy('ipxe.lkrn', addons, iso_mount)
 
+    # netboot.xyz
+    handle_addon_copy('netboot.xyz.lkrn', addons, iso_mount)
+
 
 def build_loopbackcfg(target):
     """Generate GRUB's loopback.cfg based on existing config files.
