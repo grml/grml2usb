@@ -1,3 +1,10 @@
+grml2usb (0.15.2) experimental; urgency=medium
+
+  * [2ce7572] Support netboot.xyz.lkrn addon. Thanks to Michael Schierl
+    for reporting the bug
+
+ -- Michael Prokop <mika@grml.org>  Fri, 26 May 2017 23:34:40 +0200
+
 grml2usb (0.15.1) experimental; urgency=medium
 
   * [e4a7747] Don't fail hard if installing on partition number >4,
