@@ -513,14 +513,15 @@ def install_grub(device):
             mount(device, device_mountpoint, "")
 
             logging.info("Installing grub as bootloader")
-            for opt in ["", "--force"]:
+            for opt in ["--", "--force"]:
                 set_rw(device)
                 set_rw(grub_device)
-                logging.debug("grub-install --recheck %s --no-floppy --root-directory=%s %s",
-                              opt, device_mountpoint, grub_device)
-                proc = subprocess.Popen([GRUB_INSTALL, "--recheck", opt,
+                logging.debug("%s --recheck --no-floppy --target=i386-pc --root-directory=%s %s %s",
+                              GRUB_INSTALL, device_mountpoint, opt, grub_device)
+                proc = subprocess.Popen([GRUB_INSTALL, "--recheck",
                                          "--no-floppy", "--target=i386-pc",
-                                         "--root-directory=%s" % device_mountpoint, grub_device],
+                                         "--root-directory=%s" % device_mountpoint,
+                                         opt, grub_device],
                                         stdout=file(os.devnull, "r+"))
                 proc.wait()
                 if proc.returncode == 0:
