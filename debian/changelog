@@ -1,3 +1,12 @@
+grml2usb (0.15.3) experimental; urgency=medium
+
+  * [9cbb231] Option --rw-blockdev: set r/w also in GRUB specific steps.
+    Thanks to Ralf Moll
+  * [6412ea2] Ensure that grub-install doesn't receive emtpy command line
+    argument
+
+ -- Michael Prokop <mika@grml.org>  Wed, 31 May 2017 11:28:43 +0200
+
 grml2usb (0.15.2) experimental; urgency=medium
 
   * [2ce7572] Support netboot.xyz.lkrn addon. Thanks to Michael Schierl
