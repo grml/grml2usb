@@ -502,14 +502,15 @@ def install_grub(device):
         device_mountpoint = tempfile.mkdtemp(prefix="grml2usb")
         register_tmpfile(device_mountpoint)
         try:
-            mount(device, device_mountpoint, "")
-
             # If using --grub-mbr then make sure we install grub in MBR instead of PBR
             if options.grubmbr:
                 logging.debug("Using option --grub-mbr ...")
                 grub_device, x = get_device_from_partition(device)
             else:
                 grub_device = device
+
+            set_rw(device)
+            mount(device, device_mountpoint, "")
 
             logging.info("Installing grub as bootloader")
             for opt in ["", "--force"]:
@@ -1593,6 +1594,8 @@ def install_grml(mountpoint, device):
             check_for_fat(device)
             if not options.skipbootflag:
                 check_boot_flag(device)
+
+            set_rw(device)
             mount(device, device_mountpoint, ['-o', 'utf8,iocharset=iso8859-1'])
         except CriticalException as error:
             mount(device, device_mountpoint, "")
