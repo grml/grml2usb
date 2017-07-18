@@ -42,7 +42,7 @@ GRML_FLAVOURS = set()  # which flavours are being installed?
 GRML_DEFAULT = None
 UUID = None
 SYSLINUX_LIBS = "/usr/lib/syslinux/"
-GPT_HEADER = "\x55\xaa\x45\x46\x49\x20\x50\x41\x52\x54"  # original GPT header
+GPT_HEADER = b"\x55\xaa\x45\x46\x49\x20\x50\x41\x52\x54"  # original GPT header
 GRUB_INSTALL = None
 
 RE_PARTITION = re.compile(r'([a-z/]*?)(\d+)$')
@@ -379,9 +379,9 @@ def check_boot_flag(device):
         if part.getFlag(parted.PARTITION_BOOT):
             logging.debug("bootflag is enabled on %s" % device)
             return
-    except HodorException, e:
+    except HodorException as e:
         logging.info("%s, falling back to old bootflag detection", e)
-    except ImportError, e:
+    except ImportError as e:
         logging.debug("could not import parted, falling back to old bootflag detection")
 
     with open(boot_dev, 'r') as image:
@@ -391,7 +391,7 @@ def check_boot_flag(device):
 
         if gpt_data == GPT_HEADER:
             logging.info("GPT detected, skipping bootflag check")
-        elif bootcode[6] == '\x80':
+        elif bootcode[6] == b"\x80":
             logging.debug("bootflag is enabled")
         else:
             logging.debug("bootflag is NOT enabled")
@@ -522,7 +522,7 @@ def install_grub(device):
                                          "--no-floppy", "--target=i386-pc",
                                          "--root-directory=%s" % device_mountpoint,
                                          opt, grub_device],
-                                        stdout=file(os.devnull, "r+"))
+                                        stdout=open(os.devnull, "r+"))
                 proc.wait()
                 if proc.returncode == 0:
                     break
@@ -631,7 +631,7 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
 
     logging.debug("executing: dd if='%s' of='%s' bs=512 count=1", device, tmpf.name)
     proc = subprocess.Popen(["dd", "if=%s" % device, "of=%s" % tmpf.name, "bs=512", "count=1"],
-                            stderr=file(os.devnull, "r+"))
+                            stderr=open(os.devnull, "r+"))
     proc.wait()
     if proc.returncode != 0:
         raise Exception("error executing dd (first run)")
@@ -639,7 +639,7 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     logging.debug("executing: dd if=%s of=%s bs=%s count=1 conv=notrunc", mbrtemplate,
                   tmpf.name, nmbrbytes)
     proc = subprocess.Popen(["dd", "if=%s" % mbrtemplate, "of=%s" % tmpf.name, "bs=%s" % nmbrbytes,
-                             "count=1", "conv=notrunc"], stderr=file(os.devnull, "r+"))
+                             "count=1", "conv=notrunc"], stderr=open(os.devnull, "r+"))
     proc.wait()
     if proc.returncode != 0:
         raise Exception("error executing dd (second run)")
@@ -650,16 +650,16 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
 
     if partition is not None:
         if ismirbsdmbr:
-            mbrcode = mbrcode[0:439] + chr(partition) + \
-                    mbrcode[440:510] + "\x55\xAA"
+            mbrcode = mbrcode[0:439] + chr(partition).encode('latin-1') + \
+                    mbrcode[440:510] + b"\x55\xAA"
         else:
-            actives = ["\x00", "\x00", "\x00", "\x00"]
-            actives[partition] = "\x80"
+            actives = [b"\x00", b"\x00", b"\x00", b"\x00"]
+            actives[partition] = b"\x80"
             mbrcode = mbrcode[0:446] + actives[0] + \
                     mbrcode[447:462] + actives[1] + \
                     mbrcode[463:478] + actives[2] + \
                     mbrcode[479:494] + actives[3] + \
-                    mbrcode[495:510] + "\x55\xAA"
+                    mbrcode[495:510] + b"\x55\xAA"
 
     tmpf.file.seek(0)
     tmpf.file.truncate()
@@ -670,7 +670,7 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
 
     logging.debug("executing: dd if='%s' of='%s' bs=512 count=1 conv=notrunc", tmpf.name, device)
     proc = subprocess.Popen(["dd", "if=%s" % tmpf.name, "of=%s" % device, "bs=512", "count=1",
-                             "conv=notrunc"], stderr=file(os.devnull, "r+"))
+                             "conv=notrunc"], stderr=open(os.devnull, "r+"))
     proc.wait()
     if proc.returncode != 0:
         raise Exception("error executing dd (third run)")
@@ -707,7 +707,7 @@ def mount(source, target, mount_options):
     # note: options.dryrun does not work here, as we have to
     # locate files and identify the grml flavour
 
-    for x in file('/proc/mounts').readlines():
+    for x in open('/proc/mounts', 'r').readlines():
         if x.startswith(source):
             raise CriticalException("Error executing mount: %s already mounted - " % source +
                                     "please unmount before invoking grml2usb")
