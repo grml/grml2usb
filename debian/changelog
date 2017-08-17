@@ -1,3 +1,10 @@
+grml2usb (0.15.4) unstable; urgency=medium
+
+  * [976735f] Bump Standards-Version to 4.0.1
+  * Upload to Debian unstable now that stretch is stable.
+
+ -- Michael Prokop <mika@grml.org>  Thu, 17 Aug 2017 14:50:03 +0200
+
 grml2usb (0.15.3) experimental; urgency=medium
 
   * [9cbb231] Option --rw-blockdev: set r/w also in GRUB specific steps.
