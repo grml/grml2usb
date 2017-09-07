@@ -1,3 +1,9 @@
+grml2usb (0.16.0) unstable; urgency=medium
+
+  * [70c9de3] Provide Secure Boot support
+
+ -- Michael Prokop <mika@grml.org>  Thu, 07 Sep 2017 09:40:59 +0200
+
 grml2usb (0.15.4) unstable; urgency=medium
 
   * [976735f] Bump Standards-Version to 4.0.1
