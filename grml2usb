@@ -1119,6 +1119,7 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
     if efi_img:
         mkdir(target + '/boot/')
         exec_rsync(efi_img, target + '/boot/efi.img')
+        handle_secure_boot(target, efi_img)
 
     for ffile in ['f%d' % number for number in range(1, 11)]:
         search_and_copy(ffile, iso_mount, syslinux_target + ffile)
@@ -1275,6 +1276,7 @@ def handle_grub_config(grml_flavour, device, target):
     logging.debug("Updating grub configuration")
 
     grub_target = target + '/boot/grub/'
+    secureboot_target = target + '/EFI/ubuntu/'
 
     bootid_re = re.compile("bootid=[\w_-]+")
     live_media_path_re = re.compile("live-media-path=[\w_/-]+")
@@ -1289,7 +1291,7 @@ def handle_grub_config(grml_flavour, device, target):
             remove_regexes.append(re.compile(regex))
 
     shortname = get_shortname(grml_flavour)
-    for filename in glob.glob(grub_target + '*.cfg'):
+    for filename in glob.glob(grub_target + '*.cfg') + glob.glob(secureboot_target + '*.cfg'):
         for line in fileinput.input(filename, inplace=1):
             line = line.rstrip("\r\n")
             if option_re.search(line):
@@ -1507,6 +1509,51 @@ def handle_syslinux_config(grml_flavour, target):
     add_entry_if_not_present("%s/defaults.cfg" % syslinux_target, entry)
 
     add_syslinux_entry("%s/additional.cfg" % syslinux_target, flavour_filename)
+
+
+def handle_secure_boot(target, efi_img):
+    """Provide secure boot support by extracting files from /boot/efi.img
+
+    @target: path where grml's main files should be copied to
+    @efi_img: path to the efi.img file that includes the files for secure boot
+    """
+
+    mkdir(target + '/efi/boot/')
+    efi_mountpoint = tempfile.mkdtemp(prefix="grml2usb", dir=os.path.abspath(options.tmpdir))
+    logging.debug("efi_mountpoint = %s" % efi_mountpoint)
+    register_tmpfile(efi_mountpoint)
+
+    try:
+        logging.debug("mount(%s, %s, ['-o', 'ro', '-t', 'vfat']" % (efi_img, efi_mountpoint))
+        mount(efi_img, efi_mountpoint, ['-o', 'ro', '-t', 'vfat'])
+    except CriticalException as error:
+        logging.critical("Fatal: %s", error)
+        sys.exit(1)
+
+    ubuntu_cfg = search_file('grub.cfg', efi_mountpoint + '/EFI/ubuntu')
+    logging.debug("ubuntu_cfg = %s" % ubuntu_cfg)
+    if not ubuntu_cfg:
+        logging.info("No /EFI/ubuntu/grub.cfg found inside EFI image, looks like Secure Boot support is missing.")
+    else:
+        mkdir(target + '/efi/ubuntu')
+        logging.debug("exec_rsync(%s, %s + '/efi/ubuntu/grub.cfg')" % (ubuntu_cfg, target))
+        exec_rsync(ubuntu_cfg, target + '/efi/ubuntu/grub.cfg')
+
+        logging.debug("exec_rsync(%s + '/EFI/BOOT/grubx64.efi', %s + '/efi/boot/grubx64.efi')'" % (efi_mountpoint, target))
+        exec_rsync(efi_mountpoint + '/EFI/BOOT/grubx64.efi', target + '/efi/boot/grubx64.efi')
+
+        # NOTE - we're overwriting /efi/boot/bootx64.efi from copy_bootloader_files here
+        logging.debug("exec_rsync(%s + '/EFI/BOOT/bootx64.efi', %s + '/efi/boot/bootx64.efi')'" % (efi_mountpoint, target))
+        exec_rsync(efi_mountpoint + '/EFI/BOOT/bootx64.efi', target + '/efi/boot/bootx64.efi')
+
+    try:
+        unmount(efi_mountpoint, "")
+        logging.debug('Unmounted %s' % efi_mountpoint)
+        os.rmdir(efi_mountpoint)
+        logging.debug('Removed directory %s' % efi_mountpoint)
+    except StandardError:
+        logging.critical('RuntimeError while umount %s' % efi_mountpoint)
+        sys.exit(1)
 
 
 def handle_bootloader_config(grml_flavour, device, target):
