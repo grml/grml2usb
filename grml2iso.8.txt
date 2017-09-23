@@ -97,8 +97,8 @@ Use /mnt/test/grml-tmp as working directory for creating the multiboot ISO
 Don't copy the addons from the specified ISO images
 
 
-Online Ressources
------------------
+Online Resources
+----------------
 
 Check out the link:http://grml.org/grml2usb/[grml2usb webpage] and the
 link:http://git.grml.org/?p=grml2usb.git[grml2usb git repository].

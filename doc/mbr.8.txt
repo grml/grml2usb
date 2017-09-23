@@ -93,7 +93,7 @@ Write new, clean MBR:
 USB modes
 ---------
 
-  * USB-HDD: usually the default and prefered booting mode.
+  * USB-HDD: usually the default and preferred booting mode.
   * USB-ZIP: ??? - can be set up via:
 
     # mkdiskimage -4    /dev/sdz 1  64 32 # device = 1GB

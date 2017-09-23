@@ -245,7 +245,7 @@ def unregister_mountpoint(target):
 
 
 def get_function_name(obj):
-    """Helper function for use in execute() to retrive name of a function
+    """Helper function for use in execute() to retrieve name of a function
 
     @obj: the function object
     """
@@ -1158,7 +1158,7 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
     # copy all grub files from ISO
     glob_and_copy(iso_mount + '/boot/grub/*', grub_target)
 
-    # finally (after all GRUB files have been been installed) build static loopback.cfg
+    # finally (after all GRUB files have been installed) build static loopback.cfg
     build_loopbackcfg(target)
 
 
@@ -1307,7 +1307,7 @@ def handle_grub_config(grml_flavour, device, target):
 
 
 def initial_syslinux_config(target):
-    """Generates intial syslinux configuration
+    """Generates initial syslinux configuration
 
     @target path of syslinux's configuration files"""
 
@@ -1813,7 +1813,7 @@ def handle_bootloader(device):
 
 
 def check_options(opts):
-    """Check compability of provided user opts
+    """Check compatibility of provided user opts
 
     @opts option dict from OptionParser
     """

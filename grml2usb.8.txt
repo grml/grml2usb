@@ -631,9 +631,9 @@ Install specified ISOs on device /dev/sdx and add parameter persistent-path
 to every menu entry. %flavour_name will be expanded to the flavour of the specific
 iso, e.g. grml64 and grml.
 
-[[ressources]]
-Online Ressources
------------------
+[[resources]]
+Online Resources
+----------------
 
 Check out the link:http://grml.org/grml2usb/[grml2usb webpage] and the
 link:http://git.grml.org/?p=grml2usb.git[grml2usb git repository].
