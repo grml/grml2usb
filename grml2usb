@@ -67,6 +67,7 @@ def grub_option(option, opt, value, opt_parser):
     setattr(opt_parser.values, option.dest, True)
     setattr(opt_parser.values, 'syslinux', False)
 
+
 # cmdline parsing
 USAGE = "Usage: %prog [options] <[ISO[s] | /lib/live/mount/medium]> </dev/sdX#>\n\
 \n\
