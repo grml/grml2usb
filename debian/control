@@ -11,7 +11,7 @@ Build-Depends: asciidoc,
                docbook-xsl,
                xsltproc
 Standards-Version: 4.2.1
-Homepage: http://grml.org/grml2usb/
+Homepage: https://grml.org/grml2usb/
 Vcs-git: git://git.grml.org/grml2usb.git
 Vcs-Browser: https://git.grml.org/?p=grml2usb.git
 
