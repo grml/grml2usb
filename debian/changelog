@@ -1,3 +1,15 @@
+grml2usb (0.16.2) unstable; urgency=medium
+
+  [ joeran ]
+  * [92d09d8] Python3: Some improvements to increase support
+
+  [ Michael Prokop ]
+  * [e4f812a] Make recent versions of pep8 happy
+  * [1e9487b] Bump Standards-Version to 4.2.1
+  * [d54dd34] Switch Homepage header from http to https
+
+ -- Michael Prokop <mika@grml.org>  Thu, 15 Nov 2018 10:01:30 +0100
+
 grml2usb (0.16.1) unstable; urgency=medium
 
   * [7ca80ac] Fix a bunch of typos
