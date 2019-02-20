@@ -1,3 +1,15 @@
+grml2usb (0.16.3) unstable; urgency=medium
+
+  * [1d43bf3] Bump Standards-Version to 4.3.0
+  * [daaf329] Depend on either syslinux or grub2-common + grub-pc-bin.
+    Thanks to Albert Dengg for bugreport and suggested solution + Axel
+    Beckert for assistance in getting a proper dependency resolution
+    (Closes: #796801)
+  * [ae4c051] No longer depend on coreutils or realpath. Thanks to Michael
+    Stone for the bug report (Closes: #877554)
+
+ -- Michael Prokop <mika@grml.org>  Wed, 20 Feb 2019 16:35:12 +0100
+
 grml2usb (0.16.2) unstable; urgency=medium
 
   [ joeran ]
