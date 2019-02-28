@@ -1,3 +1,13 @@
+grml2usb (0.16.4) unstable; urgency=medium
+
+  * [203ce99] Force usage with python2 (Closes: #921327)
+  * [c27e1e2] docs: update ISO filenames, referring to a more recent
+    stable version
+  * [a31bc9e] Update copyright year information
+  * [ba5ec1e] grml2iso: update ISO filename in usage example
+
+ -- Michael Prokop <mika@grml.org>  Thu, 28 Feb 2019 16:02:40 +0100
+
 grml2usb (0.16.3) unstable; urgency=medium
 
   * [1d43bf3] Bump Standards-Version to 4.3.0
