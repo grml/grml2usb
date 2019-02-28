@@ -291,14 +291,14 @@ or:
 Finally create a filesystem and execute grml2usb as needed:
 
   # mkfs.vfat /dev/loop1
-  # grml2usb --bootloader-only /grml/isos/grml-small_2013.01.iso /dev/loop1
+  # grml2usb --bootloader-only /grml/isos/grml64-small_2018.12.iso /dev/loop1
 
 [[performance-tracing]]
 Performance tracing
 ~~~~~~~~~~~~~~~~~~~
 
   # blktrace -d /dev/sdX -o - | blkparse -i -
-  # grml2usb grml_2013.01.iso /dev/sdX1
+  # grml2usb grml64-full_2018.12.iso /dev/sdX1
 
 [[troubleshooting]]
 Troubleshooting and Pitfalls when booting
@@ -399,14 +399,14 @@ Grab a recent Grml ISO and use
 link:http://syslinux.zytor.com/wiki/index.php/Doc/isolinux#HYBRID_CD-ROM.2FHARD_DISK_MODE[isohybrid
 from the syslinux project]:
 
-  % isohybrid grml_2009.10.iso
+  % isohybrid grml64-small_2018.12.iso
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 This allows you to dd the Grml ISO to your USB device (use for example
 link:http://www.chrysocome.net/rawwrite[rawwrite] if you've just a Windows
 system available) running:
 
-  % dd if=grml_2013.01.iso of=/dev/sdX
+  % dd if=grml64-full_2018.12.iso of=/dev/sdX
 
 where /dev/sdX is your USB device. Of course this doesn't provide such a
 flexible system like with grml2usb (no multi-ISO setup, no additional default
@@ -572,11 +572,11 @@ of your grml2usb commandline (consider using the "\--verbose" option).
 Usage examples
 --------------
 
-  # grml2usb /home/grml/grml_2013.01.iso /dev/sdX1
+  # grml2usb /home/grml/grml64-full_2018.12.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1.
 
-  # grml2usb /home/grml/grml_2013.01.iso /home/grml/grml_small_2013.01.iso /dev/sdX1
+  # grml2usb /home/grml/grml64-full_2018.12.iso /home/grml/grml32-full_2018.12.iso  /dev/sdX1
 
 Install specified ISOs on device /dev/sdX1 for multibooting ISOs.
 
@@ -584,17 +584,17 @@ Install specified ISOs on device /dev/sdX1 for multibooting ISOs.
 
 Install currently running Grml live system on device /dev/sdX1.
 
-  # grml2usb /lib/live/mount/medium /home/grml/grml_2013.01.iso /dev/sdX1
+  # grml2usb /lib/live/mount/medium /home/grml/grml64-full_2018.12.iso /dev/sdX1
 
 Install currently running Grml live system and the specified
 ISO on device /dev/sdX1 for multibooting.
 
-  # grml2usb --fat16 /home/grml/grml_2013.01.iso /dev/sdX1
+  # grml2usb --fat16 /home/grml/grml64-full_2018.12.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1 and format partition /dev/sdX1 with
 FAT16 filesystem.
 
-  # grml2usb --grub --grub-mbr /home/grml/grml_2013.01.iso /dev/sdX1
+  # grml2usb --grub --grub-mbr /home/grml/grml64-full_2018.12.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1 and use grub as bootloader (instead of
 syslinux being the default) and install a master boot record (MBR) to the MBR of
@@ -602,30 +602,30 @@ syslinux being the default) and install a master boot record (MBR) to the MBR of
 
 ///////////////////////////////////////////////////////////////////////////////////////
   # grml2usb --kernel=/boot/vmlinuz-2.6.28-grml --initrd=/boot/initrd.img-2.6.28-grml \
-             /home/grml/grml_2013.01.iso /dev/sdX1
+             /home/grml/grml64-full_2018.12.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1 but use given kernel and initrd
 instead of the ones provided by the ISO.
 
   # grml2usb --squashfs=/grml/grml-live/grml_cd/live/grml.squashfs \
-             /home/grml/grml_2013.01.iso /dev/sdX1
+             /home/grml/grml64-full_2018.12.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1 but use given squashfs
 file instead of the one provided by the ISO.
 ///////////////////////////////////////////////////////////////////////////////////////
 
-  # grml2usb --bootoptions="lang=de ssh=mysecret" grml_2013.01.iso /dev/sdX1
-  # grml2usb --bootoptions="lang=de" --bootoptions="ssh=mysecret" grml_2013.01.iso /dev/sdX1
+  # grml2usb --bootoptions="lang=de ssh=mysecret" grml64-full_2018.12.iso /dev/sdX1
+  # grml2usb --bootoptions="lang=de" --bootoptions="ssh=mysecret" grml64-full_2018.12.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1 and use "lang=de ssh=mysecret" as
 default bootoptions.
 
 
-  # grml2usb --remove-bootoption="vga=791" --remove-bootoption="nomce" grml_2013.01.iso /dev/sdX1
+  # grml2usb --remove-bootoption="vga=791" --remove-bootoption="nomce" grml64-full_2018.12.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1 remove vga=791 and nomce from existing bootoptions.
 
-  # grml2usb --bootoptions="persistent-path=%flavour_name" grml64_2010.04.iso grml_2010.04.iso /dev/sdX1
+  # grml2usb --bootoptions="persistent-path=%flavour_name" grml64-small_2018.12.iso grml32-small_2018.12.iso  /dev/sdX1
 
 Install specified ISOs on device /dev/sdx and add parameter persistent-path
 to every menu entry. %flavour_name will be expanded to the flavour of the specific
