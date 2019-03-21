@@ -30,4 +30,4 @@ Recommends: syslinux,
 Description: install Grml system / ISO to usb device
  This script installs a Grml ISO to an USB device to be able
  to boot from it.  Make sure you have at least one Grml ISO
- or a running Grml system (/lib/live/mount/medium) available.
+ or a running Grml system (/run/live/medium) available.

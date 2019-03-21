@@ -21,7 +21,7 @@ done
 # TODO:
 # * handling of --bootoptions=BOOTOPTIONS
 # * $devices should also list directories as valid target
-# * as output before :device:.... ISO files and/or /lib/live/mount/medium should be suggested
+# * as output before :device:.... ISO files and/or /run/live/medium should be suggested
 
 arguments=(
   '--help[display help message and exit]:'

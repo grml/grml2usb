@@ -37,7 +37,7 @@ Options
 -------
 
 ISO[s] should be the path to one or multiple grml-ISOs and/or the path to
-the currently running live-system (being /lib/live/mount/medium).
+the currently running live-system (being /run/live/medium).
 
 The device either might be a device name like /dev/sdX1 or a directory. When
 specifying a device name the device is mounted automatically. When specifying a
@@ -580,11 +580,11 @@ Install specified ISO on device /dev/sdX1.
 
 Install specified ISOs on device /dev/sdX1 for multibooting ISOs.
 
-  # grml2usb /lib/live/mount/medium /dev/sdX1
+  # grml2usb /run/live/medium /dev/sdX1
 
 Install currently running Grml live system on device /dev/sdX1.
 
-  # grml2usb /lib/live/mount/medium /home/grml/grml64-full_2018.12.iso /dev/sdX1
+  # grml2usb /run/live/medium /home/grml/grml64-full_2018.12.iso /dev/sdX1
 
 Install currently running Grml live system and the specified
 ISO on device /dev/sdX1 for multibooting.
