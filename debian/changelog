@@ -1,3 +1,10 @@
+grml2usb (0.16.5) unstable; urgency=medium
+
+  * [95b0773] Switch default mount point from /lib/live/mount/medium to
+    /run/live/medium
+
+ -- Michael Prokop <mika@grml.org>  Thu, 21 Mar 2019 12:23:59 +0100
+
 grml2usb (0.16.4) unstable; urgency=medium
 
   * [203ce99] Force usage with python2 (Closes: #921327)
