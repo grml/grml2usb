@@ -1,3 +1,11 @@
+grml2usb (0.16.6) unstable; urgency=medium
+
+  * [ef2f28e] Avoid custom boot options getting duplicated when used with
+    multiple ISOs. Thanks to Ralf Moll for the bug report and Lukas Prokop
+    for providing the bug fix
+
+ -- Michael Prokop <mika@grml.org>  Thu, 11 Jul 2019 17:26:16 +0200
+
 grml2usb (0.16.5) unstable; urgency=medium
 
   * [95b0773] Switch default mount point from /lib/live/mount/medium to
