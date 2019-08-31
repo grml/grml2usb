@@ -1932,6 +1932,8 @@ def main():
 
     except Exception as error:
         logging.critical("Fatal: %s", str(error))
+        if options.verbose:
+            logging.exception("Exception:")
         sys.exit(1)
 
 
