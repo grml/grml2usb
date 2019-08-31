@@ -1,0 +1,36 @@
+#!/bin/bash
+exec 2>&1
+set -ex
+
+TMPDIR=$(mktemp -d)
+LODEV=$(losetup -f)
+cleanup() {
+  kpartx -d "$LODEV" || true
+  losetup -d "$LODEV" || true
+  rm -rf "$TMPDIR"
+}
+trap cleanup EXIT
+
+mkdir "$TMPDIR"/isoroot "$TMPDIR"/isoroot/boot "$TMPDIR"/isoroot/boot/isolinux
+cp /usr/lib/ISOLINUX/isolinux.bin "$TMPDIR"/isoroot/boot/isolinux/
+echo 'FAKE' > "$TMPDIR"/isoroot/grml-version
+echo 'LOGO' > "$TMPDIR"/isoroot/boot/logo.16
+touch "$TMPDIR"/isoroot/boot/isolinux/FAKE_default.cfg
+touch "$TMPDIR"/isoroot/boot/isolinux/FAKE_grml.cfg
+touch "$TMPDIR"/isoroot/boot/isolinux/hidden.cfg
+xorriso -as mkisofs -l -r -J -no-pad -no-emul-boot -boot-load-size 4 -boot-info-table -b boot/isolinux/isolinux.bin -c boot/isolinux/boot.cat -o "$TMPDIR"/fake.iso "$TMPDIR"/isoroot
+xorriso -dev "$TMPDIR"/fake.iso -ls
+
+dd if=/dev/zero of="$TMPDIR"/blockdev bs=1M count=50
+
+sfdisk "$TMPDIR"/blockdev <<EOT
+label: dos
+label-id: 0x00000000
+unit: sectors
+
+p1 : start=        2048, size=      100352, type=6, bootable
+EOT
+
+losetup -P "$LODEV" "$TMPDIR"/blockdev
+
+python3 $(which grml2usb) --bootloader-only --verbose --skip-usb-check --force --fat16 "$TMPDIR"/fake.iso "$LODEV"p1

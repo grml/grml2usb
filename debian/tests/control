@@ -8,3 +8,14 @@ Depends: dosfstools,
          xorriso,
          @
 Restrictions: needs-root, isolation-machine, breaks-testbed
+
+Tests: smoke-grml2usb-py3
+Depends: dosfstools,
+         kpartx,
+         isolinux,
+         python2,
+         syslinux,
+         syslinux-common,
+         xorriso,
+         @
+Restrictions: needs-root, isolation-machine, breaks-testbed
