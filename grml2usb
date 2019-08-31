@@ -315,7 +315,7 @@ def get_defaults_file(iso_mount, flavour, name):
     return ('', '')
 
 
-def search_file(filename, search_path='/bin' + os.pathsep + '/usr/bin', lst_return=False):
+def search_file(filename, search_path='/bin' + os.pathsep + '/usr/bin', lst_return=False, required=False):
     """Given a search path, find file
 
     @filename: name of file to search for
@@ -344,6 +344,10 @@ def search_file(filename, search_path='/bin' + os.pathsep + '/usr/bin', lst_retu
                 retval.append(os.path.abspath(os.path.join(current_dir, filename)))
                 if not lst_return:
                     break
+
+    if required and not retval:
+        raise CriticalException("Required file %s not found in %s" % (filename, search_path))
+
     if lst_return:
         return retval
     elif retval:
@@ -1108,7 +1112,7 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
     grub_target = target + '/boot/grub/'
     execute(mkdir, grub_target)
 
-    logo = search_file('logo.16', iso_mount)
+    logo = search_file('logo.16', iso_mount, required=True)
     exec_rsync(logo, syslinux_target + 'logo.16')
 
     bootx64_efi = search_file('bootx64.efi', iso_mount)
