@@ -17,7 +17,8 @@ Vcs-Browser: https://git.grml.org/?p=grml2usb.git
 
 Package: grml2usb
 Architecture: amd64 i386
-Depends: mtools,
+Depends: kmod,
+         mtools,
          python,
          python-parted,
          rsync,
