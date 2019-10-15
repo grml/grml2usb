@@ -1855,14 +1855,14 @@ def check_programs():
 
 
 def load_loop():
-    """Runs modprobe loop and throws away it's output"""
+    """Runs modprobe loop and throws away its output"""
     if not which("modprobe"):
         logging.critical("Fatal: modprobe not available, can not continue - sorry.")
         logging.critical("Hint: is /sbin missing in PATH?")
         sys.exit(1)
 
     proc = subprocess.Popen(["modprobe", "loop"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    proc.wait()
+    proc.communicate()
 
 
 def main():
