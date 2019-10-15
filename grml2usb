@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # pylint: disable-msg=C0302
 """
@@ -13,7 +13,7 @@ This script installs a Grml system (either a running system or ISO[s]) to a USB 
 
 """
 
-from __future__ import print_function
+
 from optparse import OptionParser
 from inspect import isroutine, isclass
 import datetime
@@ -187,7 +187,7 @@ def cleanup():
         try:
             unmount(device, "")
             logging.debug('Unmounted %s' % device)
-        except StandardError:
+        except Exception:
             logging.debug('RuntimeError while umount %s, ignoring' % device)
 
     for tmppath in TMPFILES.copy():
@@ -202,7 +202,7 @@ def cleanup():
                 os.unlink(tmppath)
                 logging.debug('temporary file %s deleted' % tmppath)
                 unregister_tmpfile(tmppath)
-        except StandardError:
+        except Exception:
             msg = 'RuntimeError while removing temporary %s, ignoring'
             logging.debug(msg % tmppath)
 
@@ -944,7 +944,7 @@ def update_grml_versions(iso_mount, target):
             # update the existing flavours on the target
             for line in fileinput.input([target_grml_version_file], inplace=1):
                 flavour = get_flavour(line)
-                if flavour in iso_versions.keys():
+                if flavour in list(iso_versions.keys()):
                     print(iso_versions.pop(flavour))
                 else:
                     print(line.strip())
@@ -1560,7 +1560,7 @@ def handle_secure_boot(target, efi_img):
         logging.debug('Unmounted %s' % efi_mountpoint)
         os.rmdir(efi_mountpoint)
         logging.debug('Removed directory %s' % efi_mountpoint)
-    except StandardError:
+    except Exception:
         logging.critical('RuntimeError while umount %s' % efi_mountpoint)
         sys.exit(1)
 
@@ -1605,7 +1605,7 @@ def install(image, device):
         if options.force or os.path.exists(os.path.join(image, 'live')):
             logging.info("Using %s as install base", image)
         else:
-            q = raw_input("%s does not look like a Grml system. "
+            q = input("%s does not look like a Grml system. "
                 "Do you really want to use this image? y/N " % image)
             if q.lower() == 'y':
                 logging.info("Using %s as install base", image)
@@ -1745,7 +1745,7 @@ def handle_vfat(device):
             print("Forcing mkfs.fat16 on %s as requested via option --force." % device)
         else:
             # make sure the user is aware of what he is doing
-            f = raw_input("Are you sure you want to format the specified partition with fat16? y/N ")
+            f = input("Are you sure you want to format the specified partition with fat16? y/N ")
             if f == "y" or f == "Y":
                 logging.info("Note: you can skip this question using the option --force")
             else:
@@ -1770,7 +1770,7 @@ def handle_vfat(device):
 
     if not os.path.isdir(device) and not check_for_usbdevice(device) and not options.force:
         print("Warning: the specified device %s does not look like a removable usb device." % device)
-        f = raw_input("Do you really want to continue? y/N ")
+        f = input("Do you really want to continue? y/N ")
         if f.lower() != "y":
             sys.exit(1)
 
@@ -1786,7 +1786,7 @@ def handle_compat_warning(device):
         print("Instead of using grml2usb /path/to/iso %s you might" % device)
         print("want to use grml2usb /path/to/iso /dev/... instead.")
         print("Please check out the grml2usb manpage for details.")
-        f = raw_input("Do you really want to continue? y/N ")
+        f = input("Do you really want to continue? y/N ")
         if f.lower() != "y":
             sys.exit(1)
 
