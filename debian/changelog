@@ -1,3 +1,20 @@
+grml2usb (0.16.7) unstable; urgency=medium
+
+  [ Chris Hofstaedtler ]
+  * [d3008fb] grml2usb: abort if required logo.16 file is missing
+  * [6c16c88] grml2usb: print backtrace when --verbose is given
+  * [3fd61a4] grml2usb: Add smoke autopkgtest for python2
+  * [b2b68f0] grml2usb: add python3 test variant
+
+  [ Michael Prokop ]
+  * [66679fa] Port to py3k (Closes: #936663)
+  * [29d54d4] Avoid subprocess.Popen with stdout/stderr=PIPE and wait()
+    usage
+  * [aaf46a1] Bump Standards-Version to 4.4.1
+  * [0721603] Drop debian/compat and switch to debhelper-compat instead
+
+ -- Michael Prokop <mika@grml.org>  Tue, 22 Oct 2019 15:18:23 +0200
+
 grml2usb (0.16.6) unstable; urgency=medium
 
   * [ef2f28e] Avoid custom boot options getting duplicated when used with
