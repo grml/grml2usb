@@ -999,22 +999,6 @@ def copy_grml_files(grml_flavour, iso_mount, target):
         logging.warn("Warning: could not find flavour directory for %s ", grml_flavour)
 
 
-def handle_addon_copy(filename, dst, iso_mount, ignore_errors=False):
-    """handle copy of optional addons
-
-    @filename: filename of the addon
-    @dst: destination directory
-    @iso_mount: location of the iso mount
-    @ignore_errors: don't report missing files
-    """
-    file_location = search_file(filename, iso_mount)
-    if file_location is None:
-        if not ignore_errors:
-            logging.warn("Warning: %s not found (that's fine if you don't need it)", filename)
-    else:
-        exec_rsync(file_location, dst)
-
-
 def copy_addons(iso_mount, target):
     """copy grml's addons files (like allinoneimg, bsd4grml,..) to a given target
 
@@ -1024,33 +1008,11 @@ def copy_addons(iso_mount, target):
     addons = target + '/boot/addons/'
     execute(mkdir, addons)
 
-    # grub all-in-one image
-    handle_addon_copy('allinone.img', addons, iso_mount)
-
-    # bsd image
-    handle_addon_copy('bsd4grml', addons, iso_mount)
-
-    # DOS image
-    handle_addon_copy('balder10.imz', addons, iso_mount)
-
-    # syslinux + pci.ids for hdt
-    for expr in '*.c32', 'pci.ids':
-        glob_and_copy(iso_mount + '/boot/addons/' + expr, addons)
-
-    # memdisk image
-    handle_addon_copy('memdisk', addons, iso_mount)
-
-    # memtest86+ image
-    handle_addon_copy('memtest', addons, iso_mount)
-
-    # gpxe.lkrn: got replaced by ipxe
-    handle_addon_copy('gpxe.lkrn', addons, iso_mount, ignore_errors=True)
-
-    # ipxe.lkrn
-    handle_addon_copy('ipxe.lkrn', addons, iso_mount)
-
-    # netboot.xyz
-    handle_addon_copy('netboot.xyz.lkrn', addons, iso_mount)
+    for addon_file in glob.glob(iso_mount + '/boot/addons/*'):
+        filename = os.path.basename(addon_file)
+        src_file = iso_mount + "/boot/addons/" + os.path.basename(addon_file)
+        logging.debug("Copying addon file %s" % filename)
+        exec_rsync(src_file, addons)
 
 
 def build_loopbackcfg(target):
