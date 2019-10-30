@@ -32,7 +32,22 @@ import uuid
 import shutil
 
 # The line following this line is patched by debian/rules and tarball.sh.
-PROG_VERSION = '***UNRELEASED***'
+PROG_VERSION = '***UNKNOWN***'
+
+# when running from inside git, try to report version information via git-describe
+try:
+    git_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
+    with open(os.devnull, 'w') as devnull:
+        PROG_VERSION = subprocess.check_output(["git",
+                                                "-C",
+                                                git_dir,
+                                                "describe",
+                                                "--always",
+                                                "--dirty"],
+                                                stderr=devnull).strip().decode('utf-8', errors='replace') + \
+                                                " (git)"
+except Exception:
+    pass
 
 # global variables
 MOUNTED = set()   # register mountpoints
