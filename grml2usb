@@ -389,7 +389,7 @@ def check_boot_flag(device):
     except ImportError as e:
         logging.debug("could not import parted, falling back to old bootflag detection")
 
-    with open(boot_dev, 'r') as image:
+    with open(boot_dev, 'rb') as image:
         data = image.read(520)
         bootcode = data[440:]
         gpt_data = bootcode[70:80]
