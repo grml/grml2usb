@@ -389,7 +389,7 @@ def check_boot_flag(device):
     except ImportError as e:
         logging.debug("could not import parted, falling back to old bootflag detection")
 
-    with open(boot_dev, 'r') as image:
+    with open(boot_dev, 'rb') as image:
         data = image.read(520)
         bootcode = data[440:]
         gpt_data = bootcode[70:80]
@@ -790,7 +790,7 @@ def check_for_fat(partition):
 
     try:
         udev_info = subprocess.Popen(["/sbin/blkid", "-s", "TYPE", "-o", "value", partition],
-                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         filesystem = udev_info.communicate()[0].rstrip()
 
         if filesystem != "vfat":
