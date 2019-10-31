@@ -41,7 +41,7 @@ DATESTAMP = time.mktime(datetime.datetime.now().timetuple())  # unique identifie
 GRML_FLAVOURS = set()  # which flavours are being installed?
 GRML_DEFAULT = None
 UUID = None
-SYSLINUX_LIBS = "/usr/lib/syslinux/"
+SYSLINUX_LIBS = "/usr/lib/syslinux/modules/bios/"
 GPT_HEADER = b"\x55\xaa\x45\x46\x49\x20\x50\x41\x52\x54"  # original GPT header
 GRUB_INSTALL = None
 
