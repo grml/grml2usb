@@ -1,3 +1,22 @@
+grml2usb (0.17.0) unstable; urgency=medium
+
+  [ Sven Joachim ]
+  * [5b2ffe4] check_for_fat: Avoid comparing strings and bytes (Closes: #943838)
+  * [c2e742a] check_boot_flag(): Open device in binary mode
+  * [fd89485] Fix path to syslinux *.c32 files (Closes: #943845)
+
+
+  [ Michael Prokop ]
+  * [4d800e5] Provide git-describe based version information when running
+    from within git. Thanks to Florian Apolloner for review and feedback
+  * [9586781] No longer explicitly list addon files, instead copy all
+    files from /boot/addons/
+  * [ea3de89] check_for_fat(): use subprocess.check_output to avoid
+    dependency on Python 3.7. Thanks to Florian Apolloner for review and
+    feedback
+
+ -- Michael Prokop <mika@grml.org>  Thu, 31 Oct 2019 12:00:01 +0100
+
 grml2usb (0.16.7) unstable; urgency=medium
 
   [ Chris Hofstaedtler ]
