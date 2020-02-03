@@ -56,7 +56,10 @@ DATESTAMP = time.mktime(datetime.datetime.now().timetuple())  # unique identifie
 GRML_FLAVOURS = set()  # which flavours are being installed?
 GRML_DEFAULT = None
 UUID = None
-SYSLINUX_LIBS = "/usr/lib/syslinux/modules/bios/"
+SYSLINUX_LIBS = [
+    "/usr/lib/syslinux/modules/bios/", # Debian
+    "/usr/lib/syslinux/bios/", # Arch Linux
+]
 GPT_HEADER = b"\x55\xaa\x45\x46\x49\x20\x50\x41\x52\x54"  # original GPT header
 GRUB_INSTALL = None
 
@@ -138,6 +141,8 @@ parser.add_option("--syslinux", dest="syslinux", action="callback", default=True
                   help="install syslinux bootloader (deprecated as it's the default)")
 parser.add_option("--syslinux-mbr", dest="syslinuxmbr", action="store_true",
                   help="install syslinux master boot record (MBR) instead of default")
+parser.add_option("--syslinux-libs", dest="syslinuxlibs", action="append", default=[],
+                  help="syslinux modules directory path")
 parser.add_option("--tmpdir", dest="tmpdir", default="/tmp",
                   help="directory to be used for temporary files")
 parser.add_option("--verbose", dest="verbose", action="store_true",
@@ -1127,8 +1132,11 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
       'prompt.cfg', 'vesamenu.cfg', 'grml.png', '*.c32':
         glob_and_copy(iso_mount + source_dir + expr, syslinux_target)
 
-    for filename in glob.glob1(syslinux_target, "*.c32"):
-        copy_if_exist(os.path.join(SYSLINUX_LIBS, filename), syslinux_target)
+    for modules_dir in options.syslinuxlibs + SYSLINUX_LIBS:
+        if os.path.isdir(modules_dir):
+            for filename in glob.glob1(syslinux_target, "*.c32"):
+                copy_if_exist(os.path.join(modules_dir, filename), syslinux_target)
+            break
 
     # copy the addons_*.cfg file to the new syslinux directory
     glob_and_copy(iso_mount + source_dir + 'addon*.cfg', syslinux_target)
