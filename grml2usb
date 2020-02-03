@@ -1688,7 +1688,7 @@ def handle_mbr(device):
                 mbrcode = mbrpath
                 break
 
-        if mbrcode is "":
+        if not mbrcode:
             str_locations = " or ".join(['"%s"' % l for l in mbr_locations])
             logging.error('Cannot find syslinux MBR, install it at %s)',
                           str_locations)
