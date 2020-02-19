@@ -1323,7 +1323,8 @@ def add_entry_if_not_present(filename, entry):
     @filename: name of the file
     @entry: data to write to the file
     """
-    data = open(filename, "r+")
+    data = open(filename, "a+")
+    data.seek(0)
     for line in data:
         if line == entry:
             break
