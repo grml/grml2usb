@@ -116,7 +116,7 @@ rm grml2usb-$VERSION/grml2iso.8.txt
 
 # binaries, grub
 cp grml2usb grml2iso mbr/mbrldr mbr/mbrmgr grub/* grml2usb-$VERSION/
-sed -i -e "s/PROG_VERSION='\*\*\*UNKNOWN\*\*\*'/PROG_VERSION='${VERSION}'/" grml2usb-$VERSION/grml2usb
+sed -i -e "s/PROG_VERSION = '\*\*\*UNKNOWN\*\*\*'/PROG_VERSION = '${VERSION}'/" grml2usb-$VERSION/grml2usb
 
 tar zcf grml2usb.tgz "${DIR}"
 
