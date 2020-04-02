@@ -1,0 +1,5 @@
+grml2iso usr/sbin/
+grml2usb usr/sbin/
+grub/ usr/share/grml2usb/
+mbr/mbrldr usr/share/grml2usb/mbr/
+mbr/mbrmgr usr/share/grml2usb/mbr/

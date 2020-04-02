@@ -1,71 +1,24 @@
 #!/usr/bin/make -f
-# -*- makefile -*-
-# Sample debian/rules that uses debhelper.
-# This file was originally written by Joey Hess and Craig Small.
-# As a special exception, when this file is copied by dh-make into a
-# dh-make output file, you may use that output file without restriction.
-# This special exception was added by Craig Small in version 0.37 of dh-make.
 
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
 VERSION:=$(shell dpkg-parsechangelog | awk '/Version: / { print $$2 }')
 
-build: build-arch build-indep
-build-arch: build-stamp
-build-indep: build-stamp
+%:
+	dh $@
 
-build-stamp:
+override_dh_auto_build:
 	dh_testdir
-
-	egrep -q "^PROG_VERSION = '\*\*\*UNKNOWN\*\*\*'" grml2usb || (echo "PROG_VERSION in grml2usb wrong." && exit 2)
+	egrep -q '^PROG_VERSION = "\*\*\*UNKNOWN\*\*\*"' grml2usb || (echo "PROG_VERSION in grml2usb wrong." && exit 2)
+	$(MAKE) -C mbr
 	$(MAKE)
-	cd mbr && $(MAKE) && cd ..
-	touch build-stamp
 
-clean:
-	dh_testdir
-	dh_testroot
-	rm -f build-stamp
-
-	# Add here commands to clean up after the build process.
-	$(MAKE) clean
-	cd mbr && $(MAKE) clean && cd ..
-	dh_clean
-
-install: build
-	dh_testdir
-	dh_testroot
-	dh_prep
-	dh_installdirs usr/share/grml2usb/grub usr/share/grml2usb/mbr
-
-	# Add here commands to install the package into debian/grml2usb.
-	install -m 755 grml2usb               debian/grml2usb/usr/sbin/grml2usb
-	sed -i -e "s/^PROG_VERSION = '\*\*\*UNKNOWN\*\*\*'/PROG_VERSION = '$(VERSION)'/" debian/grml2usb/usr/sbin/grml2usb
-	install -m 755 grml2iso               debian/grml2usb/usr/sbin/grml2iso
-	install -m 644 mbr/mbrmgr             debian/grml2usb/usr/share/grml2usb/mbr/mbrmgr
-	install -m 644 mbr/mbrldr             debian/grml2usb/usr/share/grml2usb/mbr/mbrldr
-	cp -a          grub/                  debian/grml2usb/usr/share/grml2usb/
-
-# Build architecture-dependent files here.
-binary-arch: build-arch install
-	dh_testdir
-	dh_testroot
-	dh_installchangelogs
-	dh_installdocs TODO
-	dh_installman grml2usb.8 grml2iso.8
-	dh_strip
-	dh_compress
+override_dh_fixperms:
+	chmod 664 ./debian/grml2usb/usr/share/grml2usb/mbr/mbrldr
+	chmod 664 ./debian/grml2usb/usr/share/grml2usb/mbr/mbrmgr
 	dh_fixperms
-	dh_installdeb
-	dh_shlibdeps
-	dh_gencontrol
-	dh_md5sums
-	dh_builddeb
 
-# Build architecture-independent files here.
-binary-indep: build-indep install
-# Nothing to do.
-
-binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install
+override_dh_install:
+	dh_install
+	sed -i -e "s/^PROG_VERSION = \"\*\*\*UNKNOWN\*\*\*\"/PROG_VERSION = \"$(VERSION)\"/" ./debian/grml2usb/usr/sbin/grml2usb
