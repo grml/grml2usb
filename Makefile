@@ -1,4 +1,4 @@
-all: doc
+all: codecheck doc
 
 doc: doc_man doc_html
 
@@ -50,11 +50,9 @@ clean:
 	rm -rf html-stamp man-stamp grml2usb.tar.gz grml2usb.tgz grml2usb.tgz.md5.asc
 
 codecheck:
-	pyflakes grml2usb
-	pylint --include-ids=y --max-line-length=120 grml2usb
-	# pylint --include-ids=y --disable-msg-cat=C0301 --disable-msg-cat=W0511 grml2usb
-	# pylint --reports=n --include-ids=y --disable-msg-cat=C0301 grml2usb
-	pep8 --repeat --ignore E125,E126,E127,E128,E501 grml2usb
+	flake8 grml2usb
+	isort --check-only grml2usb
+	black --check grml2usb
 
 # graph:
 #	sudo pycallgraph grml2usb /grml/isos/grml-small_2008.11.iso /dev/sdb1
