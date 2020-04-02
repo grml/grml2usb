@@ -57,8 +57,8 @@ GRML_FLAVOURS = set()  # which flavours are being installed?
 GRML_DEFAULT = None
 UUID = None
 SYSLINUX_LIBS = [
-    "/usr/lib/syslinux/modules/bios/", # Debian
-    "/usr/lib/syslinux/bios/", # Arch Linux
+    "/usr/lib/syslinux/modules/bios/",  # Debian
+    "/usr/lib/syslinux/bios/",  # Arch Linux
 ]
 GPT_HEADER = b"\x55\xaa\x45\x46\x49\x20\x50\x41\x52\x54"  # original GPT header
 GRUB_INSTALL = None
@@ -406,7 +406,7 @@ def check_boot_flag(device):
             return
     except HodorException as e:
         logging.info("%s, falling back to old bootflag detection", e)
-    except ImportError as e:
+    except ImportError:
         logging.debug("could not import parted, falling back to old bootflag detection")
 
     with open(boot_dev, 'rb') as image:
@@ -554,9 +554,9 @@ def install_grub(device):
 
             if proc.returncode != 0:
                 # raise Exception("error executing grub-install")
-                logging.critical("Fatal: error executing grub-install " +
+                logging.critical("Fatal: error executing grub-install "
                                  "(please check the grml2usb FAQ or drop the --grub option)")
-                logging.critical("Note:  if using grub2 consider using " +
+                logging.critical("Note:  if using grub2 consider using "
                                  "the --grub-mbr option as grub considers PBR problematic.")
                 cleanup()
                 sys.exit(1)
@@ -734,8 +734,8 @@ def mount(source, target, mount_options):
 
     for x in open('/proc/mounts', 'r').readlines():
         if x.startswith(source):
-            raise CriticalException("Error executing mount: %s already mounted - " % source +
-                                    "please unmount before invoking grml2usb")
+            raise CriticalException(("Error executing mount: %s already mounted - "
+                                    "please unmount before invoking grml2usb").format(source))
 
     if os.path.isdir(source):
         logging.debug("Source %s is not a device, therefore not mounting.", source)
@@ -1266,8 +1266,8 @@ def handle_grub_config(grml_flavour, device, target):
     grub_target = target + '/boot/grub/'
     secureboot_target = target + '/EFI/ubuntu/'
 
-    bootid_re = re.compile("bootid=[\w_-]+")
-    live_media_path_re = re.compile("live-media-path=[\w_/-]+")
+    bootid_re = re.compile(r'bootid=[\w_-]+')
+    live_media_path_re = re.compile(r'live-media-path=[\w_/-]+')
 
     bootopt = get_bootoptions(grml_flavour)
 
@@ -1350,11 +1350,11 @@ def adjust_syslinux_bootoptions(src, flavour):
     @flavour: grml flavour
     """
 
-    append_re = re.compile("^(\s*append.*/boot/.*)$", re.I)
+    append_re = re.compile(r'^(\s*append.*/boot/.*)$', re.I)
     # flavour_re = re.compile("(label.*)(grml\w+)")
-    default_re = re.compile("(default.cfg)")
-    bootid_re = re.compile("bootid=[\w_-]+")
-    live_media_path_re = re.compile("live-media-path=[\w_/-]+")
+    default_re = re.compile(r'(default.cfg)')
+    bootid_re = re.compile(r'bootid=[\w_-]+')
+    live_media_path_re = re.compile(r'live-media-path=[\w_/-]+')
 
     bootopt = get_bootoptions(flavour)
 
@@ -1385,7 +1385,7 @@ def adjust_labels(src, replacement):
     """Adjust the specified labels in the syslinux config file src with
     specified replacement
     """
-    label_re = re.compile("^(\s*label\s*) ([a-zA-Z0-9_-]+)", re.I)
+    label_re = re.compile(r'^(\s*label\s*) ([a-zA-Z0-9_-]+)', re.I)
     for line in fileinput.input(src, inplace=1):
         line = label_re.sub(replacement, line)
         sys.stdout.write(line)
@@ -1429,7 +1429,7 @@ def remove_default_entry(filename):
 
     @filename: syslinux config file
     """
-    default_re = re.compile("^(\s*menu\s*default\s*)$", re.I)
+    default_re = re.compile(r'^(\s*menu\s*default\s*)$', re.I)
     for line in fileinput.input(filename, inplace=1):
         if default_re.match(line):
             continue
@@ -1612,7 +1612,7 @@ def install(image, device):
         if remove_image_mountpoint:
             try:
                 remove_mountpoint(iso_mountpoint)
-            except CriticalException as error:
+            except CriticalException:
                 cleanup()
                 raise
 
@@ -1638,7 +1638,7 @@ def install_grml(mountpoint, device):
 
             set_rw(device)
             mount(device, device_mountpoint, ['-o', 'utf8,iocharset=iso8859-1'])
-        except CriticalException as error:
+        except CriticalException:
             mount(device, device_mountpoint, "")
     try:
         grml_flavours = identify_grml_flavour(mountpoint)
@@ -1662,7 +1662,7 @@ def remove_mountpoint(mountpoint):
         if os.path.isdir(mountpoint):
             os.rmdir(mountpoint)
             unregister_tmpfile(mountpoint)
-    except CriticalException as error:
+    except CriticalException:
         cleanup()
         raise
 
@@ -1823,13 +1823,13 @@ def check_programs():
         global GRUB_INSTALL
         GRUB_INSTALL = which("grub-install") or which("grub2-install")
         if not GRUB_INSTALL:
-            logging.critical("Fatal: grub-install not available (please install the " +
+            logging.critical("Fatal: grub-install not available (please install the "
                              "grub package or drop the --grub option)")
             sys.exit(1)
 
     if options.syslinux:
         if not which("syslinux"):
-            logging.critical("Fatal: syslinux not available (please install the " +
+            logging.critical("Fatal: syslinux not available (please install the "
                              "syslinux package or use the --grub option)")
             sys.exit(1)
 
