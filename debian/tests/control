@@ -1,21 +1,9 @@
-Tests: smoke-grml2usb-py2
-Depends:
- dosfstools,
- isolinux,
- kpartx,
- python2,
- syslinux,
- syslinux-common,
- xorriso,
- @,
-Restrictions: needs-root, isolation-machine, breaks-testbed
-
 Tests: smoke-grml2usb-py3
 Depends:
  dosfstools,
  isolinux,
  kpartx,
- python2,
+ python3,
  syslinux,
  syslinux-common,
  xorriso,
