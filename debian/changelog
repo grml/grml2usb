@@ -1,3 +1,30 @@
+grml2usb (0.18.0) unstable; urgency=medium
+
+  [ Tomáš Virtus ]
+  * [25c3bf7] Fix Python 3 syntax warning (is vs ==)
+  * [ed5b633] Support more Syslinux module locations
+  * [f0e3c93] Fix duplicate Syslinux entries
+  * [99ecee2] Add mbr/ output files to gitignore
+  * [480b974] Fix duplicate Syslinux entries (2)
+
+  [ Alexei Colin ]
+  * [4d81cdb] tarball.sh: spaces in pattern for PROG_VERSION
+
+  [ Michael Prokop ]
+  * [d01d9d8] Coding style: fix pep8 + flake8 issues
+  * [b188002] Coding style: execute black + isort and fix undefined 'path'
+  * [f1d1ce8] codecheck: rely on flake8, isort + black during build time.
+    Thanks to Florian Apolloner for the feedback
+  * [31853ed] Bump Standards-Version to 4.5.0
+  * [c921dc1] debian: execute `wrap-and-sort -a -t -s`
+  * [1fa8aac] autopkgtests: drop python2 support and depend on python3
+    only (Closes: #936663)
+  * [aaaef1a] debian: switch to debhelper minimal style
+  * [263374b] Get rid of docbook-xsl workaround regarding duplicate empty
+    lines
+
+ -- Michael Prokop <mika@grml.org>  Tue, 12 May 2020 17:16:34 +0200
+
 grml2usb (0.17.0) unstable; urgency=medium
 
   [ Sven Joachim ]
