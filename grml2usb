@@ -184,7 +184,7 @@ parser.add_option(
     "--skip-bootflag",
     dest="skipbootflag",
     action="store_true",
-    help="do not try to check whether the destination has the bootflag set",
+    help="do not try to check whether the destination has the boot flag set",
 )
 parser.add_option(
     "--skip-grub-config",
@@ -505,6 +505,7 @@ def get_partition_for_path(path):
 def check_boot_flag(device):
     boot_dev, x = get_device_from_partition(device)
 
+    logging.info("Checking for boot flag")
     try:
         import parted
 
@@ -512,28 +513,19 @@ def check_boot_flag(device):
         if part is None:
             raise HodorException("parted could not find partition")
         if part.getFlag(parted.PARTITION_BOOT):
-            logging.debug("bootflag is enabled on %s" % device)
+            logging.debug("boot flag is enabled on %s" % device)
             return
-    except HodorException as e:
-        logging.info("%s, falling back to old bootflag detection", e)
-    except ImportError:
-        logging.debug("could not import parted, falling back to old bootflag detection")
-
-    with open(boot_dev, "rb") as image:
-        data = image.read(520)
-        bootcode = data[440:]
-        gpt_data = bootcode[70:80]
-
-        if gpt_data == GPT_HEADER:
-            logging.info("GPT detected, skipping bootflag check")
-        elif bootcode[6] == b"\x80":
-            logging.debug("bootflag is enabled")
         else:
-            logging.debug("bootflag is NOT enabled")
+            logging.debug("boot flag is NOT enabled on %s" % device)
             raise VerifyException(
                 "Device %s does not have the bootflag set. "
                 "Please enable it to be able to boot." % device
             )
+    except ImportError:
+        raise VerifyException(
+            "Could not import parted to verify boot flag on %s, please make sure python3-parted is installed."
+            % device
+        )
 
 
 def mkfs_fat16(device):
@@ -879,6 +871,7 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     del tmpf
 
     # make sure we sync filesystems before returning
+    logging.debug("executing: sync")
     proc = subprocess.Popen(["sync"])
     proc.wait()
 
@@ -1403,6 +1396,7 @@ def install_iso_files(grml_flavour, iso_mount, device, target):
             handle_bootloader_config(grml_flavour, device, target)
 
     # make sure we sync filesystems before returning
+    logging.info("Synching data (this might take a while)")
     proc = subprocess.Popen(["sync"])
     proc.wait()
 
