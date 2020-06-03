@@ -132,7 +132,7 @@ multiple entries for removing different bootoptions at once.
 
   *\--skip-bootflag*::
 
-Do not check for presence of bootflag on target device.
+Do not check for presence of boot flag on target device.
 
   *\--skip-grub-config*::
 

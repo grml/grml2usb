@@ -518,7 +518,7 @@ def check_boot_flag(device):
         else:
             logging.debug("boot flag is NOT enabled on %s" % device)
             raise VerifyException(
-                "Device %s does not have the bootflag set. "
+                "Device %s does not have the boot flag set. "
                 "Please enable it to be able to boot." % device
             )
     except ImportError:
