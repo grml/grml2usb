@@ -1875,10 +1875,6 @@ def install_grml(mountpoint, device):
         register_tmpfile(device_mountpoint)
         remove_device_mountpoint = True
         try:
-            check_for_fat(device)
-            if not options.skipbootflag:
-                check_boot_flag(device)
-
             set_rw(device)
             mount(device, device_mountpoint, ["-o", "utf8,iocharset=iso8859-1"])
         except CriticalException:
@@ -2162,6 +2158,9 @@ def main():
 
         # provide upgrade path
         handle_compat_warning(device)
+
+        if not options.skipbootflag:
+            check_boot_flag(device)
 
         # check for vfat partition
         handle_vfat(device)
