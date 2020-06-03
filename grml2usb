@@ -748,15 +748,13 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     "mbrtemplate" file, set the "partition" (0..3) active, and install the
     result back to "device".
 
-    @mbrtemplate: default MBR file
+    @mbrtemplate: default MBR file (must be a valid MBR file of at least 440
+    (or 439 if ismirbsdmbr) bytes)
 
     @device: name of a file assumed to be a hard disc (or USB stick) image, or
     something like "/dev/sdb"
 
     @partition: must be a number between 0 and 3, inclusive
-
-    @mbrtemplate: must be a valid MBR file of at least 440 (or 439 if
-    ismirbsdmbr) bytes.
 
     @ismirbsdmbr: if true then ignore the active flag, set the mirbsdmbr
     specific flag to 0/1/2/3 and set the MBR's default value accordingly. If
@@ -874,6 +872,14 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     logging.debug("executing: sync")
     proc = subprocess.Popen(["sync"])
     proc.wait()
+
+    logging.debug("Probing device via 'blockdev --rereadpt %s'", device)
+    proc = subprocess.Popen(["blockdev", "--rereadpt", device])
+    proc.wait()
+    if proc.returncode != 0:
+        raise Exception(
+            "Couldn't execute blockdev on '%s' (install util-linux?)", device
+        )
 
     set_rw(device)
 
