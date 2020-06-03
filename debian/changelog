@@ -1,3 +1,19 @@
+grml2usb (0.18.1) unstable; urgency=medium
+
+  [ Michael Prokop ]
+  * [705a96b] Drop old bootflag detection + be more verbose about its
+    execution. Thanks to Darshaka Pathirana for bug report and debugging
+  * [aed7d83] Use "boot flag" instead of "bootflag" also in docs +
+    exceptions
+  * [fcf63b7] Reread partition table after installing MBR to ensure
+    devices exist. Thanks to Darshaka Pathirana for debugging
+
+  [ Darshaka Pathirana ]
+  * [8b59cb0] Check for boot flag before possibly creating FAT16 on the
+    partition
+
+ -- Michael Prokop <mika@grml.org>  Wed, 03 Jun 2020 16:55:00 +0200
+
 grml2usb (0.18.0) unstable; urgency=medium
 
   [ Tomáš Virtus ]
