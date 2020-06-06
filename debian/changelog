@@ -1,3 +1,9 @@
+grml2usb (0.18.2) unstable; urgency=medium
+
+  * [657b880] Skip boot flag check when installing to directory
+
+ -- Michael Prokop <mika@grml.org>  Sat, 06 Jun 2020 15:09:37 +0200
+
 grml2usb (0.18.1) unstable; urgency=medium
 
   [ Michael Prokop ]
