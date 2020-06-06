@@ -503,6 +503,12 @@ def get_partition_for_path(path):
 
 
 def check_boot_flag(device):
+    if os.path.isdir(device):
+        logging.debug(
+            "Device %s is a directory, skipping check for boot flag." % device
+        )
+        return
+
     boot_dev, x = get_device_from_partition(device)
 
     logging.info("Checking for boot flag")
