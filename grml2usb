@@ -918,7 +918,7 @@ def mount(source, target, mount_options):
         if x.startswith(source):
             raise CriticalException(
                 (
-                    "Error executing mount: %s already mounted - "
+                    "Error executing mount: {0} already mounted - "
                     "please unmount before invoking grml2usb"
                 ).format(source)
             )
@@ -1953,7 +1953,7 @@ def handle_mbr(device):
                 break
 
         if not mbrcode:
-            str_locations = " or ".join(['"%s"' % l for l in mbr_locations])
+            str_locations = " or ".join(['"%s"' % x for x in mbr_locations])
             logging.error("Cannot find syslinux MBR, install it at %s)", str_locations)
             raise CriticalException(
                 "syslinux MBR  can not be found at %s." % str_locations
