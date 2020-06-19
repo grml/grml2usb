@@ -1314,6 +1314,9 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
         exec_rsync(efi_img, target + "/boot/efi.img")
         handle_secure_boot(target, efi_img)
 
+    execute(mkdir, target + "/conf/")
+    glob_and_copy(iso_mount + "/conf/bootfile_*", target + "/conf/")
+
     for ffile in ["f%d" % number for number in range(1, 11)]:
         search_and_copy(ffile, iso_mount, syslinux_target + ffile)
 
@@ -1493,7 +1496,6 @@ def handle_grub_config(grml_flavour, device, target):
     logging.debug("Updating grub configuration")
 
     grub_target = target + "/boot/grub/"
-    secureboot_target = target + "/EFI/ubuntu/"
 
     bootid_re = re.compile(r"bootid=[\w_-]+")
     live_media_path_re = re.compile(r"live-media-path=[\w_/-]+")
@@ -1508,9 +1510,7 @@ def handle_grub_config(grml_flavour, device, target):
             remove_regexes.append(re.compile(regex))
 
     shortname = get_shortname(grml_flavour)
-    for filename in glob.glob(grub_target + "*.cfg") + glob.glob(
-        secureboot_target + "*.cfg"
-    ):
+    for filename in glob.glob(grub_target + "*.cfg"):
         for line in fileinput.input(filename, inplace=1):
             line = line.rstrip("\r\n")
             if option_re.search(line):
@@ -1760,18 +1760,18 @@ def handle_secure_boot(target, efi_img):
         logging.critical("Fatal: %s", error)
         sys.exit(1)
 
-    ubuntu_cfg = search_file("grub.cfg", efi_mountpoint + "/EFI/ubuntu")
-    logging.debug("ubuntu_cfg = %s" % ubuntu_cfg)
-    if not ubuntu_cfg:
+    grub_cfg = efi_mountpoint + "/boot/grub/grub.cfg"
+    logging.debug("grub_cfg = %s" % grub_cfg)
+    if not grub_cfg:
         logging.info(
-            "No /EFI/ubuntu/grub.cfg found inside EFI image, looks like Secure Boot support is missing."
+            "No /boot/grub/grub.cfg found inside EFI image, looks like Secure Boot support is missing."
         )
     else:
-        mkdir(target + "/efi/ubuntu")
+        mkdir(target + "/boot/grub/x86_64-efi/")
         logging.debug(
-            "exec_rsync(%s, %s + '/efi/ubuntu/grub.cfg')" % (ubuntu_cfg, target)
+            "exec_rsync(%s, %s + '/boot/grub/x86_64-efi/grub.cfg')" % (grub_cfg, target)
         )
-        exec_rsync(ubuntu_cfg, target + "/efi/ubuntu/grub.cfg")
+        exec_rsync(grub_cfg, target + "/boot/grub/x86_64-efi/grub.cfg")
 
         logging.debug(
             "exec_rsync(%s + '/EFI/BOOT/grubx64.efi', %s + '/efi/boot/grubx64.efi')'"
