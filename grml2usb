@@ -1760,7 +1760,7 @@ def handle_secure_boot(target, efi_img):
         logging.critical("Fatal: %s", error)
         sys.exit(1)
 
-    grub_cfg = efi_mountpoint + "/boot/grub/grub.cfg"
+    grub_cfg = search_file("grub.cfg", efi_mountpoint + "/boot/grub/")
     logging.debug("grub_cfg = %s" % grub_cfg)
     if not grub_cfg:
         logging.info(
