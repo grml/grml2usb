@@ -33,6 +33,7 @@ Depends:
  ${misc:Depends},
  ${shlibs:Depends},
 Recommends:
+ isolinux (>= 3:6.03+dfsg-5+deb8u1~),
  syslinux,
  syslinux-utils,
  xorriso | genisoimage,

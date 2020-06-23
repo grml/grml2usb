@@ -1,22 +1,13 @@
 #!/usr/bin/env bash
 # Filename:      grml2iso
 # Purpose:       create a multiboot grml ISO using grml2usb
-# Authors:       Michael Prokop <mika@grml.org>,
-#                Thorsten Glaser <tg@mirbsd.org>
+# Authors:       Michael Prokop <mika@grml.org>
 # Bug-Reports:   see http://grml.org/bugs/
 # License:       This file is licensed under the GPL v2 or any later version.
 ################################################################################
 
 # make sure we have the sbin directories in our PATH to find grml2usb ootb
 PATH="${PATH}:/sbin:/usr/local/sbin:/usr/sbin"
-
-# define function getfilesize before "set -e" {{{
-  if stat --help >/dev/null 2>&1; then
-    getfilesize='stat -c %s'        # GNU stat
-  else
-    getfilesize='stat -f %z'        # BSD stat
-  fi
-# }}}
 
 # adjust variables if necessary through environment {{{
 # path to the grml2usb script you'd like to use
@@ -198,7 +189,14 @@ Options:
           UEFI_ENABLE=false
         else
           echo "/boot/efi.img found, extending boot arguments for (U)EFI boot."
-          BOOT_ARGS="$BOOT_ARGS -boot-info-table -eltorito-alt-boot -e boot/efi.img -no-emul-boot"
+          if ! [ -r /usr/lib/ISOLINUX/isohdpfx.bin ] ; then
+            echo "Error: /usr/lib/ISOLINUX/isohdpfx.bin not available, required for xorriso/isohybrid though." >&2
+            echo "Hint:  make sure isolinux is installed." >&2
+            exit 1
+          else
+            BOOT_ARGS+=" -boot-info-table -eltorito-alt-boot -e boot/efi.img -no-emul-boot"
+            BOOT_ARGS+=" -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin -eltorito-alt-boot -e boot/efi.img -no-emul-boot -isohybrid-gpt-basdat -no-pad"
+          fi
         fi
       fi
       ;;
@@ -272,31 +270,8 @@ Options:
 # }}}
 
 # generate the CD/DVD ISO {{{
-  $MKISOFS -V 'grml-multiboot' -l -r -J -no-pad $BOOT_ARGS \
+  $MKISOFS -V 'grml-multiboot' -l -r -J $BOOT_ARGS \
     -o "$ISOFILE" .
-# }}}
-
-# pad the output ISO to multiples of 256 KiB for partition table support {{{
-  siz=$($getfilesize "$ISOFILE")
-  cyls=$(($siz / 512 / 32 / 16 + 1))  # C=$cyls H=16 S=32
-  ofs=$(($cyls * 16 * 32 * 512 - 1))  # padding offset (size - 1)
-  dd if=/dev/zero bs=1 count=1 seek=$ofs of="$ISOFILE" 2>/dev/null
-# }}}
-
-# make ISO dd-able {{{
-  if ! $UEFI_ENABLE ; then
-    echo "Skipping check for --uefi option in isohybrid since prerequisites are not fulfilled."
-  else
-    if ! isohybrid --help | grep -q -- --uefi ; then
-      echo "isohybrid version does NOT support --uefi option, disabling"
-    else
-      echo "isohybrid version supports --uefi option"
-      ISOHYBRID_OPTIONS=--uefi
-    fi
-  fi
-
-  echo "Creating dd-able ISO using isohybrid"
-  isohybrid $ISOHYBRID_OPTIONS "$ISOFILE"
 # }}}
 
 # cleanup {{{
