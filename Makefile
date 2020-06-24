@@ -14,11 +14,9 @@ doc_man: man-stamp
 man-stamp: grml2usb.8.txt grml2iso.8.txt
 	# grml2usb:
 	asciidoc -d manpage -b docbook grml2usb.8.txt
-	sed -i 's/<emphasis role="strong">/<emphasis role="bold">/' grml2usb.8.xml
 	xsltproc --novalid --nonet /usr/share/xml/docbook/stylesheet/nwalsh/manpages/docbook.xsl grml2usb.8.xml
 	# grml2iso:
 	asciidoc -d manpage -b docbook grml2iso.8.txt
-	sed -i 's/<emphasis role="strong">/<emphasis role="bold">/' grml2iso.8.xml
 	xsltproc --novalid --nonet /usr/share/xml/docbook/stylesheet/nwalsh/manpages/docbook.xsl grml2iso.8.xml
 	# we're done
 	touch man-stamp
