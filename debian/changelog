@@ -1,3 +1,20 @@
+grml2usb (0.18.3) unstable; urgency=medium
+
+  * [9e7dd96] codecheck: fix flake8 issues with versions >=3.8.3. Thanks
+    to Florian Apolloner for feedback (Closes: #963454)
+  * [ec5eec1] setup.cfg: adjust flake8 section so invoking it without
+    arguments works. Thanks to Florian Apolloner
+  * [92ffc08] Support Grml's new Secure Boot approach
+  * [b1798d1] Do not fail if ISO doesn't have grub.cfg inside efi.img
+  * [f052436] grml2iso: switch from isohybrid to xorriso/isohybrid to
+    properly support EFI boot
+  * [9b96f21] docs: drop no longer needed strong->bold workaround from
+    asciidoc/xsltproc toolchain
+  * [ded5534] docs: rework grml2iso docs, including note about order of
+    ISOs
+
+ -- Michael Prokop <mika@grml.org>  Wed, 24 Jun 2020 11:27:28 +0200
+
 grml2usb (0.18.2) unstable; urgency=medium
 
   * [657b880] Skip boot flag check when installing to directory
