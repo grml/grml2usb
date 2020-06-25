@@ -14,7 +14,6 @@ This script installs a Grml system (either a running system or ISO[s]) to a USB 
 """
 
 
-import datetime
 import fileinput
 import glob
 import logging
@@ -22,11 +21,9 @@ import os
 import os.path
 import re
 import shutil
-import struct
 import subprocess
 import sys
 import tempfile
-import time
 import uuid
 from inspect import isclass, isroutine
 from optparse import OptionParser
@@ -53,9 +50,6 @@ except Exception:
 # global variables
 MOUNTED = set()  # register mountpoints
 TMPFILES = set()  # register tmpfiles
-DATESTAMP = time.mktime(
-    datetime.datetime.now().timetuple()
-)  # unique identifier for syslinux.cfg
 GRML_FLAVOURS = set()  # which flavours are being installed?
 GRML_DEFAULT = None
 UUID = None
@@ -63,7 +57,6 @@ SYSLINUX_LIBS = [
     "/usr/lib/syslinux/modules/bios/",  # Debian
     "/usr/lib/syslinux/bios/",  # Arch Linux
 ]
-GPT_HEADER = b"\x55\xaa\x45\x46\x49\x20\x50\x41\x52\x54"  # original GPT header
 GRUB_INSTALL = None
 
 RE_PARTITION = re.compile(r"([a-z/]*?)(\d+)$")
@@ -71,7 +64,7 @@ RE_P_PARTITION = re.compile(r"(.*?\d+)p(\d+)$")
 RE_LOOP_DEVICE = re.compile(r"/dev/loop\d+$")
 
 
-def syslinux_warning(option, opt, value, opt_parser):
+def syslinux_warning(option, opt, opt_parser):
     """A helper function for printing a warning about deprecated option
     """
     # pylint: disable-msg=W0613
@@ -83,7 +76,7 @@ def syslinux_warning(option, opt, value, opt_parser):
 
 
 # if grub option is set, unset syslinux option
-def grub_option(option, opt, value, opt_parser):
+def grub_option(option, opt, opt_parser):
     """A helper function adjusting other option values
     """
     # pylint: disable-msg=W0613
@@ -273,29 +266,12 @@ class VerifyException(Exception):
     @Exception: message"""
 
 
-# The following two functions help to operate on strings as
-# array (list) of bytes (octets). In Python 3000, the bytes
-# datatype will need to be used. This is intended for using
-# with manipulation of files on the octet level, like shell
-# arrays, e.g. in MBR creation.
-
-
-def array2string(*a):
-    """Convert a list of integers [0;255] to a string."""
-    return struct.pack("%sB" % len(a), *a)
-
-
-def string2array(s):
-    """Convert a (bytes) string into a list of integers."""
-    return struct.unpack("%sB" % len(s), s)
-
-
 def cleanup():
     """Cleanup function to make sure there aren't any mounted devices left behind.
     """
 
-    def del_failed(fn, path, exc):
-        logging.warn("Deletion of %s failed in temporary folder" % path)
+    def del_failed(_fn, path, _exc):
+        logging.warning("Deletion of %s failed in temporary folder", path)
 
     logging.info("Cleaning up before exiting...")
     proc = subprocess.Popen(["sync"])
@@ -465,8 +441,7 @@ def search_file(
             retval.append(os.path.abspath(os.path.join(current_dir, filename)))
             if not lst_return:
                 break
-        # pylint: disable-msg=W0612
-        for current_dir, directories, files in os.walk(path):
+        for current_dir, _directories, _files in os.walk(path):
             if match_file(current_dir):
                 retval.append(os.path.abspath(os.path.join(current_dir, filename)))
                 if not lst_return:
@@ -551,29 +526,8 @@ def mkfs_fat16(device):
         raise CriticalException("error executing mkfs.vfat")
 
 
-def generate_isolinux_splash(grml_flavour):
-    """Generate bootsplash for isolinux/syslinux
-
-    @grml_flavour: name of grml flavour the configuration should be generated for"""
-
-    grml_name = grml_flavour
-
-    return """\
-17/boot/syslinux/logo.16
-
-Some information and boot options available via keys F2 - F10. http://grml.org/
-%(grml_name)s
-""" % {
-        "grml_name": grml_name
-    }
-
-
-def generate_main_syslinux_config(*arg):
-    """Generate main configuration for use in syslinux.cfg
-
-    @*arg: just for backward compatibility"""
-    # pylint: disable-msg=W0613
-    # remove warning about unused arg
+def generate_main_syslinux_config():
+    """Generate main configuration for use in syslinux.cfg"""
 
     return """\
 label -
@@ -780,7 +734,7 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
         raise CriticalException("%s can not be read." % mbrtemplate)
 
     if partition is not None and ((partition < 0) or (partition > 3)):
-        logging.warn("Cannot activate partition %d", partition)
+        logging.warning("Cannot activate partition %d", partition)
         partition = None
 
     if ismirbsdmbr:
@@ -888,20 +842,6 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
         )
 
     set_rw(device)
-
-
-def is_writeable(device):
-    """Check if the device is writeable for the current user
-
-    @device: partition where bootloader should be installed to"""
-
-    if not device:
-        return False
-
-    if not os.path.exists(device):
-        return False
-
-    return os.access(device, os.W_OK) and os.access(device, os.R_OK)
 
 
 def mount(source, target, mount_options):
@@ -1138,54 +1078,6 @@ def copy_system_files(grml_flavour, iso_mount, target):
         exec_rsync(source, dest)
 
 
-def update_grml_versions(iso_mount, target):
-    """Update the grml version file on a cd
-    Returns true if version was updated successfully,
-    False if grml-version does not exist yet on the mountpoint
-
-    @iso_mount: string of the iso mount point
-    @target: path of the target mount point
-    """
-    grml_target = target + "/grml/"
-    target_grml_version_file = search_file("grml-version", grml_target)
-    if target_grml_version_file:
-        iso_grml_version_file = search_file("grml-version", iso_mount)
-        if not iso_grml_version_file:
-            logging.warn(
-                "Warning: %s could not be found - can not install it",
-                iso_grml_version_file,
-            )
-            return False
-        try:
-            # read the flavours from the iso image
-            iso_versions = {}
-            iso_file = open(iso_grml_version_file, "r")
-            for line in iso_file:
-                iso_versions[get_flavour(line)] = line.strip()
-
-            # update the existing flavours on the target
-            for line in fileinput.input([target_grml_version_file], inplace=1):
-                flavour = get_flavour(line)
-                if flavour in list(iso_versions.keys()):
-                    print(iso_versions.pop(flavour))
-                else:
-                    print(line.strip())
-            fileinput.close()
-
-            target_file = open(target_grml_version_file, "a")
-            # add the new flavours from the current iso
-            for flavour in iso_versions:
-                target_file.write("%s\n" % iso_versions[flavour])
-        except IOError:
-            logging.warn("Warning: Could not write file")
-        finally:
-            iso_file.close()
-            target_file.close()
-        return True
-    else:
-        return False
-
-
 def copy_grml_files(grml_flavour, iso_mount, target):
     """copy some minor grml files to a given target
 
@@ -1203,7 +1095,9 @@ def copy_grml_files(grml_flavour, iso_mount, target):
             exec_rsync(filename, grml_target)
             break
     else:
-        logging.warn("Warning: could not find flavour directory for %s ", grml_flavour)
+        logging.warning(
+            "Warning: could not find flavour directory for %s ", grml_flavour
+        )
 
 
 def copy_addons(iso_mount, target):
@@ -1929,7 +1823,7 @@ def handle_mbr(device):
 
     mbr_device, partition_number = get_device_from_partition(device)
     if partition_number is None:
-        logging.warn("Could not detect partition number, not activating partition")
+        logging.warning("Could not detect partition number, not activating partition")
 
     # if we get e.g. /dev/loop1 as device we don't want to put the MBR
     # into /dev/loop of course, therefore use /dev/loop1 as mbr_device
@@ -2164,7 +2058,7 @@ def main():
         if not os.path.isdir(device):
             if device[-1:].isdigit():
                 if int(device[-1:]) > 4 or device[-2:].isdigit():
-                    logging.warn(
+                    logging.warning(
                         "Warning: installing on partition number >4, booting *might* fail depending on your system."
                     )
 
