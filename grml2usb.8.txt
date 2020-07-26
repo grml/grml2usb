@@ -3,7 +3,7 @@ grml2usb(8)
 
 Name
 ----
-grml2usb - install Grml ISO(s) on usb device for booting
+grml2usb - install Grml ISO(s) on USB device for booting
 
 Synopsis
 --------
@@ -17,7 +17,7 @@ Important! The Grml team does not take responsibility for loss of any data!
 Introduction
 ------------
 
-grml2usb installs Grml on a given partition of your usb device and makes
+grml2usb installs Grml on a given partition of your USB device and makes
 it bootable. It provides multiboot ISO support, meaning you can specify
 several Grml ISOs on the command line at once and select the Grml
 flavour you would like to boot on the bootprompt then. Note that the
@@ -197,7 +197,7 @@ Developers Corner
 -----------------
 
 [[directory-layout]]
-Directory layout on usb device
+Directory layout on USB device
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   boot/ ->
@@ -315,9 +315,9 @@ See http://www.methods.co.nz/asciidoc/userguide.html
 [horizontal]
 *Error message*:: ran out of input data. System halted
 
-*Reason*:: Everything OK, except for the filesystem used on your usb device. So
+*Reason*:: Everything OK, except for the filesystem used on your USB device. So
 instead of fat16 you are using for example fat32. Fix: use the appropriate
-filesystem (fat16 for usb pens usually). The Bootsplash might be displayed, the
+filesystem (fat16 for USB flash drive usually). The Bootsplash might be displayed, the
 kernel loads but you very soon get the error message.
 
 *Error message*:: Invalid operating system
@@ -427,7 +427,7 @@ What's grml2iso?
 ~~~~~~~~~~~~~~~~
 
 grml2iso is a script which uses grml2usb to generate a multiboot ISO out of
-several grml ISOs. See 'man grml2iso' for further details.
+several Grml ISOs. See 'man grml2iso' for further details.
 
 [[menu-lst]]
 Why is there a menu.lst and a grub.cfg inside /boot/grub/?
