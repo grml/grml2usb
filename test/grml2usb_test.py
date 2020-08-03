@@ -34,6 +34,11 @@ def test_check_for_usb_not_removable():
     assert grml2usb.check_for_usbdevice('/dev/sda') == 0
 
 @pytest.mark.check_for_usbdevice
+def test_extract_device_name_invalid():
+    assert grml2usb.extract_device_name('/dev/sda/somethingelse') == None
+    assert grml2usb.extract_device_name('/dev/sd*') == None
+
+@pytest.mark.check_for_usbdevice
 def test_extract_device_name():
     assert grml2usb.extract_device_name('/dev/sda') == 'sda'
     assert grml2usb.extract_device_name('/dev/hdb') == 'hdb'
