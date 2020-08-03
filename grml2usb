@@ -905,6 +905,9 @@ def unmount(target, unmount_options):
             logging.debug("unregister_mountpoint(%s)", target)
             unregister_mountpoint(target)
 
+def extract_device_name(device):
+    match = re.match(r"/dev/([a-z0-9]*[0-9]*)$", device)
+    return match.group(1) if match else None
 
 def check_for_usbdevice(device):
     """Check whether the specified device is a removable USB device
@@ -912,7 +915,10 @@ def check_for_usbdevice(device):
     @device: device name, like /dev/sda1 or /dev/sda
     """
 
-    usbdevice = re.match(r"/dev/(.*?)\d*$", device).group(1)
+    usbdevice = extract_device_name(device)
+    if not usbdevice:
+        return 0
+
     # newer systems:
     usbdev = os.path.realpath("/sys/class/block/" + usbdevice + "/removable")
     if not os.path.isfile(usbdev):
@@ -921,10 +927,10 @@ def check_for_usbdevice(device):
 
     if os.path.isfile(usbdev):
         is_usb = open(usbdev).readline()
-        if is_usb.find("1"):
-            return 0
+        if is_usb.find("1") == 0:
+            return 1 # switched the return values...
 
-    return 1
+    return 0 # what have i done?!
 
 
 def check_for_fat(partition):
