@@ -16,7 +16,7 @@ cat > "${DIR}"/README << EOF
 README
 ------
 
-grml2usb installs grml ISO(s) on usb device for booting.
+grml2usb installs Grml ISO(s) on USB device for booting.
 
 This tarball provides all the necessary files for running grml2usb.
 Execute the script install.sh with root permissions to install the
