@@ -911,7 +911,8 @@ def extract_device_name(device):
 
     @device: device name, like /dev/sda1 or /dev/sda
     """
-    return re.match(r"/dev/(.*?)\d*$", device).group(1)
+    match = re.match(r"/dev/([a-z0-9]*)$", device)
+    return match.group(1) if match else None
 
 
 def check_for_usbdevice(device):
