@@ -11,7 +11,7 @@ pytest-mock (pip install pytest-mock)
 Runwith:
 <project root>$ pytest [-m {basic}]
 
-:copyright: (c) 2020 by Manuel Rom <roma@https://synpro.solutions/>
+:copyright: (c) 2020 by Manuel Rom <roma@synpro.solutions/>
 :license: GPL v2 or any later version
 :bugreports: http://grml.org/bugs/
 """
