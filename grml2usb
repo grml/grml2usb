@@ -906,13 +906,21 @@ def unmount(target, unmount_options):
             unregister_mountpoint(target)
 
 
+def extract_device_name(device):
+    """Extract the device name of a given path
+
+    @device: device name, like /dev/sda1 or /dev/sda
+    """
+    return re.match(r"/dev/(.*?)\d*$", device).group(1)
+
+
 def check_for_usbdevice(device):
     """Check whether the specified device is a removable USB device
 
     @device: device name, like /dev/sda1 or /dev/sda
     """
 
-    usbdevice = re.match(r"/dev/(.*?)\d*$", device).group(1)
+    usbdevice = extract_device_name(device)
     # newer systems:
     usbdev = os.path.realpath("/sys/class/block/" + usbdevice + "/removable")
     if not os.path.isfile(usbdev):
