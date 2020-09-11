@@ -921,7 +921,7 @@ def check_for_usbdevice(device):
     @device: device name, like /dev/sda1 or /dev/sda
     """
 
-    usbdevice = extract_device_name(device) # re.match(r"/dev/(.*?)\d*$", device).group(1)
+    usbdevice = extract_device_name(device)
     # newer systems:
     usbdev = os.path.realpath("/sys/class/block/" + usbdevice + "/removable")
     if not os.path.isfile(usbdev):
