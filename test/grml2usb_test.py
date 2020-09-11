@@ -25,4 +25,12 @@ import imp
 grml2usb = imp.load_source('grml2usb', 'grml2usb')
 
 
+# region check_for_usb tests
 
+@pytest.mark.check_for_usbdevice
+def test_extract_device_name_invalid():
+    """Assert, that 'extract_device_name' raises an Error, when given an incorrect string"""
+    with pytest.raises(AttributeError):
+        assert grml2usb.extract_device_name('/dev') == 0
+    with pytest.raises(AttributeError):
+        assert grml2usb.extract_device_name('foobar') == 0
