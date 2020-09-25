@@ -18,11 +18,9 @@ Runwith:
 
 
 import pytest
-import os
-import imp
+import importlib
 
-#import "hack", since grml2usb doesn't have the .py file ending
-grml2usb = imp.load_source('grml2usb', 'grml2usb')
+grml2usb = importlib.import_module('grml2usb', '.')
 
 
 # region check_for_usb tests
