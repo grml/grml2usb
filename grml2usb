@@ -520,7 +520,7 @@ def mkfs_fat16(device):
 
     logging.info("Formating partition with fat16 filesystem")
     logging.debug("mkfs.vfat -F 16 %s", device)
-    proc = subprocess.Popen(["mkfs.vfat", "-F", "16", device])
+    proc = subprocess.Popen(["mkfs.vfat", "-n", "GRML", "-F", "16", device])
     proc.wait()
     if proc.returncode != 0:
         raise CriticalException("error executing mkfs.vfat")
