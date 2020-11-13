@@ -65,8 +65,7 @@ RE_LOOP_DEVICE = re.compile(r"/dev/loop\d+$")
 
 
 def syslinux_warning(option, opt, opt_parser):
-    """A helper function for printing a warning about deprecated option
-    """
+    """A helper function for printing a warning about deprecated option"""
     # pylint: disable-msg=W0613
     sys.stderr.write(
         "Note: the --syslinux option is deprecated as syslinux "
@@ -77,8 +76,7 @@ def syslinux_warning(option, opt, opt_parser):
 
 # if grub option is set, unset syslinux option
 def grub_option(option, opt, opt_parser):
-    """A helper function adjusting other option values
-    """
+    """A helper function adjusting other option values"""
     # pylint: disable-msg=W0613
     setattr(opt_parser.values, option.dest, True)
     setattr(opt_parser.values, "syslinux", False)
@@ -267,8 +265,7 @@ class VerifyException(Exception):
 
 
 def cleanup():
-    """Cleanup function to make sure there aren't any mounted devices left behind.
-    """
+    """Cleanup function to make sure there aren't any mounted devices left behind."""
 
     def del_failed(_fn, path, _exc):
         logging.warning("Deletion of %s failed in temporary folder", path)
@@ -403,8 +400,7 @@ def which(program):
 
 
 def get_defaults_file(iso_mount, flavour, name):
-    """get the default file for syslinux
-    """
+    """get the default file for syslinux"""
     bootloader_dirs = ["/boot/isolinux/", "/boot/syslinux/"]
     for directory in bootloader_dirs:
         for name in name, "%s_%s" % (get_flavour_filename(flavour), name):
@@ -1330,8 +1326,7 @@ def get_device_from_partition(partition):
 
 
 def get_flavour(flavour_str):
-    """Returns the flavour of a grml version string
-    """
+    """Returns the flavour of a grml version string"""
     return re.match(r"[\w-]*", flavour_str).group()
 
 
@@ -1807,8 +1802,7 @@ def install_grml(mountpoint, device):
 
 
 def remove_mountpoint(mountpoint):
-    """remove a registered mountpoint
-    """
+    """remove a registered mountpoint"""
 
     try:
         unmount(mountpoint, "")
