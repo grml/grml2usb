@@ -806,7 +806,9 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     set_rw(device)
 
     logging.debug(
-        "executing: dd if='%s' of='%s' bs=512 count=1 conv=notrunc", tmpf.name, device
+        "executing: dd if='%s' of='%s' bs=512 count=1 conv=notrunc,fsync",
+        tmpf.name,
+        device,
     )
     proc = subprocess.Popen(
         [
@@ -815,7 +817,7 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
             "of=%s" % device,
             "bs=512",
             "count=1",
-            "conv=notrunc",
+            "conv=notrunc,fsync",
         ],
         stderr=open(os.devnull, "r+"),
     )
@@ -823,11 +825,6 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     if proc.returncode != 0:
         raise Exception("error executing dd (third run)")
     del tmpf
-
-    # make sure we sync filesystems before returning
-    logging.debug("executing: sync")
-    proc = subprocess.Popen(["sync"])
-    proc.wait()
 
     logging.debug("Probing device via 'blockdev --rereadpt %s'", device)
     proc = subprocess.Popen(["blockdev", "--rereadpt", device])
