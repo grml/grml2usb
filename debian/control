@@ -15,7 +15,7 @@ Build-Depends:
  flake8,
  isort,
  xsltproc,
-Standards-Version: 4.5.0
+Standards-Version: 4.5.1
 Homepage: https://grml.org/grml2usb/
 Vcs-git: git://git.grml.org/grml2usb.git
 Vcs-Browser: https://git.grml.org/?p=grml2usb.git
