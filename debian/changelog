@@ -1,3 +1,23 @@
+grml2usb (0.18.4) unstable; urgency=medium
+
+  [ Michael Prokop ]
+  * [3664e4a] Code cleanups. Thanks to Chris Hofstaedtler for review +
+    feedback
+  * [1dfee7d] Use "GRML" as FAT label when creating the file system
+  * [272b66e] Fix race condition with blockdev/BLKRRPART due to lack of
+    fsync. Thanks to dann frazier <dannf@dannf.org> for bug report and
+    patch (Closes: #975015)
+  * [100a957] Bump Standards-Version to 4.5.1
+
+  [ Darshaka Pathirana ]
+  * [7656c18] Use consistent case of 'USB' and 'Grml'
+
+  [ Manuel Rom ]
+  * [6f3eb52] Add unit testing capabilities and basic tests for
+    check_for_usbdevice
+
+ -- Michael Prokop <mika@grml.org>  Fri, 27 Nov 2020 17:56:02 +0100
+
 grml2usb (0.18.3) unstable; urgency=medium
 
   * [9e7dd96] codecheck: fix flake8 issues with versions >=3.8.3. Thanks
