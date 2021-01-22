@@ -1,3 +1,10 @@
+grml2usb (0.18.5) unstable; urgency=medium
+
+  * [01ed11d] Fix --grub and --syslinux handling. Thanks to Ralf Moll for
+    the bugreport
+
+ -- Michael Prokop <mika@grml.org>  Fri, 22 Jan 2021 10:32:43 +0100
+
 grml2usb (0.18.4) unstable; urgency=medium
 
   [ Michael Prokop ]
