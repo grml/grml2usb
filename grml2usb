@@ -64,7 +64,7 @@ RE_P_PARTITION = re.compile(r"(.*?\d+)p(\d+)$")
 RE_LOOP_DEVICE = re.compile(r"/dev/loop\d+$")
 
 
-def syslinux_warning(option, opt, opt_parser):
+def syslinux_warning(option, opt, _value, opt_parser):
     """A helper function for printing a warning about deprecated option"""
     # pylint: disable-msg=W0613
     sys.stderr.write(
@@ -75,7 +75,7 @@ def syslinux_warning(option, opt, opt_parser):
 
 
 # if grub option is set, unset syslinux option
-def grub_option(option, opt, opt_parser):
+def grub_option(option, opt, _value, opt_parser):
     """A helper function adjusting other option values"""
     # pylint: disable-msg=W0613
     setattr(opt_parser.values, option.dest, True)
