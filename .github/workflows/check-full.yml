@@ -1,0 +1,57 @@
+name: Code Testing
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '42 1 * * *'
+
+jobs:
+  codecheck:
+    runs-on: ubuntu-latest
+    name: Run codecheck
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+
+      - name: Install virtualenv + python3-setuptools
+        run: sudo apt-get install virtualenv python3-setuptools
+
+      - name: Set up Python virtualenv environment
+        run: virtualenv -p /usr/bin/python3 venv3
+
+      - name: Activate Python virtualenv environment
+        run: . ./venv3/bin/activate
+
+      - name: pip install wheel (to make install black work)
+        run: pip3 install wheel
+
+      - name: pip install flake8, isort + black, vulture
+        run: pip3 install flake8 isort black vulture
+
+      - name: Codecheck execution
+        run: make codecheck
+
+  unittests:
+    runs-on: ubuntu-latest
+    name: Run unit tests
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+
+      - name: Install virtualenv + python3-setuptools
+        run: sudo apt-get install virtualenv python3-setuptools
+
+      - name: Set up Python virtualenv environment
+        run: virtualenv -p /usr/bin/python3 venv3
+
+      - name: Activate Python virtualenv environment
+        run: . ./venv3/bin/activate
+
+      - name: Install pytest
+        run: pip3 install pytest
+
+      - name: Run Pytest
+        run: pytest

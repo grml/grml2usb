@@ -42,6 +42,10 @@ codecheck:
 	flake8 grml2usb
 	isort --check-only grml2usb
 	black --check grml2usb
+	vulture grml2iso grml2usb test/grml2usb_test.py
+
+test:
+	pytest
 
 # graph:
 #	sudo pycallgraph grml2usb /grml/isos/grml-small_2008.11.iso /dev/sdb1
