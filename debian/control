@@ -14,6 +14,7 @@ Build-Depends:
  docbook-xsl,
  flake8,
  isort,
+ vulture,
  xsltproc,
 Standards-Version: 4.5.1
 Homepage: https://grml.org/grml2usb/
