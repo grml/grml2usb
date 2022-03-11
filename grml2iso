@@ -11,10 +11,8 @@ PATH="${PATH}:/sbin:/usr/local/sbin:/usr/sbin"
 
 # adjust variables if necessary through environment {{{
 # path to the grml2usb script you'd like to use
-  [ -n "$GRML2USB" ] || GRML2USB='grml2usb'
-# work directory for creating the filesystem
-  [ -n "$TMPDIR" ]   && WRKDIR="${TMPDIR}/grml2iso.tmp"
-  [ -n "$WRKDIR" ]   || WRKDIR='/tmp/grml2iso.tmp'
+[ -n "$GRML2USB" ] || GRML2USB='grml2usb'
+
 # support mkisofs as well as genisoimage
 if which xorriso >/dev/null 2>&1 ; then
   MKISOFS='xorriso -as mkisofs'
@@ -54,7 +52,8 @@ Options:
                          restrictions in the bootprocess only IPs are allowed.
                          Supported protocols are: http and ftp
      -t Directory        Directory that should be used for temporary files
-                         during build. Defaults to /tmp/grml2iso.tmp if unset.
+                         during build, instead of using a temporary directory
+                         created by mktemp(1).
 
      Examples:
      $0 -s http://192.168.23.42:8000/grml/ -o small.iso grml64-small_2018.12.iso 
@@ -93,10 +92,6 @@ Options:
   # test for specified URI
   if [ -n "$URI" ] ; then
     GRML2USB_OPTS+=(--bootoptions="fetch=$URI")
-  fi
-
-  if [ -n "$WRKDIR" ] ; then
-    GRML2USB_OPTS+=(--tmpdir="$WRKDIR")
   fi
 
 # make sure -o is specified
@@ -143,8 +138,16 @@ Options:
   esac
 # }}}
 
-# create necessary stuff under WRKDIR {{{
-  [ -d "$WRKDIR" ] && WRKDIR_EXISTED='true' || WRKDIR_EXISTED='false'
+# ensure to properly set up working directory {{{
+  WRKDIR_EXISTED='false'
+  if [ -z "$WRKDIR" ] ; then
+    WRKDIR="$(mktemp -d)"
+  else
+    [ -d "$WRKDIR" ] && WRKDIR_EXISTED='true'
+  fi
+
+  GRML2USB_OPTS+=(--tmpdir="$WRKDIR")
+
   rm -rf "$WRKDIR/cddir" "$WRKDIR/grub_tmp"
   mkdir -p "$WRKDIR/cddir"
 # }}}}
