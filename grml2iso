@@ -6,6 +6,8 @@
 # License:       This file is licensed under the GPL v2 or any later version.
 ################################################################################
 
+set -e -o pipefail
+
 # make sure we have the sbin directories in our PATH to find grml2usb ootb
 PATH="${PATH}:/sbin:/usr/local/sbin:/usr/sbin"
 
@@ -32,8 +34,6 @@ fi
 # }}}
 
 # helper stuff {{{
-  set -e
-
   usage() {
     echo >&2 "Usage: $0 [OPTIONS] -o target.iso source1.iso [source2.iso ...]"
     echo >&2 "
@@ -56,7 +56,7 @@ Options:
                          created by mktemp(1).
 
      Examples:
-     $0 -s http://192.168.23.42:8000/grml/ -o small.iso grml64-small_2018.12.iso 
+     $0 -s http://192.168.23.42:8000/grml/ -o small.iso grml64-small_2021.07.iso
 
      Will generate a file small.iso which tries to download the squashfs file from
      http://192.168.23.42:8000/grml/ - the squashfs file is placed in the same
