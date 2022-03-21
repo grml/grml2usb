@@ -1,3 +1,17 @@
+grml2usb (0.19.0) unstable; urgency=medium
+
+  [ Manuel Rom ]
+  * [40221eb] Add Github action workflows for CI/CD
+
+  [ Michael Prokop ]
+  * [3f77679] Fix vulture usage and add vulture to Build-Depends
+  * [a6cce22] Github action: do not install virtualenv +
+    python3-setuptools. Thanks to Chris Hofstaedtler
+  * [78ae858] grml2iso: support parallel execution
+  * [8126bbf] grml2iso: execute under pipefail
+
+ -- Michael Prokop <mika@grml.org>  Mon, 21 Mar 2022 16:19:54 +0100
+
 grml2usb (0.18.5) unstable; urgency=medium
 
   * [01ed11d] Fix --grub and --syslinux handling. Thanks to Ralf Moll for
