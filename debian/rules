@@ -10,7 +10,7 @@ VERSION:=$(shell dpkg-parsechangelog | awk '/Version: / { print $$2 }')
 
 override_dh_auto_build:
 	dh_testdir
-	egrep -q '^PROG_VERSION = "\*\*\*UNKNOWN\*\*\*"' grml2usb || (echo "PROG_VERSION in grml2usb wrong." && exit 2)
+	grep -qE '^PROG_VERSION = "\*\*\*UNKNOWN\*\*\*"' grml2usb || (echo "PROG_VERSION in grml2usb wrong." && exit 2)
 	$(MAKE) -C mbr
 	$(MAKE)
 
