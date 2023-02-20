@@ -1614,7 +1614,6 @@ def handle_syslinux_config(grml_flavour, target):
     new_grml_cfg = "%s/%s_grml.cfg" % (syslinux_target, flavour_filename)
 
     if os.path.isfile(defaults_file):
-
         # remove default menu entry in menu
         remove_default_entry(new_default_with_path)
 
