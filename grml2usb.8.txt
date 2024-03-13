@@ -214,12 +214,6 @@ Directory layout on USB device
     |   |-- grml64
     |   |   |-- linux26      [Kernel]
     |   |   |-- initrd.gz    [initramfs]
-    |   |-- grml-medium
-    |   |   |-- linux26      [...]
-    |   |   |-- initrd.gz
-    |   |-- grml64-medium
-    |   |   |-- linux26
-    |   |   |-- initrd.gz
     |   |-- grml-small
     |   |   |-- linux26
     |   |   |-- initrd.gz
@@ -256,11 +250,8 @@ Directory layout on USB device
     |-- grml/
     |   |-- filesystem.module    [module specifying which squashfs should be used for grml]
     |   `-- grml.squashfs        [squashfs file for grml]
-    |-- grml-medium/
-    |   |-- filesystem.module    [module specifying which squashfs should be used for grml-medium]
-    |   `-- grml-medium.squashfs [squashfs file for grml-medium]
     |-- grml-small/
-    |   |-- filesystem.module    [module specifying which squashfs should be used for grml-medium]
+    |   |-- filesystem.module    [module specifying which squashfs should be used for grml-small]
     |   `-- grml-small.squashfs  [squashfs file for grml-small]
     `-- ...
 
