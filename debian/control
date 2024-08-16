@@ -39,7 +39,7 @@ Recommends:
  syslinux,
  syslinux-utils,
  xorriso | genisoimage,
-Description: install Grml system / ISO to usb device
+Description: install Grml system / ISO to USB device
  This script installs a Grml ISO to an USB device to be able
  to boot from it.  Make sure you have at least one Grml ISO
  or a running Grml system (/run/live/medium) available.
