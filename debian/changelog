@@ -1,3 +1,17 @@
+grml2usb (0.19.3) unstable; urgency=medium
+
+  [ Michael Prokop ]
+  * [5f40f1c] grml2usb docs: drop references to deprecated grml-medium
+
+  [ Chris Hofstaedtler ]
+  * [418f5db] Add GitHub Actions workflow to build grml2usb.deb
+  * [8c841fe] d/control: Capitalize Vcs-Git
+  * [60f4229] d/control: Update my name
+  * [ca3f02c] d/control: set Rules-Requires-Root: no
+  * [8926abb] d/control: uppercase USB in description
+
+ -- Michael Prokop <mika@grml.org>  Fri, 06 Sep 2024 17:39:48 +0200
+
 grml2usb (0.19.2) unstable; urgency=medium
 
   * [2955aaf] codecheck: reformat with black, version 23.1.0
