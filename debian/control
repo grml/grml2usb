@@ -14,6 +14,7 @@ Build-Depends:
  docbook-xsl,
  flake8,
  isort,
+ nasm,
  vulture,
  xsltproc,
 Standards-Version: 4.6.2
