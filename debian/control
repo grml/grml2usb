@@ -14,6 +14,7 @@ Build-Depends:
  docbook-xsl,
  flake8,
  isort,
+ nasm,
  vulture,
  xsltproc,
 Standards-Version: 4.6.2
@@ -23,7 +24,7 @@ Vcs-Git: git://git.grml.org/grml2usb.git
 Vcs-Browser: https://git.grml.org/?p=grml2usb.git
 
 Package: grml2usb
-Architecture: amd64 i386
+Architecture: all
 Depends:
  kmod,
  mtools,
