@@ -1,3 +1,12 @@
+grml2usb (0.20.0) unstable; urgency=medium
+
+  [ Chris Hofstaedtler ]
+  * [8143af6] Use nasm to assemble mbr
+  * [bb80820] debian: make grml2usb package Architecture: all
+  * [e055635] debian: Do not run codecheck
+
+ -- Michael Prokop <mika@grml.org>  Sat, 19 Oct 2024 17:23:30 +0200
+
 grml2usb (0.19.3) unstable; urgency=medium
 
   [ Michael Prokop ]
