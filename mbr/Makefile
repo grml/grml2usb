@@ -3,15 +3,11 @@
 all: mbrmgr mbrldr
 
 clean:
-	rm -f mbrmgr mbrldr mbrmgr.elf mbr.o
+	rm -f mbrmgr mbrldr
 
 mbrmgr:
-	$(CC) -D_ASM_SOURCE -DBOOTMANAGER -D__BOOT_VER=\"0AA6\" -c mbr.S
-	ld -nostdlib -Ttext 0x0600 -N -Bstatic -e _start -o mbrmgr.elf mbr.o
-	objcopy -O binary mbrmgr.elf mbrmgr
+	nasm -D__BOOT_VER=\"0AA6\" -DBOOTMANAGER mbr.S -o mbrmgr
 
 # bootloader, without a bootmenu
 mbrldr:
-	$(CC) -D_ASM_SOURCE -UBOOTMANAGER -DBOOT_QUIET -D__BOOT_VER=\"0AA6\" -c mbr.S
-	ld -nostdlib -Ttext 0x0600 -N -Bstatic -e _start -o mbrmgr.elf mbr.o
-	objcopy -O binary mbrmgr.elf mbrldr
+	$ nasm -D__BOOT_VER=\"0AA6\" -DBOOT_QUIET mbr.S -o mbrldr
