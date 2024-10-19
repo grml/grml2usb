@@ -9,13 +9,9 @@ Uploaders:
  Ulrich Dangel <mru@spamt.net>,
 Build-Depends:
  asciidoc,
- black,
  debhelper-compat (= 12),
  docbook-xsl,
- flake8,
- isort,
  nasm,
- vulture,
  xsltproc,
 Standards-Version: 4.6.2
 Rules-Requires-Root: no
