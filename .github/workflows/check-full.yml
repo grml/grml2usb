@@ -1,11 +1,14 @@
 name: Code Testing
-
 on:
-  push:
+  workflow_dispatch:
   pull_request:
+  push:
   schedule:
     - cron: '42 1 * * *'
 
+concurrency:
+  group: "codecheck-${{ github.ref }}"
+  cancel-in-progress: true
 jobs:
   codecheck:
     runs-on: ubuntu-latest
