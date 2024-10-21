@@ -27,13 +27,13 @@ Depends:
  python3,
  python3-parted,
  rsync,
- syslinux | grub-pc-bin,
- syslinux | grub2-common,
+ syslinux [amd64 i386] | grub-pc-bin [amd64 i386],
+ syslinux [amd64 i386] | grub2-common [amd64 i386],
  ${misc:Depends},
  ${shlibs:Depends},
 Recommends:
  isolinux (>= 3:6.03+dfsg-5+deb8u1~),
- syslinux,
+ syslinux [amd64 i386],
  syslinux-utils,
  xorriso | genisoimage,
 Description: install Grml system / ISO to USB device
