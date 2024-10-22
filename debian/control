@@ -16,8 +16,8 @@ Build-Depends:
 Standards-Version: 4.6.2
 Rules-Requires-Root: no
 Homepage: https://grml.org/grml2usb/
-Vcs-Git: git://git.grml.org/grml2usb.git
-Vcs-Browser: https://git.grml.org/?p=grml2usb.git
+Vcs-Git: https://github.com/grml/grml2usb.git
+Vcs-Browser: https://github.com/grml/grml2usb
 
 Package: grml2usb
 Architecture: all
