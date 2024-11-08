@@ -1,3 +1,15 @@
+grml2usb (0.20.1) unstable; urgency=medium
+
+  [ crpb ]
+  * debian: update Vcs-Git and Vcs-Browser
+
+  [ Chris Hofstaedtler ]
+  * Loosen dependency on grub2.
+    Avoid pulling in non-UEFI grub on amd64, if UEFI grub is already
+    installed. Also necessary to allow installing on arm64.
+
+ -- Chris Hofstaedtler <zeha@debian.org>  Fri, 08 Nov 2024 18:09:18 +0100
+
 grml2usb (0.20.0) unstable; urgency=medium
 
   [ Chris Hofstaedtler ]
