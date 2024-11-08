@@ -27,8 +27,8 @@ Depends:
  python3,
  python3-parted,
  rsync,
- syslinux | grub-pc-bin,
- syslinux | grub2-common,
+ syslinux | grub-efi-amd64-signed | grub-pc-bin | grub-efi-arm64-bin | grub-common,
+ syslinux | grub-common,
  ${misc:Depends},
  ${shlibs:Depends},
 Recommends:
