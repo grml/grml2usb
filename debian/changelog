@@ -1,3 +1,15 @@
+grml2usb (0.20.2) unstable; urgency=medium
+
+  [ Michael Prokop ]
+  * [4141028] Add debian/gbp.conf to set expected debian tag + dch
+    settings
+
+  [ Chris Hofstaedtler ]
+  * [b344d41] Add .github/FUNDING.yml
+  * [257aee3] Copy bootaa64.efi if available (#56)
+
+ -- Michael Prokop <mika@grml.org>  Sat, 23 Nov 2024 13:50:29 +0100
+
 grml2usb (0.20.1) unstable; urgency=medium
 
   [ crpb ]
