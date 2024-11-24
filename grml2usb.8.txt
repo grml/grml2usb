@@ -77,16 +77,6 @@ Format specified partition with FAT16.
 
 Force any (possible dangerous) actions requiring manual interaction (like --fat16).
 
-  *\--grub*::
-
-Install grub bootloader instead of (default) syslinux.
-
-  *\--grub-mbr*::
-
-Install grub into MBR (Master Boot Record) instead of PBR (Partition Boot
-Record). Check out <<mbr-vs-pbr,the 'mbr-vs-pbr' section in the FAQ of this
-document>> for further details.
-
   *\--help*::
 
 Display usage information and exit.
@@ -155,13 +145,6 @@ file no matter whether you're using grub or syslinux as bootloader.
 Skip check to verify whether given device is a removable device.
 Some USB devices are known to report wrong information, when using
 such a device you can skip grml2usb's removable device check.
-
-  *\--syslinux*::
-
-This option is deprecated and is being left only for backwards compatibility
-reasons. Syslinux is the default bootloader of grml2usb and therefore the
-'--syslinux' option doesn't have any effects. If you do not want to use syslinux
-as bootloader consider using the '--grub' option.
 
   *\--syslinux-mbr*::
 
@@ -343,8 +326,7 @@ root=..., consider using root=UUID=....
 *Error message*::  Could not find kernel image: ...
 
 *Reason*:: either a broken isolinux/syslinux version or a broken BIOS. Check out
-whether the vendor provides a BIOS update or if using bootloader grub instead of
-isolinux/syslinux fixes the problem.
+whether the vendor provides a BIOS update.
 
 [[faq]]
 Frequently Asked Questions (FAQ)
@@ -402,8 +384,7 @@ What's the difference between grml2usb and just using dd?
 
 grml2usb does not remove any data from your USB device and does not alter the
 partition table at all. grml2usb provides multi-ISO support, support for adding
-default bootoptions and selecting the bootloader (syslinux vs. grub) without
-having to manually touch the ISO at all.
+default bootoptions without having to manually touch the ISO at all.
 
 [[grml2iso]]
 What's grml2iso?
@@ -422,83 +403,6 @@ Providing both files allows grml2usb to install grub on the target device
 no matter which grub version is available on the host where grml2usb is
 executed on.
 
-[[stage1]]
-grub-install fails with 'The file ../boot/grub/stage1 not read correctly"?!
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Check whether the partition has the right partition type. For example do NOT use
-FAT16 (partition type 6) when using a ext3 filesystem on the partition but
-instead use the correct partition type ('83' - Linux) then.
-
-[[grub-install-xfs_freeze]]
-grub-install complains about /sbin/grub-install and/or xfs_freeze?!
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The following message:
-
-  You shouldn't call /sbin/grub-install. Please call /usr/sbin/grub-install instead!
-  xfs_freeze: specified file ["/tmp/tmpqaBK6z/boot/grub"] is not on an XFS filesystem
-
-This is "normal". grub-install sends those messages to stderr. To avoid hiding any
-possible real error messages grml2usb doesn't ignore those messages.
-
-[[device-map]]
-grub-install complains about /boot/grub/device.map?!
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The following message:
-
-  grub-probe: error: Cannot open `/boot/grub/device.map'
-
-This is "normal" (at least with grub1). This isn't a problem, because the
-device.map file will be generated on the target device anyway.
-
-[[unary-operator]]
-grub-install complains about a unary operator?!
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The following message:
-
-  '/usr/sbin/grub-install: line 374: [: =: unary operator expected'
-
-This is "normal". Just ignore it. (It usually doesn't appear
-on the second invocation on the same device.)
-
-[[unknown-filesystem]]
-grub-install fails with grub-probe: error: unknown filesystem?!
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The following message:
-
-  grub-probe: error: unknown filesystem
-  Auto-detection of a filesystem module failed.
-  Please specify the module with the option `--modules' explicitly.
-
-usually means that the device partition table says something else than the
-filesystem on the device. For example using FAT16 as filesystem type and
-using FAT32 as filesystem on the partition will not work. Either set filesystem
-type to FAT32 or format the partition using FAT16. It is essential that
-device partition table and filesystem use the same filesystem type.
-
-[[mbr-vs-pbr]]
-grub-setup fails after Attempting to install GRUB to a partition instead of the MBR?!
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The following message:
-
-  grub-setup: warn: Attempting to install GRUB to a partition instead of the MBR.  This is a BAD idea.
-  grub-setup: warn: Embedding is not possible.  GRUB can only be installed in this setup by using blocklists.  However, blocklists are UNRELIABLE and its use is discouraged.
-  grub-setup: error: Cannot read `/grub/core.img' correctly
-
-appears when using grub2 versions older than 1.98 as those version introduced a
-regression which avoids that grub is being installed into a partition (PBR,
-Partition Boot Record) instead of MBR (Master Boot Record).
-
-To work around this issue you can either 1) upgrade to grub versions >=1.98, 2)
-install grub into the MBR (Master Boot Record) using the '--grub-mbr' option of
-grml2usb or 3) switch to syslinux as bootmanager (just drop the '--grub'
-option).
-
 [[splash-xpm]]
 I'm getting something like "Error: /usr/share/grml2usb/grub/splash.xpm.gz can not be read"!?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -515,8 +419,7 @@ Why do I have to use a FAT16/FAT32 filesystem?
 
 Syslinux (currently) does not support any other filesystems besides FAT16/FAT32
 (though that's a sane default if you want to share your files with other
-(operating) systems). If you want to use a different filesystem (like ext2/3)
-use the bootloader grub instead using grml2usb's '--grub' option.
+(operating) systems).
 
 [NOTE]
 FAT32 is supported since syslinux version 3.0.
@@ -559,7 +462,7 @@ Usage examples
 
 Install specified ISO on device /dev/sdX1.
 
-  # grml2usb /home/grml/grml64-full_2018.12.iso /home/grml/grml32-full_2018.12.iso  /dev/sdX1
+  # grml2usb /home/grml/grml64-full_2018.12.iso /home/grml/grml32-full_2018.12.iso /dev/sdX1
 
 Install specified ISOs on device /dev/sdX1 for multibooting ISOs.
 
@@ -576,12 +479,6 @@ ISO on device /dev/sdX1 for multibooting.
 
 Install specified ISO on device /dev/sdX1 and format partition /dev/sdX1 with
 FAT16 filesystem.
-
-  # grml2usb --grub --grub-mbr /home/grml/grml64-full_2018.12.iso /dev/sdX1
-
-Install specified ISO on device /dev/sdX1 and use grub as bootloader (instead of
-syslinux being the default) and install a master boot record (MBR) to the MBR of
-/dev/sdX.
 
 ///////////////////////////////////////////////////////////////////////////////////////
   # grml2usb --kernel=/boot/vmlinuz-2.6.28-grml --initrd=/boot/initrd.img-2.6.28-grml \
