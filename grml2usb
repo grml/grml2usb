@@ -292,7 +292,7 @@ def cleanup():
                 shutil.rmtree(tmppath, onerror=del_failed)
                 logging.debug("temporary directory %s deleted" % tmppath)
                 unregister_tmpfile(tmppath)
-            elif os.path.isfile:
+            elif os.path.isfile(tmppath):
                 os.unlink(tmppath)
                 logging.debug("temporary file %s deleted" % tmppath)
                 unregister_tmpfile(tmppath)
