@@ -1923,26 +1923,6 @@ def handle_vfat(device):
             sys.exit(1)
 
 
-def handle_compat_warning(device):
-    """Backwards compatible checks
-
-    @device: device that should be checked"""
-
-    # make sure we can replace old grml2usb script and warn user when using old way of life:
-    if (
-        device.startswith("/mnt/external")
-        or device.startswith("/mnt/usb")
-        and not options.force
-    ):
-        print("Warning: the semantics of grml2usb has changed.")
-        print("Instead of using grml2usb /path/to/iso %s you might" % device)
-        print("want to use grml2usb /path/to/iso /dev/... instead.")
-        print("Please check out the grml2usb manpage for details.")
-        f = input("Do you really want to continue? y/N ")
-        if f.lower() != "y":
-            sys.exit(1)
-
-
 def handle_logging():
     """Log handling and configuration"""
 
@@ -2055,9 +2035,6 @@ def main():
                     logging.warning(
                         "Warning: installing on partition number >4, booting *might* fail depending on your system."
                     )
-
-        # provide upgrade path
-        handle_compat_warning(device)
 
         if not options.skipbootflag:
             check_boot_flag(device)
