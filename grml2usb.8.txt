@@ -385,14 +385,6 @@ Well, you can. :) Starting with Grml 2009.10 the ISOs are dd-able straight out-o
 Note that ANY existing data on your USB device will be destroyed when
 using the dd approach.
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-Grab a recent Grml ISO and use
-link:http://syslinux.zytor.com/wiki/index.php/Doc/isolinux#HYBRID_CD-ROM.2FHARD_DISK_MODE[isohybrid
-from the syslinux project]:
-
-  % isohybrid grml64-small_2018.12.iso
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
 This allows you to dd the Grml ISO to your USB device (use for example
 link:http://www.chrysocome.net/rawwrite[rawwrite] if you've just a Windows
 system available) running:
