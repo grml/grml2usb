@@ -56,22 +56,10 @@ SYSLINUX_LIBS = [
     "/usr/lib/syslinux/modules/bios/",  # Debian
     "/usr/lib/syslinux/bios/",  # Arch Linux
 ]
-GRUB_INSTALL = None
 
 RE_PARTITION = re.compile(r"([a-z/]*?)(\d+)$")
 RE_P_PARTITION = re.compile(r"(.*?\d+)p(\d+)$")
 RE_LOOP_DEVICE = re.compile(r"/dev/loop\d+$")
-
-
-class SyslinuxWarningAction(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string=None):
-        del values
-        del option_string
-        sys.stderr.write(
-            "Note: the --syslinux option is deprecated as syslinux "
-            "is grml2usb's default. Continuing anyway.\n"
-        )
-        namespace.syslinux = True
 
 
 # cmdline parsing
@@ -79,14 +67,13 @@ USAGE = "Usage: %(prog)s [options] <[ISO[s] | /run/live/medium]> </dev/sdX#>\n\
 \n\
 %(prog)s installs Grml ISO[s] to an USB device to be able to boot from it.\n\
 Make sure you have at least one Grml ISO or a running Grml system (/run/live/medium),\n\
-grub or syslinux and root access.\n\
+syslinux and root access.\n\
 \n\
 Run %(prog)s --help for usage hints, further information via: man grml2usb"
 
 # pylint: disable-msg=C0103
 # pylint: disable-msg=W0603
 parser = argparse.ArgumentParser(usage=USAGE)
-bootloader_group = parser.add_mutually_exclusive_group()
 
 parser.add_argument(
     "--bootoptions",
@@ -118,12 +105,6 @@ parser.add_argument(
     "--force",
     action="store_true",
     help="force any actions requiring manual interaction",
-)
-parser.add_argument(
-    "--grub-mbr",
-    dest="grubmbr",
-    action="store_true",
-    help="install grub into MBR instead of (default) PBR",
 )
 parser.add_argument(
     "--mbr-menu",
@@ -213,20 +194,6 @@ parser.add_argument(
     action="version",
     version=f"%(prog)s {PROG_VERSION}",
     help="display version and exit",
-)
-
-bootloader_group.add_argument(
-    "--grub",
-    action="store_true",
-    help="install grub bootloader instead of (default) syslinux",
-)
-bootloader_group.add_argument(
-    "--syslinux",
-    dest="syslinux",
-    default=True,
-    action=SyslinuxWarningAction,
-    nargs=0,
-    help="install syslinux bootloader (deprecated)",
 )
 
 parser.add_argument(
@@ -583,79 +550,6 @@ menu end
     }
 
 
-def install_grub(device):
-    """Install grub on specified device.
-
-    @mntpoint: mountpoint of device where grub should install its files to
-    @device: partition where grub should be installed to"""
-
-    if options.dryrun:
-        logging.info(
-            "Would execute grub-install [--root-directory=mount_point] %s now.", device
-        )
-    else:
-        device_mountpoint = tempfile.mkdtemp(prefix="grml2usb")
-        register_tmpfile(device_mountpoint)
-        try:
-            # If using --grub-mbr then make sure we install grub in MBR instead of PBR
-            if options.grubmbr:
-                logging.debug("Using option --grub-mbr ...")
-                grub_device, x = get_device_from_partition(device)
-            else:
-                grub_device = device
-
-            set_rw(device)
-            mount(device, device_mountpoint, "")
-
-            logging.info("Installing grub as bootloader")
-            for opt in ["--", "--force"]:
-                set_rw(device)
-                set_rw(grub_device)
-                logging.debug(
-                    "%s --recheck --no-floppy --target=i386-pc --root-directory=%s %s %s",
-                    GRUB_INSTALL,
-                    device_mountpoint,
-                    opt,
-                    grub_device,
-                )
-                proc = subprocess.Popen(
-                    [
-                        GRUB_INSTALL,
-                        "--recheck",
-                        "--no-floppy",
-                        "--target=i386-pc",
-                        "--root-directory=%s" % device_mountpoint,
-                        opt,
-                        grub_device,
-                    ],
-                    stdout=open(os.devnull, "r+"),
-                )
-                proc.wait()
-                if proc.returncode == 0:
-                    break
-
-            if proc.returncode != 0:
-                # raise Exception("error executing grub-install")
-                logging.critical(
-                    "Fatal: error executing grub-install "
-                    "(please check the grml2usb FAQ or drop the --grub option)"
-                )
-                logging.critical(
-                    "Note:  if using grub2 consider using "
-                    "the --grub-mbr option as grub considers PBR problematic."
-                )
-                cleanup()
-                sys.exit(1)
-        except CriticalException as error:
-            logging.critical("Fatal: %s", error)
-            cleanup()
-            sys.exit(1)
-        finally:
-            unmount(device_mountpoint, "")
-            os.rmdir(device_mountpoint)
-            unregister_tmpfile(device_mountpoint)
-
-
 def install_syslinux(device):
     """Install syslinux on specified device.
 
@@ -674,30 +568,8 @@ def install_syslinux(device):
     proc.wait()
     if proc.returncode != 0:
         raise CriticalException(
-            "Error executing syslinux (either try --fat16 or use grub?)"
+            "Error executing syslinux (try --fat16?)"
         )
-
-
-def install_bootloader(device):
-    """Install bootloader on specified device.
-
-    @device: partition where bootloader should be installed to"""
-
-    # by default we use grub, so install syslinux only on request
-    if options.grub:
-        try:
-            install_grub(device)
-        except CriticalException as error:
-            logging.critical("Fatal: %s", error)
-            cleanup()
-            sys.exit(1)
-    else:
-        try:
-            install_syslinux(device)
-        except CriticalException as error:
-            logging.critical("Fatal: %s", error)
-            cleanup()
-            sys.exit(1)
 
 
 def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
@@ -1896,7 +1768,7 @@ def handle_vfat(device):
             sys.exit(1)
 
     # check for vfat filesystem
-    if device is not None and not os.path.isdir(device) and options.syslinux:
+    if device is not None and not os.path.isdir(device):
         try:
             check_for_fat(device)
         except CriticalException as error:
@@ -1952,40 +1824,22 @@ def handle_bootloader(device):
     elif os.path.isdir(device):
         logging.info("Not installing bootloader as %s is a directory.", device)
     else:
-        install_bootloader(device)
-
-
-def check_options(opts):
-    """Check compatibility of provided user opts
-
-    @opts option dict from OptionParser
-    """
-    if opts.grubmbr and not opts.grub:
-        raise CriticalException("--grub-mbr requires --grub option.")
-
-    if opts.copyonly and opts.grub:
-        raise CriticalException("Cannot use --copy-only and --grub at the same time.")
+        try:
+            install_syslinux(device)
+        except CriticalException as error:
+            logging.critical("Fatal: %s", error)
+            cleanup()
+            sys.exit(1)
 
 
 def check_programs():
     """check if all needed programs are installed"""
-    if options.grub:
-        global GRUB_INSTALL
-        GRUB_INSTALL = which("grub-install") or which("grub2-install")
-        if not GRUB_INSTALL:
-            logging.critical(
-                "Fatal: grub-install not available (please install the "
-                "grub package or drop the --grub option)"
-            )
-            sys.exit(1)
-
-    if options.syslinux:
-        if not which("syslinux"):
-            logging.critical(
-                "Fatal: syslinux not available (please install the "
-                "syslinux package or use the --grub option)"
-            )
-            sys.exit(1)
+    if not which("syslinux"):
+        logging.critical(
+            "Fatal: syslinux not available (please install the "
+            "syslinux package or use the --grub option)"
+        )
+        sys.exit(1)
 
     if not which("rsync"):
         logging.critical("Fatal: rsync not available, can not continue - sorry.")
@@ -2014,8 +1868,6 @@ def main():
 
         # make sure we have the appropriate permissions
         check_uid_root()
-
-        check_options(options)
 
         load_loop()
 
