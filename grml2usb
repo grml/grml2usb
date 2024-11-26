@@ -13,7 +13,7 @@ This script installs a Grml system (either a running system or ISO[s]) to a USB 
 
 """
 
-
+import argparse
 import fileinput
 import glob
 import logging
@@ -26,7 +26,6 @@ import sys
 import tempfile
 import uuid
 from inspect import isclass, isroutine
-from optparse import OptionParser
 
 # The line following this line is patched by debian/rules and tarball.sh.
 PROG_VERSION = "***UNKNOWN***"
@@ -64,181 +63,185 @@ RE_P_PARTITION = re.compile(r"(.*?\d+)p(\d+)$")
 RE_LOOP_DEVICE = re.compile(r"/dev/loop\d+$")
 
 
-def syslinux_warning(option, opt, _value, opt_parser):
-    """A helper function for printing a warning about deprecated option"""
-    # pylint: disable-msg=W0613
-    sys.stderr.write(
-        "Note: the --syslinux option is deprecated as syslinux "
-        "is grml2usb's default. Continuing anyway.\n"
-    )
-    setattr(opt_parser.values, option.dest, True)
-
-
-# if grub option is set, unset syslinux option
-def grub_option(option, opt, _value, opt_parser):
-    """A helper function adjusting other option values"""
-    # pylint: disable-msg=W0613
-    setattr(opt_parser.values, option.dest, True)
-    setattr(opt_parser.values, "syslinux", False)
+class SyslinuxWarningAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        del values
+        del option_string
+        sys.stderr.write(
+            "Note: the --syslinux option is deprecated as syslinux "
+            "is grml2usb's default. Continuing anyway.\n"
+        )
+        namespace.syslinux = True
 
 
 # cmdline parsing
-USAGE = "Usage: %prog [options] <[ISO[s] | /run/live/medium]> </dev/sdX#>\n\
+USAGE = "Usage: %(prog)s [options] <[ISO[s] | /run/live/medium]> </dev/sdX#>\n\
 \n\
-%prog installs Grml ISO[s] to an USB device to be able to boot from it.\n\
+%(prog)s installs Grml ISO[s] to an USB device to be able to boot from it.\n\
 Make sure you have at least one Grml ISO or a running Grml system (/run/live/medium),\n\
 grub or syslinux and root access.\n\
 \n\
-Run %prog --help for usage hints, further information via: man grml2usb"
+Run %(prog)s --help for usage hints, further information via: man grml2usb"
 
 # pylint: disable-msg=C0103
 # pylint: disable-msg=W0603
-parser = OptionParser(usage=USAGE)
-parser.add_option(
+parser = argparse.ArgumentParser(usage=USAGE)
+bootloader_group = parser.add_mutually_exclusive_group()
+
+parser.add_argument(
     "--bootoptions",
-    dest="bootoptions",
     action="append",
-    type="string",
+    type=str,
     help="use specified bootoptions as default",
 )
-parser.add_option(
+parser.add_argument(
     "--bootloader-only",
     dest="bootloaderonly",
     action="store_true",
     help="do not copy files but just install a bootloader",
 )
-parser.add_option(
+parser.add_argument(
     "--copy-only",
     dest="copyonly",
     action="store_true",
     help="copy files only but do not install bootloader",
 )
-parser.add_option(
+parser.add_argument(
     "--dry-run", dest="dryrun", action="store_true", help="avoid executing commands"
 )
-parser.add_option(
+parser.add_argument(
     "--fat16",
-    dest="fat16",
     action="store_true",
     help="format specified partition with FAT16",
 )
-parser.add_option(
+parser.add_argument(
     "--force",
-    dest="force",
     action="store_true",
     help="force any actions requiring manual interaction",
 )
-parser.add_option(
-    "--grub",
-    dest="grub",
-    action="callback",
-    callback=grub_option,
-    help="install grub bootloader instead of (default) syslinux",
-)
-parser.add_option(
+parser.add_argument(
     "--grub-mbr",
     dest="grubmbr",
     action="store_true",
     help="install grub into MBR instead of (default) PBR",
 )
-parser.add_option(
+parser.add_argument(
     "--mbr-menu",
     dest="mbrmenu",
     action="store_true",
     help="enable interactive boot menu in MBR",
 )
-parser.add_option(
+parser.add_argument(
     "--quiet",
-    dest="quiet",
     action="store_true",
     help="do not output anything but just errors on console",
 )
-parser.add_option(
+parser.add_argument(
     "--remove-bootoption",
     dest="removeoption",
     action="append",
     help="regex for removing existing bootoptions",
 )
-parser.add_option(
+parser.add_argument(
     "--rw-blockdev",
     dest="rwblockdev",
     action="store_true",
     help="enforce read-write mode on involved block devices",
 )
-parser.add_option(
+parser.add_argument(
     "--skip-addons",
     dest="skipaddons",
     action="store_true",
     help="do not install /boot/addons/ files",
 )
-parser.add_option(
+parser.add_argument(
     "--skip-bootflag",
     dest="skipbootflag",
     action="store_true",
     help="do not try to check whether the destination has the boot flag set",
 )
-parser.add_option(
+parser.add_argument(
     "--skip-grub-config",
     dest="skipgrubconfig",
     action="store_true",
     help="skip generation of grub configuration files",
 )
-parser.add_option(
+parser.add_argument(
     "--skip-mbr",
     dest="skipmbr",
     action="store_true",
     help="do not install a master boot record (MBR) on the device",
 )
-parser.add_option(
+parser.add_argument(
     "--skip-syslinux-config",
     dest="skipsyslinuxconfig",
     action="store_true",
     help="skip generation of syslinux configuration files",
 )
-parser.add_option(
+parser.add_argument(
     "--skip-usb-check",
     dest="skipusbcheck",
     action="store_true",
     help="skip check to verify whether given device is removable",
 )
-parser.add_option(
-    "--syslinux",
-    dest="syslinux",
-    action="callback",
-    default=True,
-    callback=syslinux_warning,
-    help="install syslinux bootloader (deprecated as it's the default)",
-)
-parser.add_option(
+parser.add_argument(
     "--syslinux-mbr",
     dest="syslinuxmbr",
     action="store_true",
     help="install syslinux master boot record (MBR) instead of default",
 )
-parser.add_option(
+parser.add_argument(
     "--syslinux-libs",
     dest="syslinuxlibs",
     action="append",
     default=[],
     help="syslinux modules directory path",
 )
-parser.add_option(
+parser.add_argument(
     "--tmpdir",
-    dest="tmpdir",
     default="/tmp",
     help="directory to be used for temporary files",
 )
-parser.add_option(
-    "--verbose", dest="verbose", action="store_true", help="enable verbose mode"
-)
-parser.add_option(
-    "-v",
-    "--version",
-    dest="version",
+parser.add_argument(
+    "--verbose",
     action="store_true",
+    help="enable verbose mode",
+)
+parser.add_argument(
+    "--version",
+    "-v",
+    action="version",
+    version=f"%(prog)s {PROG_VERSION}",
     help="display version and exit",
 )
-(options, args) = parser.parse_args()
+
+bootloader_group.add_argument(
+    "--grub",
+    action="store_true",
+    help="install grub bootloader instead of (default) syslinux",
+)
+bootloader_group.add_argument(
+    "--syslinux",
+    dest="syslinux",
+    default=True,
+    action=SyslinuxWarningAction,
+    nargs=0,
+    help="install syslinux bootloader (deprecated)",
+)
+
+parser.add_argument(
+    "isos",
+    nargs="+",
+    help="ISOs to install",
+)
+parser.add_argument(
+    "device",
+    nargs=1,
+    help="Partition on USB Device to install on",
+)
+
+if __name__ == "__main__":
+    options = parser.parse_args()
 
 
 GRML2USB_BASE = "/usr/share/grml2usb"
@@ -289,7 +292,7 @@ def cleanup():
                 shutil.rmtree(tmppath, onerror=del_failed)
                 logging.debug("temporary directory %s deleted" % tmppath)
                 unregister_tmpfile(tmppath)
-            elif os.path.isfile:
+            elif os.path.isfile(tmppath):
                 os.unlink(tmppath)
                 logging.debug("temporary file %s deleted" % tmppath)
                 unregister_tmpfile(tmppath)
@@ -1920,26 +1923,6 @@ def handle_vfat(device):
             sys.exit(1)
 
 
-def handle_compat_warning(device):
-    """Backwards compatible checks
-
-    @device: device that should be checked"""
-
-    # make sure we can replace old grml2usb script and warn user when using old way of life:
-    if (
-        device.startswith("/mnt/external")
-        or device.startswith("/mnt/usb")
-        and not options.force
-    ):
-        print("Warning: the semantics of grml2usb has changed.")
-        print("Instead of using grml2usb /path/to/iso %s you might" % device)
-        print("want to use grml2usb /path/to/iso /dev/... instead.")
-        print("Please check out the grml2usb manpage for details.")
-        f = input("Do you really want to continue? y/N ")
-        if f.lower() != "y":
-            sys.exit(1)
-
-
 def handle_logging():
     """Log handling and configuration"""
 
@@ -2026,13 +2009,6 @@ def main():
     """Main invocation"""
 
     try:
-        if options.version:
-            print(os.path.basename(sys.argv[0]) + " " + PROG_VERSION)
-            sys.exit(0)
-
-        if len(args) < 2:
-            parser.error("invalid usage")
-
         # log handling
         handle_logging()
 
@@ -2051,8 +2027,7 @@ def main():
         check_programs()
 
         # specified arguments
-        device = os.path.realpath(args[len(args) - 1])
-        isos = args[0 : len(args) - 1]
+        device = os.path.realpath(options.device)
 
         if not os.path.isdir(device):
             if device[-1:].isdigit():
@@ -2061,9 +2036,6 @@ def main():
                         "Warning: installing on partition number >4, booting *might* fail depending on your system."
                     )
 
-        # provide upgrade path
-        handle_compat_warning(device)
-
         if not options.skipbootflag:
             check_boot_flag(device)
 
@@ -2071,7 +2043,7 @@ def main():
         handle_vfat(device)
 
         # main operation (like installing files)
-        for iso in isos:
+        for iso in options.isos:
             install(iso, device)
 
         # install mbr
