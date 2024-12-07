@@ -1,3 +1,12 @@
+grml2usb (0.20.3) unstable; urgency=medium
+
+  * [2163d31] migrate from optparse to argparse
+  * [966c17b] fix missed execution of function
+  * [a29b826] remove upgrade path from 15 years ago
+  * [d3339d2] doc: remove isohybrid hint
+
+ -- Chris Hofstaedtler <ch@grml.org>  Sat, 07 Dec 2024 16:08:26 +0100
+
 grml2usb (0.20.2) unstable; urgency=medium
 
   [ Michael Prokop ]
