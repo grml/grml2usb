@@ -833,13 +833,17 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
         raise Exception("error executing dd (third run)")
     del tmpf
 
-    logging.debug("Probing device via 'blockdev --rereadpt %s'", device)
-    proc = subprocess.Popen(["blockdev", "--rereadpt", device])
+    blockdev_args = ["blockdev", "--rereadpt", device]
+    logging.debug("Probing device using: %s", " ".join(blockdev_args))
+    proc = subprocess.Popen(blockdev_args)
     proc.wait()
     if proc.returncode != 0:
-        raise Exception(
-            "Couldn't execute blockdev on '%s' (install util-linux?)", device
+        logging.warning(
+            "Probing device failed with return code: %d (command: %s)",
+            proc.returncode,
+            " ".join(blockdev_args),
         )
+        logging.warning("(Install util-linux?)")
 
     set_rw(device)
 
