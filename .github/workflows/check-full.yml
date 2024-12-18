@@ -28,15 +28,19 @@ jobs:
         run: make codecheck
 
   unittests:
-    runs-on: ubuntu-latest
-    name: Run unit tests
+    runs-on: ubuntu-24.04
+    name: Run unit tests as root
 
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
 
-      - name: Install pytest
-        run: pip3 install pytest
+      - name: Install pytest and deps
+        run: sudo apt install python3-pytest python3-parted syslinux grub-efi-amd64-signed grub2-common parted curl nasm make
 
+      - name: Compile mbr
+        run: make -C mbr
+
+      # tests need root, as they manage loopdevs etc.
       - name: Run Pytest
-        run: pytest
+        run: sudo pytest-3

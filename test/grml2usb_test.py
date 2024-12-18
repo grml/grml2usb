@@ -15,8 +15,10 @@ Runwith:
 :bugreports: http://grml.org/bugs/
 """
 
-
+import argparse
 import importlib
+import os
+import subprocess
 
 import pytest
 
@@ -38,3 +40,89 @@ def test_extract_device_name_invalid():
         assert grml2usb.extract_device_name("/dev")
     with pytest.raises(AttributeError):
         assert grml2usb.extract_device_name("foobar")
+
+
+def _run_x(args, check: bool = True, **kwargs):
+    # str-ify Paths, not necessary, but for readability in logs.
+    args = [arg if isinstance(arg, str) else str(arg) for arg in args]
+    args_str = '" "'.join(args)
+    print(f'D: Running "{args_str}"', flush=True)
+    return subprocess.run(args, check=check, **kwargs)
+
+
+def _find_free_loopdev() -> str:
+    return _run_x(["losetup", "-f"], capture_output=True).stdout.decode().strip()
+
+
+def _identify_file(path) -> str:
+    return _run_x(["file", path], capture_output=True).stdout.decode().strip().split(": ", 1)[1]
+
+
+@pytest.mark.require_root
+def test_smoke(tmp_path):
+    loop_dev = _find_free_loopdev()
+    partition = f"{loop_dev!s}p1"
+
+    iso_url = "https://daily.grml.org/grml-small-amd64-unstable/latest/grml-small-amd64-unstable_latest.iso"
+    iso_name = "grml.iso"
+    if not os.path.exists(iso_name):
+        _run_x(["curl", "-fSl#", "--output", iso_name, iso_url])
+
+    grml2usb_options = argparse.Namespace(
+        bootoptions=None,
+        bootloaderonly=False,
+        copyonly=False,
+        dryrun=False,
+        fat16=True,
+        force=True,
+        grubmbr=False,
+        mbrmenu=False,
+        quiet=False,
+        removeoption=None,
+        rwblockdev=False,
+        skipaddons=False,
+        skipbootflag=False,
+        skipgrubconfig=False,
+        skipmbr=False,
+        skipsyslinuxconfig=False,
+        skipusbcheck=False,
+        syslinuxmbr=False,
+        syslinuxlibs=[],
+        tmpdir="/tmp",
+        verbose=False,
+        grub=False,
+        syslinux=True,
+        isos=[iso_name],
+        device=partition,
+    )
+    print("Options:", grml2usb_options)
+
+    part_size = 1 * 1024 * 1024  # 1 GB
+    part_size_sectors = int(part_size * (1024 / 512))
+    dd_size = str(int((part_size / 1024) + 100))
+
+    # format (see sfdisk manual page):
+    # <start>,<size_in_sectors>,<id>,<bootable>
+    # 1st partition, EFI (FAT-12/16/32, ID ef) + bootable flag
+    sfdisk_template = f"2048,{part_size_sectors},ef,*\n"
+    print("Using sfdisk template:\n", sfdisk_template, "\n---")
+    loop_backing_file = tmp_path / "loop"
+
+    _run_x(["dd", "if=/dev/zero", f"of={loop_backing_file!s}", "bs=1M", f"count={dd_size}"])
+    sfdisk_input_file = tmp_path / "sfdisk.txt"
+    with sfdisk_input_file.open("wt") as fh:
+        fh.write(sfdisk_template)
+        fh.flush()
+
+    with sfdisk_input_file.open() as fh:
+        _run_x(["/sbin/sfdisk", loop_backing_file], stdin=fh)
+
+    _run_x(["losetup", loop_dev, loop_backing_file])
+    _run_x(["partprobe", loop_dev])
+
+    try:
+        grml2usb.main(grml2usb_options)
+    finally:
+        _run_x(["losetup", "-d", loop_dev])
+
+    assert _identify_file(loop_backing_file).startswith("DOS/MBR boot sector; partition 1 : ID=0xef, active")

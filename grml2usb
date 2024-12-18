@@ -240,8 +240,8 @@ parser.add_argument(
     help="Partition on USB Device to install on",
 )
 
-if __name__ == "__main__":
-    options = parser.parse_args()
+# will be overwritten at the bottom of this file.
+options: argparse.Namespace | None = None
 
 
 GRML2USB_BASE = "/usr/share/grml2usb"
@@ -350,6 +350,7 @@ def get_function_name(obj):
 
 
 def set_rw(device):
+    assert options is not None
     if not options.rwblockdev:
         return
 
@@ -364,6 +365,7 @@ def execute(f, *exec_arguments):
     """Wrapper for executing a command. Either really executes
     the command (default) or when using --dry-run commandline option
     just displays what would be executed."""
+    assert options is not None
     # usage: execute(subprocess.Popen, (["ls", "-la"]))
     if options.dryrun:
         # pylint: disable-msg=W0141
@@ -512,6 +514,7 @@ def mkfs_fat16(device):
     """Format specified device with VFAT/FAT16 filesystem.
 
     @device: partition that should be formated"""
+    assert options is not None
 
     if options.dryrun:
         logging.info("Would execute mkfs.vfat -F 16 %s now.", device)
@@ -588,6 +591,7 @@ def install_grub(device):
 
     @mntpoint: mountpoint of device where grub should install its files to
     @device: partition where grub should be installed to"""
+    assert options is not None
 
     if options.dryrun:
         logging.info(
@@ -1191,6 +1195,7 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
     @target: path where grml's main files should be copied to
     @grml_flavour: name of the current processed grml_flavour
     """
+    assert options is not None
 
     syslinux_target = target + "/boot/syslinux/"
     execute(mkdir, syslinux_target)
@@ -1283,6 +1288,7 @@ def install_iso_files(grml_flavour, iso_mount, device, target):
     @iso_mount: path where a grml ISO is mounted on
     @device: device/partition where bootloader should be installed to
     @target: path where grml's main files should be copied to"""
+    assert options is not None
 
     global GRML_DEFAULT
     GRML_DEFAULT = GRML_DEFAULT or grml_flavour
@@ -1373,6 +1379,7 @@ def get_bootoptions(grml_flavour):
 
     @grml_flavour: name of the grml_flavour
     """
+    assert options is not None
     # do NOT write "None" in kernel cmdline
     if not options.bootoptions:
         bootopt = ""
@@ -1388,6 +1395,7 @@ def handle_grub_config(grml_flavour, device, target):
     @grml_flavour: name of grml flavour the configuration should be generated for
     @device: device/partition where grub should be installed to
     @target: path of grub's configuration files"""
+    assert options is not None
 
     global UUID
 
@@ -1480,6 +1488,7 @@ def adjust_syslinux_bootoptions(src, flavour):
     @src: config file to alter
     @flavour: grml flavour
     """
+    assert options is not None
 
     append_re = re.compile(r"^(\s*append.*/boot/.*)$", re.I)
     # flavour_re = re.compile("(label.*)(grml\w+)")
@@ -1573,6 +1582,7 @@ def handle_syslinux_config(grml_flavour, target):
 
     @grml_flavour: name of grml flavour the configuration should be generated for
     @target: path of syslinux's configuration files"""
+    assert options is not None
 
     logging.debug("Generating syslinux configuration")
     syslinux_target = target + "/boot/syslinux/"
@@ -1640,6 +1650,7 @@ def handle_secure_boot(target, efi_img):
     @target: path where grml's main files should be copied to
     @efi_img: path to the efi.img file that includes the files for secure boot
     """
+    assert options is not None
 
     mkdir(target + "/efi/boot/")
     efi_mountpoint = tempfile.mkdtemp(
@@ -1703,6 +1714,7 @@ def handle_bootloader_config(grml_flavour, device, target):
     @grml_flavour: name of grml flavour the configuration should be generated for
     @device: device/partition where bootloader should be installed to
     @target: path of bootloader's configuration files"""
+    assert options is not None
 
     global UUID
     UUID = get_uuid(target)
@@ -1731,6 +1743,7 @@ def install(image, device):
     @image: directory or is file
     @device: partition or directory to install the device
     """
+    assert options is not None
     iso_mountpoint = image
     remove_image_mountpoint = False
     if os.path.isdir(image):
@@ -1818,6 +1831,7 @@ def handle_mbr(device):
     """Main handler for installing master boot record (MBR)
 
     @device: device where the MBR should be installed to"""
+    assert options is not None
 
     if options.dryrun:
         logging.info("Would install MBR")
@@ -1868,6 +1882,7 @@ def handle_vfat(device):
     """Check for FAT specific settings and options
 
     @device: device that should checked / formated"""
+    assert options is not None
 
     # make sure we have mkfs.vfat available
     if options.fat16:
@@ -1925,6 +1940,7 @@ def handle_vfat(device):
 
 def handle_logging():
     """Log handling and configuration"""
+    assert options is not None
 
     if options.verbose and options.quiet:
         parser.error("please use either verbose (--verbose) or quiet (--quiet) option")
@@ -1943,6 +1959,7 @@ def handle_bootloader(device):
     """wrapper for installing bootloader
 
     @device: device where bootloader should be installed to"""
+    assert options is not None
 
     # Install bootloader only if not using the --copy-only option
     if options.copyonly:
@@ -1969,6 +1986,7 @@ def check_options(opts):
 
 def check_programs():
     """check if all needed programs are installed"""
+    assert options is not None
     if options.grub:
         global GRUB_INSTALL
         GRUB_INSTALL = which("grub-install") or which("grub2-install")
@@ -2005,88 +2023,91 @@ def load_loop():
     proc.communicate()
 
 
-def main():
+def main(grml2usb_options: argparse.Namespace):
     """Main invocation"""
+    global options
 
-    try:
-        # log handling
-        handle_logging()
+    # allow overriding options from a test
+    options = grml2usb_options
 
-        # make sure we have the appropriate permissions
-        check_uid_root()
+    # log handling
+    handle_logging()
 
-        check_options(options)
+    # make sure we have the appropriate permissions
+    check_uid_root()
 
-        load_loop()
+    check_options(options)
 
-        logging.info("Executing grml2usb version %s", PROG_VERSION)
+    load_loop()
 
-        if options.dryrun:
-            logging.info("Running in simulation mode as requested via option dry-run.")
+    logging.info("Executing grml2usb version %s", PROG_VERSION)
 
-        check_programs()
+    if options.dryrun:
+        logging.info("Running in simulation mode as requested via option dry-run.")
 
-        # specified arguments
-        device = os.path.realpath(options.device)
+    check_programs()
 
-        if not os.path.isdir(device):
-            if device[-1:].isdigit():
-                if int(device[-1:]) > 4 or device[-2:].isdigit():
-                    logging.warning(
-                        "Warning: installing on partition number >4, booting *might* fail depending on your system."
-                    )
+    # specified arguments
+    device = os.path.realpath(options.device)
 
-        if not options.skipbootflag:
-            check_boot_flag(device)
+    if not os.path.isdir(device):
+        if device[-1:].isdigit():
+            if int(device[-1:]) > 4 or device[-2:].isdigit():
+                logging.warning(
+                    "Warning: installing on partition number >4, booting *might* fail depending on your system."
+                )
 
-        # check for vfat partition
-        handle_vfat(device)
+    if not options.skipbootflag:
+        check_boot_flag(device)
 
-        # main operation (like installing files)
-        for iso in options.isos:
-            install(iso, device)
+    # check for vfat partition
+    handle_vfat(device)
 
-        # install mbr
-        is_superfloppy = not device[-1:].isdigit()
-        if is_superfloppy:
-            logging.info("Detected superfloppy format - not installing MBR")
+    # main operation (like installing files)
+    for iso in options.isos:
+        install(iso, device)
 
-        if not options.skipmbr and not os.path.isdir(device) and not is_superfloppy:
-            handle_mbr(device)
+    # install mbr
+    is_superfloppy = not device[-1:].isdigit()
+    if is_superfloppy:
+        logging.info("Detected superfloppy format - not installing MBR")
 
-        handle_bootloader(device)
+    if not options.skipmbr and not os.path.isdir(device) and not is_superfloppy:
+        handle_mbr(device)
 
+    handle_bootloader(device)
+
+    logging.info(
+        "Note: grml flavour %s was installed as the default booting system.",
+        GRML_DEFAULT,
+    )
+
+    for flavour in GRML_FLAVOURS:
         logging.info(
-            "Note: grml flavour %s was installed as the default booting system.",
-            GRML_DEFAULT,
+            "Note: you can boot flavour %s using '%s' on the commandline.",
+            flavour,
+            flavour,
         )
 
-        for flavour in GRML_FLAVOURS:
-            logging.info(
-                "Note: you can boot flavour %s using '%s' on the commandline.",
-                flavour,
-                flavour,
-            )
-
-        # finally be polite :)
-        logging.info(
-            "Finished execution of grml2usb (%s). Have fun with your Grml system.",
-            PROG_VERSION,
-        )
-
-    except Exception as error:
-        logging.critical("Fatal: %s", str(error))
-        if options.verbose:
-            logging.exception("Exception:")
-        sys.exit(1)
+    # finally be polite :)
+    logging.info(
+        "Finished execution of grml2usb (%s). Have fun with your Grml system.",
+        PROG_VERSION,
+    )
 
 
 if __name__ == "__main__":
+    _options = parser.parse_args()
     try:
-        main()
+        main(_options)
     except KeyboardInterrupt:
         logging.info("Received KeyboardInterrupt")
         cleanup()
+    except Exception as error:
+        logging.critical("Fatal: %s", str(error))
+        if _options.verbose:
+            logging.exception("Exception:")
+        sys.exit(1)
 
 # END OF FILE ##################################################################
 # vim:foldmethod=indent expandtab ai ft=python tw=120 fileencoding=utf-8
