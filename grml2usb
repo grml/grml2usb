@@ -236,7 +236,6 @@ parser.add_argument(
 )
 parser.add_argument(
     "device",
-    nargs=1,
     help="Partition on USB Device to install on",
 )
 
