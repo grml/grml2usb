@@ -1,3 +1,12 @@
+grml2usb (0.20.4) unstable; urgency=medium
+
+  * [7538f7b] Fix crash: expected str, bytes or os.PathLike object, not list
+  * [f087d75] Add smoke test
+  * [026d659] Make blockdev --rereadpt optional
+  * [4cbd342] Introduce automatic bootloader selection
+
+ -- Chris Hofstaedtler <ch@grml.org>  Thu, 19 Dec 2024 02:00:26 +0100
+
 grml2usb (0.20.3) unstable; urgency=medium
 
   * [2163d31] migrate from optparse to argparse
