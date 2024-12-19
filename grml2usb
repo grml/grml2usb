@@ -15,6 +15,7 @@ This script installs a Grml system (either a running system or ISO[s]) to a USB 
 
 import argparse
 import fileinput
+import functools
 import glob
 import logging
 import os
@@ -61,17 +62,6 @@ GRUB_INSTALL = None
 RE_PARTITION = re.compile(r"([a-z/]*?)(\d+)$")
 RE_P_PARTITION = re.compile(r"(.*?\d+)p(\d+)$")
 RE_LOOP_DEVICE = re.compile(r"/dev/loop\d+$")
-
-
-class SyslinuxWarningAction(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string=None):
-        del values
-        del option_string
-        sys.stderr.write(
-            "Note: the --syslinux option is deprecated as syslinux "
-            "is grml2usb's default. Continuing anyway.\n"
-        )
-        namespace.syslinux = True
 
 
 # cmdline parsing
@@ -216,17 +206,24 @@ parser.add_argument(
 )
 
 bootloader_group.add_argument(
+    "--bootloader",
+    default="auto",
+    choices=["auto", "syslinux", "grub", "efi"],
+    help="Select bootloader to install",
+)
+bootloader_group.add_argument(
     "--grub",
-    action="store_true",
-    help="install grub bootloader instead of (default) syslinux",
+    dest="bootloader",
+    action="store_const",
+    const="grub",
+    help="install grub bootloader (deprecated option)",
 )
 bootloader_group.add_argument(
     "--syslinux",
-    dest="syslinux",
-    default=True,
-    action=SyslinuxWarningAction,
-    nargs=0,
-    help="install syslinux bootloader (deprecated)",
+    dest="bootloader",
+    action="store_const",
+    const="syslinux",
+    help="install syslinux bootloader (deprecated option)",
 )
 
 parser.add_argument(
@@ -346,6 +343,14 @@ def get_function_name(obj):
     if not (isroutine(obj) or isclass(obj)):
         obj = type(obj)
     return obj.__module__ + "." + obj.__name__
+
+
+def run_program(args, check: bool = True, **kwargs):
+    # str-ify Paths, not necessary, but for readability in logs.
+    args = [arg if isinstance(arg, str) else str(arg) for arg in args]
+    args_str = '" "'.join(args)
+    logging.debug('Running "%s"', args_str)
+    return subprocess.run(args, check=check, **kwargs)
 
 
 def set_rw(device):
@@ -685,16 +690,17 @@ def install_bootloader(device):
     """Install bootloader on specified device.
 
     @device: partition where bootloader should be installed to"""
+    assert options is not None
 
     # by default we use grub, so install syslinux only on request
-    if options.grub:
+    if options.bootloader == "grub":
         try:
             install_grub(device)
         except CriticalException as error:
             logging.critical("Fatal: %s", error)
             cleanup()
             sys.exit(1)
-    else:
+    elif options.bootloader == "syslinux":
         try:
             install_syslinux(device)
         except CriticalException as error:
@@ -724,6 +730,10 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     active flags to 0 and set the active flag of the partition to 80h.  Note:
     behaviour of mirbsdmbr: if flag = 0/1/2/3 then use it, otherwise search for
     the active flag."""
+    assert options is not None
+    if options.bootloader == "efi":
+        logging.info("Skipping MBR installation for EFI-boot")
+        return
 
     logging.info("Installing default MBR")
 
@@ -1014,7 +1024,7 @@ def write_uuid(target_file):
     return uid
 
 
-def get_uuid(target):
+def get_target_bootid(target):
     """Get the uuid of the specified target. Will generate an uuid if none exist.
 
     @target: directory/mountpoint containing the grml layout
@@ -1200,17 +1210,21 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
     """
     assert options is not None
 
-    syslinux_target = target + "/boot/syslinux/"
-    execute(mkdir, syslinux_target)
-
     grub_target = target + "/boot/grub/"
     execute(mkdir, grub_target)
 
-    logo = search_file("logo.16", iso_mount, required=True)
-    exec_rsync(logo, syslinux_target + "logo.16")
+    require_syslinux = options.bootloader == "syslinux"
+    logo = search_file("logo.16", iso_mount, required=require_syslinux)
+    if logo:
+        syslinux_target = target + "/boot/syslinux/"
+        execute(mkdir, syslinux_target)
+        exec_rsync(logo, syslinux_target + "logo.16")
+    else:
+        # arm64 ISOs do not suport it
+        syslinux_target = None
 
     for filename in ("bootx64.efi", "bootaa64.efi"):
-        efi_loader = search_file("bootx64.efi", iso_mount)
+        efi_loader = search_file(filename, iso_mount)
         if efi_loader:
             mkdir(target + "/efi/boot/")
             exec_rsync(efi_loader, target + "/efi/boot/" + filename)
@@ -1224,64 +1238,75 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
     execute(mkdir, target + "/conf/")
     glob_and_copy(iso_mount + "/conf/bootfile_*", target + "/conf/")
 
-    for ffile in ["f%d" % number for number in range(1, 11)]:
-        search_and_copy(ffile, iso_mount, syslinux_target + ffile)
-
-    # avoid the "file is read only, overwrite anyway (y/n) ?" question
-    # of mtools by syslinux ("mmove -D o -D O s:/ldlinux.sys $target_file")
-    if os.path.isfile(syslinux_target + "ldlinux.sys"):
-        os.unlink(syslinux_target + "ldlinux.sys")
-
-    (source_dir, name) = get_defaults_file(iso_mount, grml_flavour, "default.cfg")
-    (source_dir, defaults_file) = get_defaults_file(iso_mount, grml_flavour, "grml.cfg")
-
-    if not source_dir:
-        raise CriticalException(
-            "file default.cfg could not be found.\n"
-            "Note:  this grml2usb version requires an ISO generated by grml-live >=0.9.24 ...\n"
-            "       ... either use grml releases >=2009.10 or switch to an older grml2usb version."
-        )
-
     if not os.path.exists(iso_mount + "/boot/grub/footer.cfg"):
         logging.warning(
             "Warning: Grml releases older than 2011.12 support only one flavour in grub."
         )
 
-    for expr in (
-        name,
-        "distri.cfg",
-        defaults_file,
-        "grml.png",
-        "hd.cfg",
-        "isolinux.cfg",
-        "isolinux.bin",
-        "isoprompt.cfg",
-        "options.cfg",
-        "prompt.cfg",
-        "vesamenu.cfg",
-        "grml.png",
-        "*.c32",
-    ):
-        glob_and_copy(iso_mount + source_dir + expr, syslinux_target)
+    if syslinux_target:
+        for ffile in ["f%d" % number for number in range(1, 11)]:
+            search_and_copy(ffile, iso_mount, syslinux_target + ffile)
 
-    for modules_dir in options.syslinuxlibs + SYSLINUX_LIBS:
-        if os.path.isdir(modules_dir):
-            for filename in glob.glob1(syslinux_target, "*.c32"):
-                copy_if_exist(os.path.join(modules_dir, filename), syslinux_target)
-            break
+        # avoid the "file is read only, overwrite anyway (y/n) ?" question
+        # of mtools by syslinux ("mmove -D o -D O s:/ldlinux.sys $target_file")
+        if os.path.isfile(syslinux_target + "ldlinux.sys"):
+            os.unlink(syslinux_target + "ldlinux.sys")
 
-    # copy the addons_*.cfg file to the new syslinux directory
-    glob_and_copy(iso_mount + source_dir + "addon*.cfg", syslinux_target)
+        (source_dir, name) = get_defaults_file(iso_mount, grml_flavour, "default.cfg")
+        (source_dir, defaults_file) = get_defaults_file(
+            iso_mount, grml_flavour, "grml.cfg"
+        )
 
-    search_and_copy(
-        "hidden.cfg", iso_mount + source_dir, syslinux_target + "new_" + "hidden.cfg"
-    )
+        if source_dir:
+            # Copy syslinux files if they exist on the ISO. arm64 ISOs no longer have them.
+            for expr in (
+                name,
+                "distri.cfg",
+                defaults_file,
+                "grml.png",
+                "hd.cfg",
+                "isolinux.cfg",
+                "isolinux.bin",
+                "isoprompt.cfg",
+                "options.cfg",
+                "prompt.cfg",
+                "vesamenu.cfg",
+                "grml.png",
+                "*.c32",
+            ):
+                glob_and_copy(iso_mount + source_dir + expr, syslinux_target)
+
+            for modules_dir in options.syslinuxlibs + SYSLINUX_LIBS:
+                if os.path.isdir(modules_dir):
+                    for filename in glob.glob1(syslinux_target, "*.c32"):
+                        copy_if_exist(
+                            os.path.join(modules_dir, filename), syslinux_target
+                        )
+                    break
+
+            # copy the addons_*.cfg file to the new syslinux directory
+            glob_and_copy(iso_mount + source_dir + "addon*.cfg", syslinux_target)
+
+            search_and_copy(
+                "hidden.cfg",
+                iso_mount + source_dir,
+                syslinux_target + "new_" + "hidden.cfg",
+            )
+
+            if not options.dryrun:
+                handle_syslinux_config(grml_flavour, target)
+
+    else:
+        logging.info("Skipping syslinux installation, ISO does not support it")
 
     # copy all grub files from ISO
     glob_and_copy(iso_mount + "/boot/grub/*", grub_target)
 
     # finally (after all GRUB files have been installed) build static loopback.cfg
     build_loopbackcfg(target)
+
+    bootid = get_target_bootid(target)
+    handle_grub_config(grml_flavour, target, bootid)
 
 
 def install_iso_files(grml_flavour, iso_mount, device, target):
@@ -1314,9 +1339,6 @@ def install_iso_files(grml_flavour, iso_mount, device, target):
 
     if not options.copyonly:
         copy_bootloader_files(iso_mount, target, grml_flavour)
-
-        if not options.dryrun:
-            handle_bootloader_config(grml_flavour, device, target)
 
     # make sure we sync filesystems before returning
     logging.info("Synching data (this might take a while)")
@@ -1392,15 +1414,16 @@ def get_bootoptions(grml_flavour):
     return bootopt
 
 
-def handle_grub_config(grml_flavour, device, target):
+def handle_grub_config(grml_flavour, target, bootid):
     """Main handler for generating grub (v1 and v2) configuration
 
     @grml_flavour: name of grml flavour the configuration should be generated for
-    @device: device/partition where grub should be installed to
     @target: path of grub's configuration files"""
     assert options is not None
 
-    global UUID
+    if options.skipgrubconfig:
+        logging.info("Skipping generation of grub configuration as requested.")
+        return
 
     logging.debug("Updating grub configuration")
 
@@ -1433,7 +1456,7 @@ def handle_grub_config(grml_flavour, device, target):
                     line = line.replace(" {} ".format(bootopt.strip()), " ")
                     if line.endswith(bootopt):
                         line = line[: -len(bootopt)]
-                line = line.rstrip() + r" bootid=%s %s " % (UUID, bootopt)
+                line = line.rstrip() + r" bootid=%s %s " % (bootid, bootopt)
                 for regex in remove_regexes:
                     line = regex.sub(" ", line)
             print(line)
@@ -1587,10 +1610,16 @@ def handle_syslinux_config(grml_flavour, target):
     @target: path of syslinux's configuration files"""
     assert options is not None
 
-    logging.debug("Generating syslinux configuration")
+    if options.skipsyslinuxconfig:
+        logging.info("Skipping generation of syslinux configuration as requested.")
+        return
+
     syslinux_target = target + "/boot/syslinux/"
-    # should be present via  copy_bootloader_files(), but make sure it exits:
-    execute(mkdir, syslinux_target)
+    logging.debug("Generating syslinux configuration in %s", syslinux_target)
+    if not os.path.exists(syslinux_target):
+        logging.info("Skipping syslinux configuration, ISO does not support it")
+        return
+
     syslinux_cfg = syslinux_target + "syslinux.cfg"
 
     # install main configuration only *once*, no matter how many ISOs we have:
@@ -1709,35 +1738,6 @@ def handle_secure_boot(target, efi_img):
     except Exception:
         logging.critical("RuntimeError while umount %s" % efi_mountpoint)
         sys.exit(1)
-
-
-def handle_bootloader_config(grml_flavour, device, target):
-    """Main handler for generating bootloader's configuration
-
-    @grml_flavour: name of grml flavour the configuration should be generated for
-    @device: device/partition where bootloader should be installed to
-    @target: path of bootloader's configuration files"""
-    assert options is not None
-
-    global UUID
-    UUID = get_uuid(target)
-    if options.skipsyslinuxconfig:
-        logging.info("Skipping generation of syslinux configuration as requested.")
-    else:
-        try:
-            handle_syslinux_config(grml_flavour, target)
-        except CriticalException as error:
-            logging.critical("Fatal: %s", error)
-            sys.exit(1)
-
-    if options.skipgrubconfig:
-        logging.info("Skipping generation of grub configuration as requested.")
-    else:
-        try:
-            handle_grub_config(grml_flavour, device, target)
-        except CriticalException as error:
-            logging.critical("Fatal: %s", error)
-            sys.exit(1)
 
 
 def install(image, device):
@@ -1914,7 +1914,11 @@ def handle_vfat(device):
             sys.exit(1)
 
     # check for vfat filesystem
-    if device is not None and not os.path.isdir(device) and options.syslinux:
+    if (
+        device is not None
+        and not os.path.isdir(device)
+        and options.bootloader in ("syslinux", "efi")
+    ):
         try:
             check_for_fat(device)
         except CriticalException as error:
@@ -1975,38 +1979,59 @@ def handle_bootloader(device):
         install_bootloader(device)
 
 
-def check_options(opts):
-    """Check compatibility of provided user opts
+@functools.cache
+def host_architecture() -> str:
+    return run_program(["uname", "-m"], capture_output=True).stdout.decode().strip()
 
-    @opts option dict from OptionParser
+
+def check_options(options: argparse.Namespace):
     """
-    if opts.grubmbr and not opts.grub:
+    Check compatibility of user-provided options, and pick correct default bootloader
+    """
+    global GRUB_INSTALL
+    GRUB_INSTALL = which("grub-install") or which("grub2-install")
+    syslinux_program = which("syslinux")
+
+    if options.bootloader == "auto":
+        if host_architecture() == "arm64":
+            options.bootloader = "efi"
+        else:
+            if syslinux_program:
+                logging.info("Choosing syslinux as bootloader")
+                options.bootloader = "syslinux"
+            elif GRUB_INSTALL:
+                logging.info("Choosing GRUB as bootloader (syslinux not found)")
+                options.bootloader = "grub"
+            else:
+                logging.warning("Choosing EFI-boot as no x86 bootloaders were found")
+                logging.warning("Install syslinux and/or grub-install if needed")
+                options.bootloader = "efi"
+
+    if options.grubmbr and options.bootloader != "grub":
         raise CriticalException("--grub-mbr requires --grub option.")
 
-    if opts.copyonly and opts.grub:
+    if options.copyonly and options.bootloader == "grub":
         raise CriticalException("Cannot use --copy-only and --grub at the same time.")
 
-
-def check_programs():
-    """check if all needed programs are installed"""
-    assert options is not None
-    if options.grub:
-        global GRUB_INSTALL
-        GRUB_INSTALL = which("grub-install") or which("grub2-install")
+    if options.bootloader == "grub":
         if not GRUB_INSTALL:
             logging.critical(
                 "Fatal: grub-install not available (please install the "
                 "grub package or drop the --grub option)"
             )
             sys.exit(1)
+        else:
+            logging.info("Using %s as bootloader", options.bootloader)
 
-    if options.syslinux:
-        if not which("syslinux"):
+    elif options.bootloader == "syslinux":
+        if not syslinux_program:
             logging.critical(
                 "Fatal: syslinux not available (please install the "
                 "syslinux package or use the --grub option)"
             )
             sys.exit(1)
+        else:
+            logging.info("Using %s as bootloader", options.bootloader)
 
     if not which("rsync"):
         logging.critical("Fatal: rsync not available, can not continue - sorry.")
@@ -2036,6 +2061,8 @@ def main(grml2usb_options: argparse.Namespace):
     # log handling
     handle_logging()
 
+    logging.info("Executing grml2usb version %s", PROG_VERSION)
+
     # make sure we have the appropriate permissions
     check_uid_root()
 
@@ -2043,12 +2070,8 @@ def main(grml2usb_options: argparse.Namespace):
 
     load_loop()
 
-    logging.info("Executing grml2usb version %s", PROG_VERSION)
-
     if options.dryrun:
         logging.info("Running in simulation mode as requested via option dry-run.")
-
-    check_programs()
 
     # specified arguments
     device = os.path.realpath(options.device)
