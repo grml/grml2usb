@@ -68,33 +68,7 @@ def test_smoke(tmp_path):
     if not os.path.exists(iso_name):
         _run_x(["curl", "-fSl#", "--output", iso_name, iso_url])
 
-    grml2usb_options = argparse.Namespace(
-        bootoptions=None,
-        bootloaderonly=False,
-        copyonly=False,
-        dryrun=False,
-        fat16=True,
-        force=True,
-        grubmbr=False,
-        mbrmenu=False,
-        quiet=False,
-        removeoption=None,
-        rwblockdev=False,
-        skipaddons=False,
-        skipbootflag=False,
-        skipgrubconfig=False,
-        skipmbr=False,
-        skipsyslinuxconfig=False,
-        skipusbcheck=False,
-        syslinuxmbr=False,
-        syslinuxlibs=[],
-        tmpdir="/tmp",
-        verbose=False,
-        grub=False,
-        syslinux=True,
-        isos=[iso_name],
-        device=partition,
-    )
+    grml2usb_options = grml2usb.parser.parse_args(["--fat16", "--force", iso_name, partition])
     print("Options:", grml2usb_options)
 
     part_size = 1 * 1024 * 1024  # 1 GB
