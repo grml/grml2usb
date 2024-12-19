@@ -1,3 +1,9 @@
+grml2usb (0.20.5) unstable; urgency=medium
+
+  * [804d407] Fix updating bootid for isolinux installs
+
+ -- Chris Hofstaedtler <ch@grml.org>  Thu, 19 Dec 2024 17:31:56 +0100
+
 grml2usb (0.20.4) unstable; urgency=medium
 
   * [7538f7b] Fix crash: expected str, bytes or os.PathLike object, not list
