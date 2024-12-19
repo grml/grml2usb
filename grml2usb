@@ -52,7 +52,6 @@ MOUNTED = set()  # register mountpoints
 TMPFILES = set()  # register tmpfiles
 GRML_FLAVOURS = set()  # which flavours are being installed?
 GRML_DEFAULT = None
-UUID = None
 SYSLINUX_LIBS = [
     "/usr/lib/syslinux/modules/bios/",  # Debian
     "/usr/lib/syslinux/bios/",  # Arch Linux
@@ -1237,6 +1236,7 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
 
     execute(mkdir, target + "/conf/")
     glob_and_copy(iso_mount + "/conf/bootfile_*", target + "/conf/")
+    bootid = get_target_bootid(target)
 
     if not os.path.exists(iso_mount + "/boot/grub/footer.cfg"):
         logging.warning(
@@ -1294,7 +1294,7 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
             )
 
             if not options.dryrun:
-                handle_syslinux_config(grml_flavour, target)
+                handle_syslinux_config(grml_flavour, target, bootid)
 
     else:
         logging.info("Skipping syslinux installation, ISO does not support it")
@@ -1305,7 +1305,6 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
     # finally (after all GRUB files have been installed) build static loopback.cfg
     build_loopbackcfg(target)
 
-    bootid = get_target_bootid(target)
     handle_grub_config(grml_flavour, target, bootid)
 
 
@@ -1418,7 +1417,9 @@ def handle_grub_config(grml_flavour, target, bootid):
     """Main handler for generating grub (v1 and v2) configuration
 
     @grml_flavour: name of grml flavour the configuration should be generated for
-    @target: path of grub's configuration files"""
+    @target: path of grub's configuration files
+    @bootid: unique id of the target usb key
+    """
     assert options is not None
 
     if options.skipgrubconfig:
@@ -1507,12 +1508,13 @@ def get_flavour_filename(flavour):
     return flavour.replace("-", "_")
 
 
-def adjust_syslinux_bootoptions(src, flavour):
+def adjust_syslinux_bootoptions(src, flavour, bootid):
     """Adjust existing bootoptions of specified syslinux config to
     grml2usb specific ones, e.g. change the location of the kernel...
 
     @src: config file to alter
     @flavour: grml flavour
+    @bootid: unique id of the target usb key
     """
     assert options is not None
 
@@ -1539,7 +1541,7 @@ def adjust_syslinux_bootoptions(src, flavour):
         line = live_media_path_re.sub("", line)
         line = append_re.sub(r"\1 live-media-path=/live/%s/ " % flavour, line)
         line = append_re.sub(r"\1 boot=live %s " % bootopt, line)
-        line = append_re.sub(r"\1 %s=%s " % ("bootid", UUID), line)
+        line = append_re.sub(r"\1 bootid=%s " % bootid, line)
         if option_re and option_re.search(line):
             for regex in regexe:
                 line = regex.sub(" ", line)
@@ -1603,11 +1605,13 @@ def remove_default_entry(filename):
     fileinput.close()
 
 
-def handle_syslinux_config(grml_flavour, target):
+def handle_syslinux_config(grml_flavour, target, bootid):
     """Main handler for generating syslinux configuration
 
     @grml_flavour: name of grml flavour the configuration should be generated for
-    @target: path of syslinux's configuration files"""
+    @target: path of syslinux's configuration files
+    @bootid: unique id of the target usb key
+    """
     assert options is not None
 
     if options.skipsyslinuxconfig:
@@ -1644,12 +1648,12 @@ def handle_syslinux_config(grml_flavour, target):
     if not search_file("hidden.cfg", syslinux_target):
         new_hidden = syslinux_target + "hidden.cfg"
         os.rename(filename, new_hidden)
-        adjust_syslinux_bootoptions(new_hidden, grml_flavour)
+        adjust_syslinux_bootoptions(new_hidden, grml_flavour, bootid)
     else:
         new_hidden_file = "%s/%s_hidden.cfg" % (syslinux_target, flavour_filename)
         os.rename(filename, new_hidden_file)
         adjust_labels(new_hidden_file, r"\1 %s-\2" % grml_flavour)
-        adjust_syslinux_bootoptions(new_hidden_file, grml_flavour)
+        adjust_syslinux_bootoptions(new_hidden_file, grml_flavour, bootid)
         entry = "include %s_hidden.cfg\n" % flavour_filename
         add_entry_if_not_present("%s/hiddens.cfg" % syslinux_target, entry)
 
@@ -1668,8 +1672,8 @@ def handle_syslinux_config(grml_flavour, target):
         adjust_labels(new_grml_cfg, r"\1 %s-\2" % grml_flavour)
 
     # always adjust bootoptions
-    adjust_syslinux_bootoptions(new_default_with_path, grml_flavour)
-    adjust_syslinux_bootoptions(new_grml_cfg, grml_flavour)
+    adjust_syslinux_bootoptions(new_default_with_path, grml_flavour, bootid)
+    adjust_syslinux_bootoptions(new_grml_cfg, grml_flavour, bootid)
 
     add_entry_if_not_present("%s/defaults.cfg" % syslinux_target, entry)
 
