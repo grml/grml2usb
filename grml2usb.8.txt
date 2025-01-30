@@ -1,5 +1,5 @@
 grml2usb(8)
-==========
+===========
 
 Name
 ----
@@ -46,53 +46,53 @@ don't need one) and a bootloader won't be installed automatically.
 
 The following options are supported:
 
-  *\--bootoptions=...*::
+  *--bootoptions=...*::
 
 Use specified bootoptions as default. To use flavour name as a argument for a
 boot parameter use %flavour which will be expanded to the flavour name. To add
 multiple bootoptions you can specify the option multiple time.
 
-  *\--bootloader-only*::
+  *--bootloader-only*::
 
 Do *not* copy files but instead just install a bootloader.  Note that the boot
 addons are copied to /boot/addons at this stage as well.  If you want to skip
 copying the boot addons consider using the --skip-addons option.
 
-  *\--copy-only*::
+  *--copy-only*::
 
 Copy files only but do *not* install a bootloader.
 
-  *\--dry-run*::
+  *--dry-run*::
 
 Avoid executing commands, instead show what would be executed.
 Warning: please notice that the ISO has to be mounted anyway, otherwise
 identifying the Grml flavour would not be possible.
 
-  *\--fat16*::
+  *--fat16*::
 
 Format specified partition with FAT16.
 **Important:** this will destroy any existing data on the specified partition!
 
-  *\--force*::
+  *--force*::
 
 Force any (possible dangerous) actions requiring manual interaction (like --fat16).
 
-  *\--grub*::
+  *--grub*::
 
 Install grub bootloader instead of (default) syslinux.
 
-  *\--grub-mbr*::
+  *--grub-mbr*::
 
 Install grub into MBR (Master Boot Record) instead of PBR (Partition Boot
 Record). Check out <<mbr-vs-pbr,the 'mbr-vs-pbr' section in the FAQ of this
 document>> for further details.
 
-  *\--help*::
+  *--help*::
 
 Display usage information and exit.
 
 //////////////////////////////////////////////////////////////////////////
-  *\--initrd=...*::
+  *--initrd=...*::
 
 Install specified initrd instead of the default. You might want to specify
 option *--kernel* as well. (Be aware when using multiboot setup.)
@@ -100,14 +100,14 @@ option *--kernel* as well. (Be aware when using multiboot setup.)
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-  *\--kernel=...*::
+  *--kernel=...*::
 
 Install specified kernel instead of the default. You might want to specify
 option *--initrd* as well. (Be aware when using multiboot setup.)
 [Notice: not implemented yet.]
 //////////////////////////////////////////////////////////////////////////
 
-  *\--mbr-menu*::
+  *--mbr-menu*::
 
 Install master boot record (MBR) with integrated boot menu: interactively choose
 the partition to boot from, with a timeout to load the default partition, or
@@ -117,53 +117,53 @@ visible at all but instead directly jumps to the bootloader - being grub or
 syslinux). Note: This options is available only when using the default MBR and
 won't have any effect if you're using the '--syslinux-mbr' option.
 
-  *\--quiet*::
+  *--quiet*::
 
 Do not output anything but just errors on console.
 
-  *\--skip-addons*::
+  *--skip-addons*::
 
 Do not install /boot/addons/ files (like dos, grub, memdisk,...).
 
-  *\--remove-bootoption=...*::
+  *--remove-bootoption=...*::
 
 Remove specified bootoption (could be a regex) from existing boot options. Use
 multiple entries for removing different bootoptions at once.
 
-  *\--skip-bootflag*::
+  *--skip-bootflag*::
 
 Do not check for presence of boot flag on target device.
 
-  *\--skip-grub-config*::
+  *--skip-grub-config*::
 
 Skip generation of grub configuration files. By default the configuration
 files for syslinux *and* grub will be written so you've a working configuration
 file no matter whether you're using grub or syslinux as bootloader.
 
-  *\--skip-mbr*::
+  *--skip-mbr*::
 
 Do not touch/install the master boot record (MBR).
 
-  *\--skip-syslinux-config*::
+  *--skip-syslinux-config*::
 
 Skip generation of syslinux configuration files. By default the configuration
 files for syslinux *and* grub will be written so you've a working configuration
 file no matter whether you're using grub or syslinux as bootloader.
 
-  *\--skip-usb-check*::
+  *--skip-usb-check*::
 
 Skip check to verify whether given device is a removable device.
 Some USB devices are known to report wrong information, when using
 such a device you can skip grml2usb's removable device check.
 
-  *\--syslinux*::
+  *--syslinux*::
 
 This option is deprecated and is being left only for backwards compatibility
 reasons. Syslinux is the default bootloader of grml2usb and therefore the
 '--syslinux' option doesn't have any effects. If you do not want to use syslinux
 as bootloader consider using the '--grub' option.
 
-  *\--syslinux-mbr*::
+  *--syslinux-mbr*::
 
 Install syslinux' master boot record (MBR, which is booting from the partition
 with the "active" flag set) instead of the default one.  If you encounter any
@@ -172,24 +172,24 @@ that works for you please <<author,let us know>> so we can adjust our default
 MBR accordingly.
 
 //////////////////////////////////////////////////////////////////////////
-  *\--squashfs=*::
+  *--squashfs=*::
 
 Install specified squashfs file instead of the default.
 [Notice: not implemented yet.]
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-  *\--uninstall*::
+  *--uninstall*::
 
 Uninstall Grml ISO files.
 [Notice: not implemented yet.]
 //////////////////////////////////////////////////////////////////////////
 
-  *-v*, *\--version*::
+  *-v*, *--version*::
 
 Return version and exit.
 
-  *\--verbose*::
+  *--verbose*::
 
 Enable verbose mode.
 
@@ -549,7 +549,7 @@ I've found a bug!
 ~~~~~~~~~~~~~~~~~
 
 Please <<author,report it to the author>>. Please provide usage examples and output
-of your grml2usb commandline (consider using the "\--verbose" option).
+of your grml2usb commandline (consider using the "--verbose" option).
 
 [[usage-examples]]
 Usage examples
