@@ -795,7 +795,7 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
                 mbrcode[0:439]
                 + chr(partition).encode("latin-1")
                 + mbrcode[440:510]
-                + b"\x55\xAA"
+                + b"\x55\xaa"
             )
         else:
             actives = [b"\x00", b"\x00", b"\x00", b"\x00"]
@@ -810,7 +810,7 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
                 + mbrcode[479:494]
                 + actives[3]
                 + mbrcode[495:510]
-                + b"\x55\xAA"
+                + b"\x55\xaa"
             )
 
     tmpf.file.seek(0)
