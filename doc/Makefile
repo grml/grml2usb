@@ -23,10 +23,5 @@ man-stamp: mbr.8.txt
 	rm mbr.8.tmp
 	touch man-stamp
 
-#online: all
-#	scp mbr.8.html grml:/var/www/grml/mbr/index.html
-#	scp images/icons/*          grml:/var/www/grml/mbr/images/icons/
-#	scp images/screenshot.png   grml:/var/www/grml/mbr/images/
-
 clean:
 	rm -rf mbr.8.html mbr.8.xml mbr.8 html-stamp man-stamp
