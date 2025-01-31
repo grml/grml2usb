@@ -21,11 +21,6 @@ man-stamp: grml2usb.8.txt grml2iso.8.txt
 	# we're done
 	touch man-stamp
 
-online: all
-	scp grml2usb.8.html grml:/var/www/grml/grml2usb/index.html
-	scp images/icons/*          grml:/var/www/grml/grml2usb/images/icons/
-	scp images/screenshot.png   grml:/var/www/grml/grml2usb/images/
-
 tarball: all
 	./tarball.sh
 
