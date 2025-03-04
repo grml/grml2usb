@@ -1,3 +1,12 @@
+grml2usb (0.20.6) unstable; urgency=medium
+
+  * [669ff7b] doc: remove backslashes from options
+  * [2a47e65] doc/Makefile: remove scp leftovers
+  * [2a9b458] Makefile: remove scp leftovers
+  * [e5bea18] python: apply current black style
+
+ -- Chris Hofstaedtler <ch@grml.org>  Tue, 04 Mar 2025 23:25:48 +0100
+
 grml2usb (0.20.5) unstable; urgency=medium
 
   * [804d407] Fix updating bootid for isolinux installs
