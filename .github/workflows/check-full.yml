@@ -28,7 +28,7 @@ jobs:
         run: make codecheck
 
   unittests:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     name: Run unit tests as root
 
     steps:
