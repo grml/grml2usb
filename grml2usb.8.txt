@@ -259,7 +259,7 @@ Directory layout on USB device
 Grabbing the source
 ~~~~~~~~~~~~~~~~~~~
 
-  % git clone git://git.grml.org/grml2usb.git
+  % git clone https://github.com/grml/grml2usb.git
 
 [[debugging]]
 Developers Debugging Hints
@@ -360,7 +360,7 @@ grml-testing Debian repository].
 If you do not want to (or can't) use the grml2usb Debian package you can either
 use the grml2usb git tree running:
 
-  git clone git://git.grml.org/grml2usb.git
+  git clone https://github.com/grml/grml2usb.git
   cd grml2usb
   make -C mbr
   sudo ./grml2usb ...
@@ -534,7 +534,7 @@ I think I've got a really cool idea!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Great! Please check out
-link:http://git.grml.org/?p=grml2usb.git;a=blob;f=TODO;hb=HEAD[the TODO file].
+link:https://github.com/grml/grml2usb/blob/master/TODO[the TODO file].
 Feel free to <<author,report your wishes to the author>>. Patches highly
 appreciated.
 
@@ -618,8 +618,9 @@ iso, e.g. grml64 and grml.
 Online Resources
 ----------------
 
-Check out the link:http://grml.org/grml2usb/[grml2usb webpage] and the
-link:http://git.grml.org/?p=grml2usb.git[grml2usb git repository].
+Check out the link:http://grml.org/grml2usb/[grml2usb webpage], the
+link:https://github.com/grml/grml2usb[grml2usb git repository] and the
+wiki for link:https://github.com/grml/grml/wiki/persistency[persistency].
 
 [[bugs]]
 Bugs
