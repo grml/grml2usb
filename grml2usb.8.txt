@@ -259,7 +259,7 @@ Directory layout on USB device
 Grabbing the source
 ~~~~~~~~~~~~~~~~~~~
 
-  % git clone git://git.grml.org/grml2usb.git
+  % git clone https://github.com/grml/grml2usb.git
 
 [[debugging]]
 Developers Debugging Hints
@@ -354,26 +354,20 @@ Frequently Asked Questions (FAQ)
 Where can I get grml2usb?
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-grml2usb is available as Debian package via link:http://deb.grml.org/[the
+grml2usb is available as Debian package via link:https://deb.grml.org/[the
 grml-testing Debian repository].
 
 If you do not want to (or can't) use the grml2usb Debian package you can either
 use the grml2usb git tree running:
 
-  git clone git://git.grml.org/grml2usb.git
+  git clone https://github.com/grml/grml2usb.git
   cd grml2usb
   make -C mbr
   sudo ./grml2usb ...
 
-or download the provided
-link:http://grml.org/grml2usb/grml2usb.tgz[http://grml.org/grml2usb/grml2usb.tgz]
-(link:http://grml.org/grml2usb/grml2usb.tgz.md5.asc[gpg signed md5 hash]).
-Download and extract the tarball and execute the provided script 'install.sh'.
-
 [NOTE]
 It is *NOT* enough to have just the grml2usb script itself without the according
-files provided either via the Debian package, the git tree or the file
-grml2usb.tgz.
+files provided either via the Debian package or the git tree.
 
 [[dd]]
 Why can't I just dd the ISO to a USB device?
@@ -505,7 +499,7 @@ I'm getting something like "Error: /usr/share/grml2usb/grub/splash.xpm.gz can no
 
 Looks like you've only the grml2usb script itself available. Please make sure
 you've the grml2usb Debian package installed. The most resent stable version is
-available via link:http://deb.grml.org/[the grml-testing Debian repository].  If
+available via link:https://deb.grml.org/[the grml-testing Debian repository].  If
 you do not have a Debian system please see section <<download,Where can I get
 grml2usb?>> in this FAQ.
 
@@ -534,7 +528,7 @@ I think I've got a really cool idea!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Great! Please check out
-link:http://git.grml.org/?p=grml2usb.git;a=blob;f=TODO;hb=HEAD[the TODO file].
+link:https://github.com/grml/grml2usb/blob/master/TODO[the TODO file].
 Feel free to <<author,report your wishes to the author>>. Patches highly
 appreciated.
 
@@ -618,8 +612,9 @@ iso, e.g. grml64 and grml.
 Online Resources
 ----------------
 
-Check out the link:http://grml.org/grml2usb/[grml2usb webpage] and the
-link:http://git.grml.org/?p=grml2usb.git[grml2usb git repository].
+Check out the link:https://grml.org/grml2usb/[grml2usb webpage], the
+link:https://github.com/grml/grml2usb[grml2usb git repository] and the
+wiki for link:https://github.com/grml/grml/wiki/persistency[persistency].
 
 [[bugs]]
 Bugs
@@ -632,10 +627,6 @@ Author
 Michael Prokop <mika@grml.org>
 
 /////////////////////////////////////////////////////////////////
-http://wiki.grml.org/doku.php?id=tips#multiboot_usb_pen
-http://www.startx.ro/sugar/isotostick.sh
-https://help.ubuntu.com/community/Installation/FromUSBStick
-http://unetbootin.sourceforge.net/
-http://www.tux.org/pub/people/kent-robotti/looplinux/rip/mkusb.sh
+https://unetbootin.sourceforge.net/
 https://fedorahosted.org/liveusb-creator/
 /////////////////////////////////////////////////////////////////
