@@ -68,7 +68,7 @@ def test_smoke(tmp_path):
     if not os.path.exists(iso_name):
         _run_x(["curl", "-fSl#", "--output", iso_name, iso_url])
 
-    grml2usb_options = grml2usb.parser.parse_args(["--fat16", "--force", iso_name, partition])
+    grml2usb_options = grml2usb.parser.parse_args(["--format", "--force", iso_name, partition])
     print("Options:", grml2usb_options)
 
     part_size = 1 * 1024 * 1024  # 1 GB

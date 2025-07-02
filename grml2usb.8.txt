@@ -68,14 +68,15 @@ Avoid executing commands, instead show what would be executed.
 Warning: please notice that the ISO has to be mounted anyway, otherwise
 identifying the Grml flavour would not be possible.
 
-  *--fat16*::
+  *--format*::
 
-Format specified partition with FAT16.
+Format specified partition with FAT.
 **Important:** this will destroy any existing data on the specified partition!
 
   *--force*::
 
-Force any (possible dangerous) actions requiring manual interaction (like --fat16).
+Force any (possible dangerous) actions requiring manual interaction (like
+--format).
 
   *--grub*::
 
@@ -277,7 +278,7 @@ Then create according partitions either running for example:
 
 or:
 
-  # parted /dev/loop1 -s "mkpart primary fat16 0 -1s mkfs 1 fat16"
+  # parted /dev/loop1 -s "mkpart primary fat32 0 -1s mkfs 1 fat32"
 
 Finally create a filesystem and execute grml2usb as needed:
 
@@ -509,7 +510,7 @@ available via link:http://deb.grml.org/[the grml-testing Debian repository].  If
 you do not have a Debian system please see section <<download,Where can I get
 grml2usb?>> in this FAQ.
 
-[[fat16]]
+[[fat]]
 Why do I have to use a FAT16/FAT32 filesystem?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -517,6 +518,7 @@ Syslinux (currently) does not support any other filesystems besides FAT16/FAT32
 (though that's a sane default if you want to share your files with other
 (operating) systems). If you want to use a different filesystem (like ext2/3)
 use the bootloader grub instead using grml2usb's '--grub' option.
+
 
 [NOTE]
 FAT32 is supported since syslinux version 3.0.
@@ -572,10 +574,10 @@ Install currently running Grml live system on device /dev/sdX1.
 Install currently running Grml live system and the specified
 ISO on device /dev/sdX1 for multibooting.
 
-  # grml2usb --fat16 /home/grml/grml64-full_2018.12.iso /dev/sdX1
+  # grml2usb --format /home/grml/grml64-full_2018.12.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1 and format partition /dev/sdX1 with
-FAT16 filesystem.
+FAT filesystem.
 
   # grml2usb --grub --grub-mbr /home/grml/grml64-full_2018.12.iso /dev/sdX1
 
