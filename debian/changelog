@@ -1,3 +1,14 @@
+grml2usb (0.20.7) unstable; urgency=medium
+
+  [ Chris Hofstaedtler ]
+  * [2722899] GHA CI: revert back to ubuntu-latest
+
+  [ Christopher Bock ]
+  * [e218516] grml2usb.8: cleanup link, add wiki link for persistence
+  * [9afefbb] replace fat16 command with format
+
+ -- Michael Prokop <mika@grml.org>  Fri, 15 Aug 2025 12:05:26 +0200
+
 grml2usb (0.20.6) unstable; urgency=medium
 
   * [669ff7b] doc: remove backslashes from options
