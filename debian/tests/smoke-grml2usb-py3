@@ -33,4 +33,4 @@ EOT
 
 losetup -P "$LODEV" "$TMPDIR"/blockdev
 
-python3 $(which grml2usb) --bootloader-only --verbose --skip-usb-check --force --fat16 "$TMPDIR"/fake.iso "$LODEV"p1
+python3 $(which grml2usb) --bootloader-only --verbose --skip-usb-check --force --format "$TMPDIR"/fake.iso "$LODEV"p1
