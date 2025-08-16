@@ -220,8 +220,6 @@ Directory layout on USB device
     |-- grub/
     |   |-- grml.png         [graphical bootsplash background image for grub2]
     |   |-- grub.cfg         [configuration file for grub2]
-    |   |-- menu.lst         [configuration file for grub1]
-    |   |-- splash.xpm.gz    [splash screen for grub1]
     `-- syslinux/
         |-- grml.png         [graphical bootsplash background image for syslinux]
         |-- syslinux.cfg     [main configuration file for syslinux]
@@ -403,24 +401,6 @@ What's grml2iso?
 grml2iso is a script which uses grml2usb to generate a multiboot ISO out of
 several Grml ISOs. See 'man grml2iso' for further details.
 
-[[menu-lst]]
-Why is there a menu.lst and a grub.cfg inside /boot/grub/?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-grml2usb supports grub version 1 (grub1) as well as grub version 2 (grub2).
-Whereas grub1 uses menu.lst the new version grub2 needs grub.cfg.
-Providing both files allows grml2usb to install grub on the target device
-no matter which grub version is available on the host where grml2usb is
-executed on.
-
-[[stage1]]
-grub-install fails with 'The file ../boot/grub/stage1 not read correctly"?!
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Check whether the partition has the right partition type. For example do NOT use
-FAT16 (partition type 6) when using a ext3 filesystem on the partition but
-instead use the correct partition type ('83' - Linux) then.
-
 [[grub-install-xfs_freeze]]
 grub-install complains about /sbin/grub-install and/or xfs_freeze?!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -432,17 +412,6 @@ The following message:
 
 This is "normal". grub-install sends those messages to stderr. To avoid hiding any
 possible real error messages grml2usb doesn't ignore those messages.
-
-[[device-map]]
-grub-install complains about /boot/grub/device.map?!
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The following message:
-
-  grub-probe: error: Cannot open `/boot/grub/device.map'
-
-This is "normal" (at least with grub1). This isn't a problem, because the
-device.map file will be generated on the target device anyway.
 
 [[unary-operator]]
 grub-install complains about a unary operator?!
