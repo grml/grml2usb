@@ -206,16 +206,16 @@ Directory layout on USB device
     |   |-- ...              [as provided on ISO]
     |-- release/
     |   |-- grml/
-    |   |   |-- linux26      [Kernel]
+    |   |   |-- vmlinuz      [Kernel]
     |   |   |-- initrd.gz    [initramfs]
     |   |-- grml64
-    |   |   |-- linux26      [Kernel]
+    |   |   |-- vmlinuz      [Kernel]
     |   |   |-- initrd.gz    [initramfs]
     |   |-- grml-small
-    |   |   |-- linux26
+    |   |   |-- vmlinuz
     |   |   |-- initrd.gz
     |   `-- grml64-small
-    |       |-- linux26
+    |       |-- vmlinuz
     |       |-- initrd.gz
     |-- grub/
     |   |-- grml.png         [graphical bootsplash background image for grub2]
