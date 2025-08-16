@@ -544,20 +544,6 @@ Install specified ISO on device /dev/sdX1 and use grub as bootloader (instead of
 syslinux being the default) and install a master boot record (MBR) to the MBR of
 /dev/sdX.
 
-///////////////////////////////////////////////////////////////////////////////////////
-  # grml2usb --kernel=/boot/vmlinuz-2.6.28-grml --initrd=/boot/initrd.img-2.6.28-grml \
-             /home/grml/grml64-full_2018.12.iso /dev/sdX1
-
-Install specified ISO on device /dev/sdX1 but use given kernel and initrd
-instead of the ones provided by the ISO.
-
-  # grml2usb --squashfs=/grml/grml-live/grml_cd/live/grml.squashfs \
-             /home/grml/grml64-full_2018.12.iso /dev/sdX1
-
-Install specified ISO on device /dev/sdX1 but use given squashfs
-file instead of the one provided by the ISO.
-///////////////////////////////////////////////////////////////////////////////////////
-
   # grml2usb --bootoptions="lang=de ssh=mysecret" grml64-full_2018.12.iso /dev/sdX1
   # grml2usb --bootoptions="lang=de" --bootoptions="ssh=mysecret" grml64-full_2018.12.iso /dev/sdX1
 
