@@ -203,11 +203,7 @@ Directory layout on USB device
 
   boot/ ->
     |-- addons/
-    |   |-- allinone.img     [grub - all in one image]
-    |   |-- bsd4grml/        [MirBSD]
-    |   |-- balder10.imz     [FreeDOS]
-    |   |-- memdisk          [chainloading helper]
-    |   |-- memtest          [memtest86+]
+    |   |-- ...              [as provided on ISO]
     |-- release/
     |   |-- grml/
     |   |   |-- linux26      [Kernel]

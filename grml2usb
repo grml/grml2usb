@@ -1131,7 +1131,7 @@ def copy_grml_files(grml_flavour, iso_mount, target):
 
 
 def copy_addons(iso_mount, target):
-    """copy grml's addons files (like allinoneimg, bsd4grml,..) to a given target
+    """copy grml's addons files to a given target
 
     @iso_mount: path where a grml ISO is mounted on
     @target: path where grml's main files should be copied to"""
