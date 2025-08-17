@@ -1,3 +1,14 @@
+grml2usb (0.20.8) unstable; urgency=medium
+
+  * [bc49898] Stop mentioning specific addons
+  * [23bf0c7] Remove support for kernels named linux26
+  * [886a630] Remove grub1 details
+  * [8d83006] Remove disabled doc part about --squashfs
+  * [cb53e5a] Remove syslinux < 4.0 specifics
+  * [17726f0] Update grml ISO in examples
+
+ -- Chris Hofstaedtler <ch@grml.org>  Sun, 17 Aug 2025 12:34:08 +0200
+
 grml2usb (0.20.7) unstable; urgency=medium
 
   [ Chris Hofstaedtler ]
