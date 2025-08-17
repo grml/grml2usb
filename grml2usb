@@ -1094,9 +1094,6 @@ def copy_system_files(grml_flavour, iso_mount, target):
         exec_rsync(iso_mount + "/boot/" + shortname, target + "/boot")
     else:
         kernel = search_file("vmlinuz", iso_mount)
-        if kernel is None:
-            # compat for releases < 2011.12
-            kernel = search_file("linux26", iso_mount)
 
         if kernel is None:
             logging.error("error locating kernel file")
@@ -1131,7 +1128,7 @@ def copy_grml_files(grml_flavour, iso_mount, target):
 
 
 def copy_addons(iso_mount, target):
-    """copy grml's addons files (like allinoneimg, bsd4grml,..) to a given target
+    """copy grml's addons files to a given target
 
     @iso_mount: path where a grml ISO is mounted on
     @target: path where grml's main files should be copied to"""
@@ -1446,7 +1443,7 @@ def handle_grub_config(grml_flavour, target, bootid):
     bootopt = get_bootoptions(grml_flavour)
 
     remove_regexes = []
-    option_re = re.compile(r"(.*/boot/.*(linux26|vmlinuz).*)")
+    option_re = re.compile(r"(.*/boot/.*vmlinuz.*)")
 
     if options.removeoption:
         for regex in options.removeoption:

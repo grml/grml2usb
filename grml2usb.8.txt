@@ -203,29 +203,23 @@ Directory layout on USB device
 
   boot/ ->
     |-- addons/
-    |   |-- allinone.img     [grub - all in one image]
-    |   |-- bsd4grml/        [MirBSD]
-    |   |-- balder10.imz     [FreeDOS]
-    |   |-- memdisk          [chainloading helper]
-    |   |-- memtest          [memtest86+]
+    |   |-- ...              [as provided on ISO]
     |-- release/
     |   |-- grml/
-    |   |   |-- linux26      [Kernel]
+    |   |   |-- vmlinuz      [Kernel]
     |   |   |-- initrd.gz    [initramfs]
     |   |-- grml64
-    |   |   |-- linux26      [Kernel]
+    |   |   |-- vmlinuz      [Kernel]
     |   |   |-- initrd.gz    [initramfs]
     |   |-- grml-small
-    |   |   |-- linux26
+    |   |   |-- vmlinuz
     |   |   |-- initrd.gz
     |   `-- grml64-small
-    |       |-- linux26
+    |       |-- vmlinuz
     |       |-- initrd.gz
     |-- grub/
     |   |-- grml.png         [graphical bootsplash background image for grub2]
     |   |-- grub.cfg         [configuration file for grub2]
-    |   |-- menu.lst         [configuration file for grub1]
-    |   |-- splash.xpm.gz    [splash screen for grub1]
     `-- syslinux/
         |-- grml.png         [graphical bootsplash background image for syslinux]
         |-- syslinux.cfg     [main configuration file for syslinux]
@@ -283,14 +277,14 @@ or:
 Finally create a filesystem and execute grml2usb as needed:
 
   # mkfs.vfat /dev/loop1
-  # grml2usb --bootloader-only /grml/isos/grml64-small_2018.12.iso /dev/loop1
+  # grml2usb --bootloader-only /grml/isos/grml-full-2025.08-amd64.iso /dev/loop1
 
 [[performance-tracing]]
 Performance tracing
 ~~~~~~~~~~~~~~~~~~~
 
   # blktrace -d /dev/sdX -o - | blkparse -i -
-  # grml2usb grml64-full_2018.12.iso /dev/sdX1
+  # grml2usb grml-full-2025.08-amd64.iso /dev/sdX1
 
 [[troubleshooting]]
 Troubleshooting and Pitfalls when booting
@@ -384,7 +378,7 @@ This allows you to dd the Grml ISO to your USB device (use for example
 link:http://www.chrysocome.net/rawwrite[rawwrite] if you've just a Windows
 system available) running:
 
-  % dd if=grml64-full_2018.12.iso of=/dev/sdX
+  % dd if=grml-full-2025.08-amd64.iso of=/dev/sdX
 
 where /dev/sdX is your USB device. Of course this doesn't provide such a
 flexible system like with grml2usb (no multi-ISO setup, no additional default
@@ -407,24 +401,6 @@ What's grml2iso?
 grml2iso is a script which uses grml2usb to generate a multiboot ISO out of
 several Grml ISOs. See 'man grml2iso' for further details.
 
-[[menu-lst]]
-Why is there a menu.lst and a grub.cfg inside /boot/grub/?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-grml2usb supports grub version 1 (grub1) as well as grub version 2 (grub2).
-Whereas grub1 uses menu.lst the new version grub2 needs grub.cfg.
-Providing both files allows grml2usb to install grub on the target device
-no matter which grub version is available on the host where grml2usb is
-executed on.
-
-[[stage1]]
-grub-install fails with 'The file ../boot/grub/stage1 not read correctly"?!
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Check whether the partition has the right partition type. For example do NOT use
-FAT16 (partition type 6) when using a ext3 filesystem on the partition but
-instead use the correct partition type ('83' - Linux) then.
-
 [[grub-install-xfs_freeze]]
 grub-install complains about /sbin/grub-install and/or xfs_freeze?!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -436,17 +412,6 @@ The following message:
 
 This is "normal". grub-install sends those messages to stderr. To avoid hiding any
 possible real error messages grml2usb doesn't ignore those messages.
-
-[[device-map]]
-grub-install complains about /boot/grub/device.map?!
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The following message:
-
-  grub-probe: error: Cannot open `/boot/grub/device.map'
-
-This is "normal" (at least with grub1). This isn't a problem, because the
-device.map file will be generated on the target device anyway.
 
 [[unary-operator]]
 grub-install complains about a unary operator?!
@@ -513,18 +478,6 @@ Syslinux (currently) does not support any other filesystems besides FAT16/FAT32
 (operating) systems). If you want to use a different filesystem (like ext2/3)
 use the bootloader grub instead using grml2usb's '--grub' option.
 
-
-[NOTE]
-FAT32 is supported since syslinux version 3.0.
-
-[[hdt-hangs]]
-Addons -> Hardware Detection Tool freezes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This usually means that the machine you ran grml2usb on had syslinux 3.x
-installed. The version of hdt (Hardware detection tool) shipping with Grml
-2010.12 and newer requires syslinux 4.x.
-
 [[cool-idea]]
 I think I've got a really cool idea!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -551,11 +504,11 @@ of your grml2usb commandline (consider using the "--verbose" option).
 Usage examples
 --------------
 
-  # grml2usb /home/grml/grml64-full_2018.12.iso /dev/sdX1
+  # grml2usb /home/grml/grml-full-2025.08-amd64.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1.
 
-  # grml2usb /home/grml/grml64-full_2018.12.iso /home/grml/grml32-full_2018.12.iso  /dev/sdX1
+  # grml2usb /home/grml/grml-full-2025.08-amd64.iso /home/grml/grml-full-2025.08-arm64.iso  /dev/sdX1
 
 Install specified ISOs on device /dev/sdX1 for multibooting ISOs.
 
@@ -563,48 +516,34 @@ Install specified ISOs on device /dev/sdX1 for multibooting ISOs.
 
 Install currently running Grml live system on device /dev/sdX1.
 
-  # grml2usb /run/live/medium /home/grml/grml64-full_2018.12.iso /dev/sdX1
+  # grml2usb /run/live/medium /home/grml/grml-full-2025.08-amd64.iso /dev/sdX1
 
 Install currently running Grml live system and the specified
 ISO on device /dev/sdX1 for multibooting.
 
-  # grml2usb --format /home/grml/grml64-full_2018.12.iso /dev/sdX1
+  # grml2usb --format /home/grml/grml-full-2025.08-amd64.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1 and format partition /dev/sdX1 with
 FAT filesystem.
 
-  # grml2usb --grub --grub-mbr /home/grml/grml64-full_2018.12.iso /dev/sdX1
+  # grml2usb --grub --grub-mbr /home/grml/grml-full-2025.08-amd64.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1 and use grub as bootloader (instead of
 syslinux being the default) and install a master boot record (MBR) to the MBR of
 /dev/sdX.
 
-///////////////////////////////////////////////////////////////////////////////////////
-  # grml2usb --kernel=/boot/vmlinuz-2.6.28-grml --initrd=/boot/initrd.img-2.6.28-grml \
-             /home/grml/grml64-full_2018.12.iso /dev/sdX1
-
-Install specified ISO on device /dev/sdX1 but use given kernel and initrd
-instead of the ones provided by the ISO.
-
-  # grml2usb --squashfs=/grml/grml-live/grml_cd/live/grml.squashfs \
-             /home/grml/grml64-full_2018.12.iso /dev/sdX1
-
-Install specified ISO on device /dev/sdX1 but use given squashfs
-file instead of the one provided by the ISO.
-///////////////////////////////////////////////////////////////////////////////////////
-
-  # grml2usb --bootoptions="lang=de ssh=mysecret" grml64-full_2018.12.iso /dev/sdX1
-  # grml2usb --bootoptions="lang=de" --bootoptions="ssh=mysecret" grml64-full_2018.12.iso /dev/sdX1
+  # grml2usb --bootoptions="lang=de ssh=mysecret" grml-full-2025.08-amd64.iso /dev/sdX1
+  # grml2usb --bootoptions="lang=de" --bootoptions="ssh=mysecret" grml-full-2025.08-amd64.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1 and use "lang=de ssh=mysecret" as
 default bootoptions.
 
 
-  # grml2usb --remove-bootoption="vga=791" --remove-bootoption="nomce" grml64-full_2018.12.iso /dev/sdX1
+  # grml2usb --remove-bootoption="vga=791" --remove-bootoption="nomce" grml-full-2025.08-amd64.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1 remove vga=791 and nomce from existing bootoptions.
 
-  # grml2usb --bootoptions="persistent-path=%flavour_name" grml64-small_2018.12.iso grml32-small_2018.12.iso  /dev/sdX1
+  # grml2usb --bootoptions="persistent-path=%flavour_name" grml-full-2025.08-amd64.iso grml-full-2025.08-arm64.iso /dev/sdX1
 
 Install specified ISOs on device /dev/sdx and add parameter persistent-path
 to every menu entry. %flavour_name will be expanded to the flavour of the specific
