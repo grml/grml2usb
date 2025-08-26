@@ -1,3 +1,9 @@
+grml2usb (0.20.9) unstable; urgency=medium
+
+  * [99d1520] d/copyright: Remove old FSF address
+
+ -- Chris Hofstaedtler <ch@grml.org>  Tue, 26 Aug 2025 20:02:33 +0200
+
 grml2usb (0.20.8) unstable; urgency=medium
 
   * [bc49898] Stop mentioning specific addons
