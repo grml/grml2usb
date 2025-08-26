@@ -107,12 +107,12 @@ chmod 755 "${DIR}"/uninstall.sh
 fakeroot debian/rules build
 
 # manpage
-cp grml2usb.8.txt grml2usb-$VERSION/
-cp grml2iso.8.txt grml2usb-$VERSION/
-gzip -9 --to-stdout grml2usb-$VERSION/grml2usb.8.txt > grml2usb-$VERSION/grml2usb.8.gz
-gzip -9 --to-stdout grml2usb-$VERSION/grml2iso.8.txt > grml2usb-$VERSION/grml2iso.8.gz
-rm grml2usb-$VERSION/grml2usb.8.txt
-rm grml2usb-$VERSION/grml2iso.8.txt
+cp grml2usb.8.adoc grml2usb-$VERSION/
+cp grml2iso.8.adoc grml2usb-$VERSION/
+gzip -9 --to-stdout grml2usb-$VERSION/grml2usb.8.adoc > grml2usb-$VERSION/grml2usb.8.gz
+gzip -9 --to-stdout grml2usb-$VERSION/grml2iso.8.adoc > grml2usb-$VERSION/grml2iso.8.gz
+rm grml2usb-$VERSION/grml2usb.8.adoc
+rm grml2usb-$VERSION/grml2iso.8.adoc
 
 # binaries, grub
 cp grml2usb grml2iso mbr/mbrldr mbr/mbrmgr grub/* grml2usb-$VERSION/

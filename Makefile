@@ -4,19 +4,19 @@ doc: doc_man doc_html
 
 doc_html: html-stamp
 
-html-stamp: grml2usb.8.txt grml2iso.8.txt
-	asciidoc -b xhtml11 -a icons -a toc -a numbered grml2usb.8.txt
-	asciidoc -b xhtml11 -a icons -a toc -a numbered grml2iso.8.txt
+html-stamp: grml2usb.8.adoc grml2iso.8.adoc
+	asciidoc -b xhtml11 -a icons -a toc -a numbered grml2usb.8.adoc
+	asciidoc -b xhtml11 -a icons -a toc -a numbered grml2iso.8.adoc
 	touch html-stamp
 
 doc_man: man-stamp
 
-man-stamp: grml2usb.8.txt grml2iso.8.txt
+man-stamp: grml2usb.8.adoc grml2iso.8.adoc
 	# grml2usb:
-	asciidoc -d manpage -b docbook grml2usb.8.txt
+	asciidoc -d manpage -b docbook grml2usb.8.adoc
 	xsltproc --novalid --nonet /usr/share/xml/docbook/stylesheet/nwalsh/manpages/docbook.xsl grml2usb.8.xml
 	# grml2iso:
-	asciidoc -d manpage -b docbook grml2iso.8.txt
+	asciidoc -d manpage -b docbook grml2iso.8.adoc
 	xsltproc --novalid --nonet /usr/share/xml/docbook/stylesheet/nwalsh/manpages/docbook.xsl grml2iso.8.xml
 	# we're done
 	touch man-stamp
