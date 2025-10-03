@@ -4,14 +4,14 @@ doc: doc_man doc_html
 
 doc_html: html-stamp
 
-html-stamp: mbr.8.txt
-	asciidoc -b xhtml11 -a icons mbr.8.txt
+html-stamp: mbr.8.adoc
+	asciidoc -b xhtml11 -a icons mbr.8.adoc
 	touch html-stamp
 
 doc_man: man-stamp
 
-man-stamp: mbr.8.txt
-	asciidoc -d manpage -b docbook mbr.8.txt
+man-stamp: mbr.8.adoc
+	asciidoc -d manpage -b docbook mbr.8.adoc
 	sed -i 's/<emphasis role="strong">/<emphasis role="bold">/' mbr.8.xml
 	xsltproc --novalid --nonet /usr/share/xml/docbook/stylesheet/nwalsh/manpages/docbook.xsl mbr.8.xml
 	# ugly hack to avoid duplicate empty lines in manpage
