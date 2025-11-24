@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: pip install wheel (to make install black work)
         run: pip3 install wheel
@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Install pytest and deps
         run: sudo apt install python3-pytest python3-parted syslinux grub-efi-amd64-signed grub2-common parted curl nasm make
