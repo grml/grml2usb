@@ -1451,7 +1451,7 @@ def handle_grub_config(grml_flavour, target, bootid):
 
     shortname = get_shortname(grml_flavour)
     for filename in glob.glob(grub_target + "*.cfg"):
-        for line in fileinput.input(filename, inplace=1):
+        for line in fileinput.input(filename, inplace=True):
             line = line.rstrip("\r\n")
             if option_re.search(line):
                 line = bootid_re.sub("", line)
@@ -1541,7 +1541,7 @@ def adjust_syslinux_bootoptions(src, flavour, bootid):
         for regex in options.removeoption:
             regexe.append(re.compile(r"%s" % regex))
 
-    for line in fileinput.input(src, inplace=1):
+    for line in fileinput.input(src, inplace=True):
         # line = flavour_re.sub(r'\1 %s-\2' % flavour, line)
         line = default_re.sub(r"%s-\1" % flavour, line)
         line = bootid_re.sub("", line)
@@ -1561,7 +1561,7 @@ def adjust_labels(src, replacement):
     specified replacement
     """
     label_re = re.compile(r"^(\s*label\s*) ([a-zA-Z0-9_-]+)", re.I)
-    for line in fileinput.input(src, inplace=1):
+    for line in fileinput.input(src, inplace=True):
         line = label_re.sub(replacement, line)
         sys.stdout.write(line)
     fileinput.close()
@@ -1605,7 +1605,7 @@ def remove_default_entry(filename):
     @filename: syslinux config file
     """
     default_re = re.compile(r"^(\s*menu\s*default\s*)$", re.I)
-    for line in fileinput.input(filename, inplace=1):
+    for line in fileinput.input(filename, inplace=True):
         if default_re.match(line):
             continue
         sys.stdout.write(line)
