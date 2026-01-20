@@ -15,14 +15,86 @@ Runwith:
 :bugreports: http://grml.org/bugs/
 """
 
-import argparse
 import importlib
 import os
 import subprocess
+import uuid
 
 import pytest
 
 grml2usb = importlib.import_module("grml2usb", ".")
+
+
+def test_which_finds_existing_program():
+    """which should find programs existing in PATH"""
+    result = grml2usb.which("ls")
+    assert result is not None
+    assert result.endswith("/ls")
+    assert os.path.isfile(result)
+
+
+def test_which_returns_none_for_nonexistent_program():
+    """which should return None for non-existing programs"""
+    assert grml2usb.which("nonexistent_program_xyz123") is None
+
+
+def test_which_skips_non_executable_files(tmp_path, monkeypatch):
+    """which skips files that are not executable"""
+    non_exe = tmp_path / "program"
+    non_exe.touch()
+    non_exe.chmod(0o644)
+    monkeypatch.setenv("PATH", str(tmp_path))
+    assert grml2usb.which("program") is None
+
+
+def test_write_uuid(tmp_path):
+    target_file = tmp_path / "test_uuid.txt"
+    returned_uid = grml2usb.write_uuid(target_file)
+    assert str(uuid.UUID(returned_uid)) == returned_uid
+    assert target_file.read_text() == returned_uid
+
+
+def test_get_target_bootid_existing(tmp_path):
+    conf_dir = tmp_path / "conf"
+    conf_dir.mkdir()
+    bootid_file = conf_dir / "bootid.txt"
+    existing_uuid = "12345678-1234-5678-1234-567812345678"
+    bootid_file.write_text(existing_uuid)
+
+    result = grml2usb.get_target_bootid(tmp_path)
+    assert result == existing_uuid
+
+
+def test_get_target_bootid_new(tmp_path, monkeypatch):
+    monkeypatch.setattr(grml2usb, "execute", lambda f, *args: f(*args))
+    conf_dir = tmp_path / "conf"
+    result = grml2usb.get_target_bootid(tmp_path)
+    assert str(uuid.UUID(result)) == result
+    assert (conf_dir / "bootid.txt").read_text() == result
+
+
+def test_build_loopbackcfg(tmp_path):
+    # Create some config files to be sourced
+    grub_dir = tmp_path / "boot" / "grub"
+    grub_dir.mkdir(parents=True)
+    (grub_dir / "grml64_default.cfg").touch()
+    (grub_dir / "grml32_default.cfg").touch()
+    (grub_dir / "grml64_options.cfg").touch()
+
+    grml2usb.build_loopbackcfg(str(tmp_path))
+
+    loopback_cfg = grub_dir / "loopback.cfg"
+    lines = loopback_cfg.read_text().splitlines()
+
+    assert lines == [
+        "# grml2usb generated grub2 configuration file",
+        "source /boot/grub/header.cfg",
+        "source /boot/grub/grml32_default.cfg",
+        "source /boot/grub/grml64_default.cfg",
+        "source /boot/grub/grml64_options.cfg",
+        "source /boot/grub/addons.cfg",
+        "source /boot/grub/footer.cfg",
+    ]
 
 
 @pytest.mark.check_for_usbdevice
@@ -55,7 +127,12 @@ def _find_free_loopdev() -> str:
 
 
 def _identify_file(path) -> str:
-    return _run_x(["file", path], capture_output=True).stdout.decode().strip().split(": ", 1)[1]
+    return (
+        _run_x(["file", path], capture_output=True)
+        .stdout.decode()
+        .strip()
+        .split(": ", 1)[1]
+    )
 
 
 @pytest.mark.require_root
@@ -68,7 +145,9 @@ def test_smoke(tmp_path):
     if not os.path.exists(iso_name):
         _run_x(["curl", "-fSl#", "--output", iso_name, iso_url])
 
-    grml2usb_options = grml2usb.parser.parse_args(["--format", "--force", iso_name, partition])
+    grml2usb_options = grml2usb.parser.parse_args(
+        ["--format", "--force", iso_name, partition]
+    )
     print("Options:", grml2usb_options)
 
     part_size = 1 * 1024 * 1024  # 1 GB
@@ -82,7 +161,9 @@ def test_smoke(tmp_path):
     print("Using sfdisk template:\n", sfdisk_template, "\n---")
     loop_backing_file = tmp_path / "loop"
 
-    _run_x(["dd", "if=/dev/zero", f"of={loop_backing_file!s}", "bs=1M", f"count={dd_size}"])
+    _run_x(
+        ["dd", "if=/dev/zero", f"of={loop_backing_file!s}", "bs=1M", f"count={dd_size}"]
+    )
     sfdisk_input_file = tmp_path / "sfdisk.txt"
     with sfdisk_input_file.open("wt") as fh:
         fh.write(sfdisk_template)
@@ -99,4 +180,6 @@ def test_smoke(tmp_path):
     finally:
         _run_x(["losetup", "-d", loop_dev])
 
-    assert _identify_file(loop_backing_file).startswith("DOS/MBR boot sector; partition 1 : ID=0xef, active")
+    assert _identify_file(loop_backing_file).startswith(
+        "DOS/MBR boot sector; partition 1 : ID=0xef, active"
+    )

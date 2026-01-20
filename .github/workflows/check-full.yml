@@ -18,11 +18,8 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v6
 
-      - name: pip install wheel (to make install black work)
-        run: pip3 install wheel
-
-      - name: pip install flake8, isort + black, vulture
-        run: pip3 install flake8 isort black vulture
+      - name: pip install ruff, vulture
+        run: pip3 install ruff vulture
 
       - name: Codecheck execution
         run: make codecheck

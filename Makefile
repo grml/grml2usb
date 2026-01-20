@@ -34,9 +34,8 @@ clean:
 	rm -rf html-stamp man-stamp grml2usb.tar.gz grml2usb.tgz grml2usb.tgz.md5.asc
 
 codecheck:
-	flake8 grml2usb
-	isort --check-only grml2usb
-	black --check grml2usb
+	ruff check grml2usb
+	ruff format --check grml2usb
 	vulture grml2usb test/grml2usb_test.py
 
 test:
