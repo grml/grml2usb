@@ -289,7 +289,7 @@ def cleanup():
 
     for device in MOUNTED.copy():
         try:
-            unmount(device, "")
+            unmount(device)
             logging.debug("Unmounted %s", device)
         except Exception:
             logging.debug("Exception while umount %s, ignoring", device)
@@ -641,7 +641,7 @@ def install_grub(device):
             cleanup()
             sys.exit(1)
         finally:
-            unmount(device_mountpoint, "")
+            unmount(device_mountpoint)
             os.rmdir(device_mountpoint)
             unregister_tmpfile(device_mountpoint)
 
@@ -870,11 +870,11 @@ def mount(source, target, mount_options):
         register_mountpoint(target)
 
 
-def unmount(target, unmount_options):
+def unmount(target):
     """Unmount specified target
 
     @target: target where something is mounted on and which should be unmounted
-    @options: options for umount command"""
+    """
 
     # make sure we unmount only already mounted targets
     target_unmount = False
@@ -887,8 +887,8 @@ def unmount(target, unmount_options):
     if not target_unmount:
         logging.debug("%s not mounted anymore", target)
     else:
-        logging.debug("umount %s %s", list(unmount_options), target)
-        proc = subprocess.Popen(["umount"] + list(unmount_options) + [target])
+        logging.debug("umount %s", target)
+        proc = subprocess.Popen(["umount", target])
         proc.wait()
         if proc.returncode != 0:
             raise Exception("Error executing umount")
@@ -1709,7 +1709,7 @@ def handle_secure_boot(target, efi_img):
         )
 
     try:
-        unmount(efi_mountpoint, "")
+        unmount(efi_mountpoint)
         logging.debug("Unmounted %s", efi_mountpoint)
         os.rmdir(efi_mountpoint)
         logging.debug("Removed directory %s", efi_mountpoint)
@@ -1798,7 +1798,7 @@ def remove_mountpoint(mountpoint):
     """remove a registered mountpoint"""
 
     try:
-        unmount(mountpoint, "")
+        unmount(mountpoint)
         if os.path.isdir(mountpoint):
             os.rmdir(mountpoint)
             unregister_tmpfile(mountpoint)
