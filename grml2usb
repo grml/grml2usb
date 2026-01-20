@@ -1933,14 +1933,14 @@ def handle_logging():
     if options.verbose and options.quiet:
         parser.error("please use either verbose (--verbose) or quiet (--quiet) option")
 
-    FORMAT = "%(message)s"
+    log_format = "%(message)s"
     if options.verbose:
-        FORMAT = "%(asctime)-15s %(message)s"
-        logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+        log_format = "%(asctime)-15s %(message)s"
+        logging.basicConfig(level=logging.DEBUG, format=log_format)
     elif options.quiet:
-        logging.basicConfig(level=logging.CRITICAL, format=FORMAT)
+        logging.basicConfig(level=logging.CRITICAL, format=log_format)
     else:
-        logging.basicConfig(level=logging.INFO, format=FORMAT)
+        logging.basicConfig(level=logging.INFO, format=log_format)
 
 
 def handle_bootloader(device):
