@@ -34,16 +34,15 @@ PROG_VERSION = "***UNKNOWN***"
 # when running from inside git, try to report version information via git-describe
 try:
     git_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
-    with open(os.devnull, "w") as devnull:
-        PROG_VERSION = (
-            subprocess.check_output(
-                ["git", "-C", git_dir, "describe", "--always", "--dirty"],
-                stderr=devnull,
-            )
-            .strip()
-            .decode("utf-8", errors="replace")
-            + " (git)"
+    PROG_VERSION = (
+        subprocess.check_output(
+            ["git", "-C", git_dir, "describe", "--always", "--dirty"],
+            stderr=subprocess.DEVNULL,
         )
+        .strip()
+        .decode("utf-8", errors="replace")
+        + " (git)"
+    )
 except Exception:
     pass
 
@@ -285,8 +284,7 @@ def cleanup():
         logging.warning("Deletion of %s failed in temporary folder", path)
 
     logging.info("Cleaning up before exiting...")
-    proc = subprocess.Popen(["sync"])
-    proc.wait()
+    run_program(["sync"], check=False)
 
     for device in MOUNTED.copy():
         try:
@@ -372,11 +370,7 @@ def set_rw(device):
     if not options.rwblockdev:
         return
 
-    logging.debug("executing: blockdev --setrw %s", device)
-    proc = subprocess.Popen(["blockdev", "--setrw", device])
-    proc.wait()
-    if proc.returncode != 0:
-        raise Exception(f"error executing blockdev on {device}")
+    run_program(["blockdev", "--setrw", device])
 
 
 def execute(f, *exec_arguments):
@@ -508,13 +502,12 @@ def mkfs_vfat(device):
 
     if options.dryrun:
         logging.info("Would execute mkfs.vfat %s now.", device)
-        return 0
+        return
 
     logging.info("Formatting partition using mkfs.vfat")
-    logging.debug("mkfs.vfat %s", device)
-    proc = subprocess.Popen(["mkfs.vfat", "-n", "GRML", device])
-    proc.wait()
-    if proc.returncode != 0:
+    try:
+        run_program(["mkfs.vfat", "-n", "GRML", device])
+    except subprocess.CalledProcessError:
         raise CriticalException("error executing mkfs.vfat")
 
 
@@ -599,17 +592,11 @@ def install_grub(device):
             mount(device, device_mountpoint, "")
 
             logging.info("Installing grub as bootloader")
+            grub_install_succeeded = False
             for opt in ["--", "--force"]:
                 set_rw(device)
                 set_rw(grub_device)
-                logging.debug(
-                    "%s --recheck --no-floppy --target=i386-pc --root-directory=%s %s %s",
-                    GRUB_INSTALL,
-                    device_mountpoint,
-                    opt,
-                    grub_device,
-                )
-                proc = subprocess.Popen(
+                result = run_program(
                     [
                         GRUB_INSTALL,
                         "--recheck",
@@ -619,13 +606,14 @@ def install_grub(device):
                         opt,
                         grub_device,
                     ],
-                    stdout=open(os.devnull, "r+"),
+                    check=False,
+                    stdout=subprocess.DEVNULL,
                 )
-                proc.wait()
-                if proc.returncode == 0:
+                if result.returncode == 0:
+                    grub_install_succeeded = True
                     break
 
-            if proc.returncode != 0:
+            if not grub_install_succeeded:
                 # raise Exception("error executing grub-install")
                 logging.critical(
                     "Fatal: error executing grub-install "
@@ -654,16 +642,15 @@ def install_syslinux(device):
 
     if options.dryrun:
         logging.info("Would install syslinux as bootloader on %s", device)
-        return 0
+        return
 
     set_rw(device)
 
     # syslinux -d boot/isolinux /dev/sdb1
     logging.info("Installing syslinux as bootloader")
     logging.debug("syslinux -d boot/syslinux %s", device)
-    proc = subprocess.Popen(["syslinux", "-d", "boot/syslinux", device])
-    proc.wait()
-    if proc.returncode != 0:
+    result = run_program(["syslinux", "-d", "boot/syslinux", device], check=False)
+    if result.returncode != 0:
         raise CriticalException(
             "Error executing syslinux (either try --format or use grub?)"
         )
@@ -738,22 +725,12 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
 
     tmpf = tempfile.NamedTemporaryFile()
 
-    logging.debug("executing: dd if='%s' of='%s' bs=512 count=1", device, tmpf.name)
-    proc = subprocess.Popen(
+    run_program(
         ["dd", f"if={device}", f"of={tmpf.name}", "bs=512", "count=1"],
-        stderr=open(os.devnull, "r+"),
+        stderr=subprocess.DEVNULL,
     )
-    proc.wait()
-    if proc.returncode != 0:
-        raise Exception("error executing dd (first run)")
 
-    logging.debug(
-        "executing: dd if=%s of=%s bs=%s count=1 conv=notrunc",
-        mbrtemplate,
-        tmpf.name,
-        nmbrbytes,
-    )
-    proc = subprocess.Popen(
+    run_program(
         [
             "dd",
             f"if={mbrtemplate}",
@@ -762,11 +739,8 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
             "count=1",
             "conv=notrunc",
         ],
-        stderr=open(os.devnull, "r+"),
+        stderr=subprocess.DEVNULL,
     )
-    proc.wait()
-    if proc.returncode != 0:
-        raise Exception("error executing dd (second run)")
 
     mbrcode = tmpf.file.read(512)
     if len(mbrcode) < 512:
@@ -808,7 +782,7 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
         tmpf.name,
         device,
     )
-    proc = subprocess.Popen(
+    run_program(
         [
             "dd",
             f"if={tmpf.name}",
@@ -817,21 +791,16 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
             "count=1",
             "conv=notrunc,fsync",
         ],
-        stderr=open(os.devnull, "r+"),
+        stderr=subprocess.DEVNULL,
     )
-    proc.wait()
-    if proc.returncode != 0:
-        raise Exception("error executing dd (third run)")
     del tmpf
 
     blockdev_args = ["blockdev", "--rereadpt", device]
-    logging.debug("Probing device using: %s", " ".join(blockdev_args))
-    proc = subprocess.Popen(blockdev_args)
-    proc.wait()
-    if proc.returncode != 0:
+    result = run_program(blockdev_args, check=False)
+    if result.returncode != 0:
         logging.warning(
             "Probing device failed with return code: %d (command: %s)",
-            proc.returncode,
+            result.returncode,
             " ".join(blockdev_args),
         )
         logging.warning("(Install util-linux?)")
@@ -859,16 +828,15 @@ def mount(source, target, mount_options):
         logging.debug("Source %s is not a device, therefore not mounting.", source)
         return 0
 
-    logging.debug("mount %s %s %s", mount_options, source, target)
-    proc = subprocess.Popen(["mount"] + list(mount_options) + [source, target])
-    proc.wait()
-    if proc.returncode != 0:
+    try:
+        run_program(["mount"] + list(mount_options) + [source, target])
+    except subprocess.CalledProcessError:
         raise CriticalException(
             "Error executing mount (no filesystem on the partition?)"
         )
-    else:
-        logging.debug("register_mountpoint(%s)", target)
-        register_mountpoint(target)
+
+    logging.debug("register_mountpoint(%s)", target)
+    register_mountpoint(target)
 
 
 def unmount(target):
@@ -887,15 +855,15 @@ def unmount(target):
 
     if not target_unmount:
         logging.debug("%s not mounted anymore", target)
-    else:
-        logging.debug("umount %s", target)
-        proc = subprocess.Popen(["umount", target])
-        proc.wait()
-        if proc.returncode != 0:
-            raise Exception("Error executing umount")
-        else:
-            logging.debug("unregister_mountpoint(%s)", target)
-            unregister_mountpoint(target)
+        return
+
+    try:
+        run_program(["umount", target])
+    except subprocess.CalledProcessError:
+        raise CriticalException("Error executing umount")
+
+    logging.debug("unregister_mountpoint(%s)", target)
+    unregister_mountpoint(target)
 
 
 def extract_device_name(device):
@@ -939,10 +907,11 @@ def check_for_fat(partition):
 
     try:
         filesystem = (
-            subprocess.check_output(
-                ["/sbin/blkid", "-s", "TYPE", "-o", "value", partition]
+            run_program(
+                ["/sbin/blkid", "-s", "TYPE", "-o", "value", partition],
+                capture_output=True,
             )
-            .decode()
+            .stdout.decode()
             .rstrip()
         )
 
@@ -968,15 +937,14 @@ def exec_rsync(source, target):
 
     @source: source file/directory
     @target: target file/directory"""
-    logging.debug("Source: %s / Target: %s", source, target)
-    proc = subprocess.Popen(["rsync", "-rlptDH", "--inplace", source, target])
-    proc.wait()
-    if proc.returncode == 12:
+    logging.debug("rsync Source: %s / Target: %s", source, target)
+    result = run_program(["rsync", "-rlptDH", "--inplace", source, target], check=False)
+    if result.returncode == 12:
         logging.critical("Fatal: No space left on device")
         cleanup()
         sys.exit(1)
 
-    if proc.returncode != 0:
+    if result.returncode != 0:
         logging.critical("Fatal: could not install %s", source)
         cleanup()
         sys.exit(1)
@@ -1301,8 +1269,7 @@ def install_iso_files(grml_flavour, iso_mount, device, target):
 
     # make sure we sync filesystems before returning
     logging.info("Synching data (this might take a while)")
-    proc = subprocess.Popen(["sync"])
-    proc.wait()
+    run_program(["sync"], check=False)
 
 
 def get_device_from_partition(partition):
