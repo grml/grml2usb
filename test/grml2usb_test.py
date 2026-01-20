@@ -54,6 +54,25 @@ def test_write_uuid(tmp_path):
     assert target_file.read_text() == returned_uid
 
 
+def test_get_target_bootid_existing(tmp_path):
+    conf_dir = tmp_path / "conf"
+    conf_dir.mkdir()
+    bootid_file = conf_dir / "bootid.txt"
+    existing_uuid = "12345678-1234-5678-1234-567812345678"
+    bootid_file.write_text(existing_uuid)
+
+    result = grml2usb.get_target_bootid(tmp_path)
+    assert result == existing_uuid
+
+
+def test_get_target_bootid_new(tmp_path, monkeypatch):
+    monkeypatch.setattr(grml2usb, "execute", lambda f, *args: f(*args))
+    conf_dir = tmp_path / "conf"
+    result = grml2usb.get_target_bootid(tmp_path)
+    assert str(uuid.UUID(result)) == result
+    assert (conf_dir / "bootid.txt").read_text() == result
+
+
 @pytest.mark.check_for_usbdevice
 def test_extract_device_name():
     """Assert, that 'extract_device_name' returns a device name for a given path"""
