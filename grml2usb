@@ -1365,10 +1365,11 @@ def get_bootoptions(grml_flavour):
     """
     assert options is not None
     # do NOT write "None" in kernel cmdline
-    if not options.bootoptions:
-        bootopt = ""
-    else:
+    if options.bootoptions:
         bootopt = " ".join(options.bootoptions)
+    else:
+        bootopt = ""
+
     bootopt = bootopt.replace("%flavour", grml_flavour)
     return bootopt
 
