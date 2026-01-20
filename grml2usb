@@ -1614,9 +1614,6 @@ def handle_secure_boot(target, efi_img):
     register_tmpfile(efi_mountpoint)
 
     try:
-        logging.debug(
-            "mount(%s, %s, ['-o', 'ro', '-t', 'vfat']", efi_img, efi_mountpoint
-        )
         mount(efi_img, efi_mountpoint, ["-o", "ro", "-t", "vfat"])
     except CriticalException as error:
         logging.critical("Fatal: %s", error)
