@@ -15,7 +15,6 @@ Runwith:
 :bugreports: http://grml.org/bugs/
 """
 
-import argparse
 import importlib
 import os
 import subprocess
