@@ -4,7 +4,7 @@ version = "0.0.0"
 description = "Install Grml system to USB device"
 requires-python = ">=3.10"
 dependencies = [
-    "pyparted",
+    "pyparted; sys_platform == 'linux'",
 ]
 
 [project.optional-dependencies]
