@@ -1967,24 +1967,24 @@ def check_options(options: argparse.Namespace):
         raise CriticalException("Cannot use --copy-only and --grub at the same time.")
 
     if options.bootloader == "grub":
-        if not GRUB_INSTALL:
+        if GRUB_INSTALL:
+            logging.info("Using %s as bootloader", options.bootloader)
+        else:
             logging.critical(
                 "Fatal: grub-install not available (please install the "
                 "grub package or drop the --grub option)"
             )
             sys.exit(1)
-        else:
-            logging.info("Using %s as bootloader", options.bootloader)
 
     elif options.bootloader == "syslinux":
-        if not syslinux_program:
+        if syslinux_program:
+            logging.info("Using %s as bootloader", options.bootloader)
+        else:
             logging.critical(
                 "Fatal: syslinux not available (please install the "
                 "syslinux package or use the --grub option)"
             )
             sys.exit(1)
-        else:
-            logging.info("Using %s as bootloader", options.bootloader)
 
     if not which("rsync"):
         logging.critical("Fatal: rsync not available, can not continue - sorry.")
