@@ -1422,23 +1422,20 @@ def handle_grub_config(grml_flavour, target, bootid):
         fileinput.close()
 
 
-def initial_syslinux_config(target):
+def initial_syslinux_config(target: str | Path):
     """Generates initial syslinux configuration
 
     @target path of syslinux's configuration files"""
 
-    target = target + "/"
-    filename = target + "grmlmain.cfg"
-    if os.path.isfile(target + "grmlmain.cfg"):
+    target = Path(target)
+    grmlmain_cfg = target / "grmlmain.cfg"
+    if grmlmain_cfg.exists():
         return
-    data = open(filename, "w")
-    data.write(generate_main_syslinux_config())
-    data.close()
 
-    filename = target + "hiddens.cfg"
-    data = open(filename, "w")
-    data.write("include hidden.cfg\n")
-    data.close()
+    grmlmain_cfg.write_text(generate_main_syslinux_config())
+
+    hiddens_cfg = target / "hiddens.cfg"
+    hiddens_cfg.write_text("include hidden.cfg\n")
 
 
 def add_entry_if_not_present(filename, entry):
