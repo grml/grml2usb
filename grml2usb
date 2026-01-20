@@ -1438,21 +1438,19 @@ def initial_syslinux_config(target: str | Path):
     hiddens_cfg.write_text("include hidden.cfg\n")
 
 
-def add_entry_if_not_present(filename, entry):
+def add_entry_if_not_present(filename: str | Path, entry):
     """Write entry into filename if entry is not already in the file
 
     @filename: name of the file
     @entry: data to write to the file
     """
-    data = open(filename, "a+")
-    data.seek(0)
-    for line in data:
-        if line == entry:
-            break
-    else:
-        data.write(entry)
-
-    data.close()
+    with open(filename, "a+") as data:
+        data.seek(0)
+        for line in data:
+            if line == entry:
+                break
+        else:
+            data.write(entry)
 
 
 def get_flavour_filename(flavour):
