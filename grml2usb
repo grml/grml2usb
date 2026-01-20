@@ -467,7 +467,7 @@ def search_file(
 
 def check_uid_root():
     """Check for root permissions"""
-    if not os.geteuid() == 0:
+    if os.geteuid() != 0:
         raise CriticalException("please run this script with uid 0 (root).")
 
 
