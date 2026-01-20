@@ -491,9 +491,7 @@ def get_partition_for_path(path):
 
 def check_boot_flag(device):
     if os.path.isdir(device):
-        logging.debug(
-            "Device %s is a directory, skipping check for boot flag.", device
-        )
+        logging.debug("Device %s is a directory, skipping check for boot flag.", device)
         return
 
     boot_dev, x = get_device_from_partition(device)
@@ -1723,7 +1721,8 @@ def handle_secure_boot(target, efi_img):
 
         logging.debug(
             "exec_rsync(%s + '/EFI/BOOT/grubx64.efi', %s + '/efi/boot/grubx64.efi')'",
-            efi_mountpoint, target
+            efi_mountpoint,
+            target,
         )
         exec_rsync(
             efi_mountpoint + "/EFI/BOOT/grubx64.efi", target + "/efi/boot/grubx64.efi"
@@ -1732,7 +1731,8 @@ def handle_secure_boot(target, efi_img):
         # NOTE - we're overwriting /efi/boot/bootx64.efi from copy_bootloader_files here
         logging.debug(
             "exec_rsync(%s + '/EFI/BOOT/bootx64.efi', %s + '/efi/boot/bootx64.efi')'",
-            efi_mountpoint, target
+            efi_mountpoint,
+            target,
         )
         exec_rsync(
             efi_mountpoint + "/EFI/BOOT/bootx64.efi", target + "/efi/boot/bootx64.efi"

@@ -54,7 +54,12 @@ def _find_free_loopdev() -> str:
 
 
 def _identify_file(path) -> str:
-    return _run_x(["file", path], capture_output=True).stdout.decode().strip().split(": ", 1)[1]
+    return (
+        _run_x(["file", path], capture_output=True)
+        .stdout.decode()
+        .strip()
+        .split(": ", 1)[1]
+    )
 
 
 @pytest.mark.require_root
@@ -67,7 +72,9 @@ def test_smoke(tmp_path):
     if not os.path.exists(iso_name):
         _run_x(["curl", "-fSl#", "--output", iso_name, iso_url])
 
-    grml2usb_options = grml2usb.parser.parse_args(["--format", "--force", iso_name, partition])
+    grml2usb_options = grml2usb.parser.parse_args(
+        ["--format", "--force", iso_name, partition]
+    )
     print("Options:", grml2usb_options)
 
     part_size = 1 * 1024 * 1024  # 1 GB
@@ -81,7 +88,9 @@ def test_smoke(tmp_path):
     print("Using sfdisk template:\n", sfdisk_template, "\n---")
     loop_backing_file = tmp_path / "loop"
 
-    _run_x(["dd", "if=/dev/zero", f"of={loop_backing_file!s}", "bs=1M", f"count={dd_size}"])
+    _run_x(
+        ["dd", "if=/dev/zero", f"of={loop_backing_file!s}", "bs=1M", f"count={dd_size}"]
+    )
     sfdisk_input_file = tmp_path / "sfdisk.txt"
     with sfdisk_input_file.open("wt") as fh:
         fh.write(sfdisk_template)
@@ -98,4 +107,6 @@ def test_smoke(tmp_path):
     finally:
         _run_x(["losetup", "-d", loop_dev])
 
-    assert _identify_file(loop_backing_file).startswith("DOS/MBR boot sector; partition 1 : ID=0xef, active")
+    assert _identify_file(loop_backing_file).startswith(
+        "DOS/MBR boot sector; partition 1 : ID=0xef, active"
+    )
