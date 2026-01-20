@@ -1868,7 +1868,7 @@ def handle_mbr(device):
 def handle_vfat(device):
     """Check for FAT specific settings and options
 
-    @device: device that should checked / formated"""
+    @device: device that should be checked / formatted"""
     assert options is not None
 
     # make sure we have mkfs.vfat available
@@ -1881,9 +1881,9 @@ def handle_vfat(device):
         if options.force:
             print(f"Forcing mkfs.vfat on {device} as requested via option --force.")
         else:
-            # make sure the user is aware of what he is doing
-            f = input("Are you sure you want to format the specified partition? y/N ")
-            if f == "y" or f == "Y":
+            # make sure the user is aware of what they are doing
+            f = input(f"Are you sure you want to format the device {device}? y/N ")
+            if f in ("y", "Y"):
                 logging.info(
                     "Note: you can skip this question using the option --force"
                 )
