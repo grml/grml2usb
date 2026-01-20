@@ -1513,7 +1513,7 @@ def adjust_labels(src, replacement):
     fileinput.close()
 
 
-def add_syslinux_entry(filename, grml_flavour):
+def add_syslinux_entry(syslinux_target: str | Path, filename: str | Path, grml_flavour):
     """Add includes for a specific grml_flavour to the specified filename
 
     @filename: syslinux config file
@@ -1522,12 +1522,13 @@ def add_syslinux_entry(filename, grml_flavour):
 
     entry_filename = f"option_{grml_flavour}.cfg"
 
-    add_entry_if_not_present(filename, f"include {entry_filename}\n")
-    path = os.path.dirname(filename)
+    add_entry_if_not_present(
+        Path(syslinux_target) / filename, f"include {entry_filename}\n"
+    )
 
-    data = open(path + "/" + entry_filename, "w")
-    data.write(generate_flavour_specific_syslinux_config(grml_flavour))
-    data.close()
+    (Path(syslinux_target) / entry_filename).write_text(
+        generate_flavour_specific_syslinux_config(grml_flavour)
+    )
 
 
 def modify_filenames(grml_flavour, target, filenames):
@@ -1630,7 +1631,7 @@ def handle_syslinux_config(grml_flavour, target, bootid):
 
     add_entry_if_not_present(f"{syslinux_target}/defaults.cfg", entry)
 
-    add_syslinux_entry(f"{syslinux_target}/additional.cfg", flavour_filename)
+    add_syslinux_entry(syslinux_target, "additional.cfg", flavour_filename)
 
 
 def handle_secure_boot(target, efi_img):
