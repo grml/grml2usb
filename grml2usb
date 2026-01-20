@@ -478,29 +478,19 @@ def check_uid_root():
         raise CriticalException("please run this script with uid 0 (root).")
 
 
-# for usage inside check_boot_flag
-def get_partition_for_path(path):
-    import parted
-
-    boot_dev, x = get_device_from_partition(path)
-
-    d = parted.getDevice(boot_dev)
-    disk = parted.Disk(d)
-    return disk.getPartitionByPath(path)
-
-
 def check_boot_flag(device):
     if os.path.isdir(device):
         logging.debug("Device %s is a directory, skipping check for boot flag.", device)
         return
 
-    boot_dev, x = get_device_from_partition(device)
+    boot_dev, _ = get_device_from_partition(device)
 
     logging.info("Checking for boot flag")
     try:
         import parted
 
-        part = get_partition_for_path(device)
+        disk = parted.Disk(parted.getDevice(boot_dev))
+        part = disk.getPartitionByPath(device)
         if part is None:
             raise HodorException("parted could not find partition")
         if part.getFlag(parted.PARTITION_BOOT):
