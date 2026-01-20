@@ -1285,7 +1285,7 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
 
             for modules_dir in options.syslinuxlibs + SYSLINUX_LIBS:
                 if os.path.isdir(modules_dir):
-                    for filename in glob.glob1(syslinux_target, "*.c32"):
+                    for filename in glob.glob("*.c32", root_dir=syslinux_target):
                         copy_if_exist(
                             os.path.join(modules_dir, filename), syslinux_target
                         )
