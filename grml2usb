@@ -589,7 +589,7 @@ def install_grub(device):
                 grub_device = device
 
             set_rw(device)
-            mount(device, device_mountpoint, "")
+            mount(device, device_mountpoint)
 
             logging.info("Installing grub as bootloader")
             grub_install_succeeded = False
@@ -808,7 +808,7 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     set_rw(device)
 
 
-def mount(source, target, mount_options):
+def mount(source, target, mount_options: list[str] | None = None):
     """Mount specified source on given target
 
     @source: name of device/ISO that should be mounted
@@ -826,10 +826,11 @@ def mount(source, target, mount_options):
 
     if os.path.isdir(source):
         logging.debug("Source %s is not a device, therefore not mounting.", source)
-        return 0
+        return
 
+    mount_options = mount_options if mount_options else []
     try:
-        run_program(["mount"] + list(mount_options) + [source, target])
+        run_program(["mount"] + mount_options + [source, target])
     except subprocess.CalledProcessError:
         raise CriticalException(
             "Error executing mount (no filesystem on the partition?)"
@@ -1723,7 +1724,7 @@ def install_grml(mountpoint, device):
             set_rw(device)
             mount(device, device_mountpoint, ["-o", "utf8,iocharset=iso8859-1"])
         except CriticalException:
-            mount(device, device_mountpoint, "")
+            mount(device, device_mountpoint)
     try:
         grml_flavours = identify_grml_flavour(mountpoint)
         for flavour in set(grml_flavours):
