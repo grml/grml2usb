@@ -285,9 +285,9 @@ def cleanup():
     for device in MOUNTED.copy():
         try:
             unmount(device, "")
-            logging.debug("Unmounted %s" % device)
+            logging.debug("Unmounted %s", device)
         except Exception:
-            logging.debug("RuntimeError while umount %s, ignoring" % device)
+            logging.debug("Exception while umount %s, ignoring", device)
 
     for tmppath in TMPFILES.copy():
         try:
@@ -295,15 +295,14 @@ def cleanup():
                 # symbolic links to directories are ignored
                 # without the check it will throw an OSError
                 shutil.rmtree(tmppath, onerror=del_failed)
-                logging.debug("temporary directory %s deleted" % tmppath)
+                logging.debug("temporary directory %s deleted", tmppath)
                 unregister_tmpfile(tmppath)
             elif os.path.isfile(tmppath):
                 os.unlink(tmppath)
-                logging.debug("temporary file %s deleted" % tmppath)
+                logging.debug("temporary file %s deleted", tmppath)
                 unregister_tmpfile(tmppath)
         except Exception:
-            msg = "RuntimeError while removing temporary %s, ignoring"
-            logging.debug(msg % tmppath)
+            logging.debug("Exception while removing temporary %s, ignoring", tmppath)
 
 
 def register_tmpfile(path):
@@ -494,7 +493,7 @@ def get_partition_for_path(path):
 def check_boot_flag(device):
     if os.path.isdir(device):
         logging.debug(
-            "Device %s is a directory, skipping check for boot flag." % device
+            "Device %s is a directory, skipping check for boot flag.", device
         )
         return
 
@@ -508,10 +507,10 @@ def check_boot_flag(device):
         if part is None:
             raise HodorException("parted could not find partition")
         if part.getFlag(parted.PARTITION_BOOT):
-            logging.debug("boot flag is enabled on %s" % device)
+            logging.debug("boot flag is enabled on %s", device)
             return
         else:
-            logging.debug("boot flag is NOT enabled on %s" % device)
+            logging.debug("boot flag is NOT enabled on %s", device)
             raise VerifyException(
                 "Device %s does not have the boot flag set. "
                 "Please enable it to be able to boot." % device
@@ -748,8 +747,7 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
 
     if not os.path.isfile(mbrtemplate):
         logging.error(
-            "Error installing MBR (either try --syslinux-mbr or "
-            'install missing file "%s"?)',
+            'Error installing MBR (either try --syslinux-mbr or install missing file "%s"?)',
             mbrtemplate,
         )
         raise CriticalException("%s can not be read." % mbrtemplate)
@@ -1139,7 +1137,7 @@ def copy_addons(iso_mount, target):
     for addon_file in glob.glob(iso_mount + "/boot/addons/*"):
         filename = os.path.basename(addon_file)
         src_file = iso_mount + "/boot/addons/" + os.path.basename(addon_file)
-        logging.debug("Copying addon file %s" % filename)
+        logging.debug("Copying addon file %s", filename)
         exec_rsync(src_file, addons)
 
 
@@ -1161,14 +1159,14 @@ def build_loopbackcfg(target):
         target + os.path.sep + grub_dir + os.path.sep + "*_default.cfg"
     ):
         sourcefile = defaults.split(target + os.path.sep)[1]
-        logging.debug("Found source file" + sourcefile)
+        logging.debug("Found source file %s", sourcefile)
         os.path.isfile(defaults) and f.write("source " + sourcefile + "\n")
 
     for ops in glob.glob(
         target + os.path.sep + grub_dir + os.path.sep + "*_options.cfg"
     ):
         sourcefile = ops.split(target + os.path.sep)[1]
-        logging.debug("Found source file" + sourcefile)
+        logging.debug("Found source file %s", sourcefile)
         os.path.isfile(ops) and f.write("source " + sourcefile + "\n")
 
     f.write("source /boot/grub/addons.cfg\n")
@@ -1699,12 +1697,12 @@ def handle_secure_boot(target, efi_img):
     efi_mountpoint = tempfile.mkdtemp(
         prefix="grml2usb", dir=os.path.abspath(options.tmpdir)
     )
-    logging.debug("efi_mountpoint = %s" % efi_mountpoint)
+    logging.debug("efi_mountpoint = %s", efi_mountpoint)
     register_tmpfile(efi_mountpoint)
 
     try:
         logging.debug(
-            "mount(%s, %s, ['-o', 'ro', '-t', 'vfat']" % (efi_img, efi_mountpoint)
+            "mount(%s, %s, ['-o', 'ro', '-t', 'vfat']", efi_img, efi_mountpoint
         )
         mount(efi_img, efi_mountpoint, ["-o", "ro", "-t", "vfat"])
     except CriticalException as error:
@@ -1712,7 +1710,7 @@ def handle_secure_boot(target, efi_img):
         sys.exit(1)
 
     grub_cfg = search_file("grub.cfg", efi_mountpoint + "/boot/grub/")
-    logging.debug("grub_cfg = %s" % grub_cfg)
+    logging.debug("grub_cfg = %s", grub_cfg)
     if not grub_cfg:
         logging.info(
             "No /boot/grub/grub.cfg found inside EFI image, looks like Secure Boot support is missing."
@@ -1720,13 +1718,13 @@ def handle_secure_boot(target, efi_img):
     else:
         mkdir(target + "/boot/grub/x86_64-efi/")
         logging.debug(
-            "exec_rsync(%s, %s + '/boot/grub/x86_64-efi/grub.cfg')" % (grub_cfg, target)
+            "exec_rsync(%s, %s + '/boot/grub/x86_64-efi/grub.cfg')", grub_cfg, target
         )
         exec_rsync(grub_cfg, target + "/boot/grub/x86_64-efi/grub.cfg")
 
         logging.debug(
-            "exec_rsync(%s + '/EFI/BOOT/grubx64.efi', %s + '/efi/boot/grubx64.efi')'"
-            % (efi_mountpoint, target)
+            "exec_rsync(%s + '/EFI/BOOT/grubx64.efi', %s + '/efi/boot/grubx64.efi')'",
+            efi_mountpoint, target
         )
         exec_rsync(
             efi_mountpoint + "/EFI/BOOT/grubx64.efi", target + "/efi/boot/grubx64.efi"
@@ -1734,8 +1732,8 @@ def handle_secure_boot(target, efi_img):
 
         # NOTE - we're overwriting /efi/boot/bootx64.efi from copy_bootloader_files here
         logging.debug(
-            "exec_rsync(%s + '/EFI/BOOT/bootx64.efi', %s + '/efi/boot/bootx64.efi')'"
-            % (efi_mountpoint, target)
+            "exec_rsync(%s + '/EFI/BOOT/bootx64.efi', %s + '/efi/boot/bootx64.efi')'",
+            efi_mountpoint, target
         )
         exec_rsync(
             efi_mountpoint + "/EFI/BOOT/bootx64.efi", target + "/efi/boot/bootx64.efi"
@@ -1743,11 +1741,11 @@ def handle_secure_boot(target, efi_img):
 
     try:
         unmount(efi_mountpoint, "")
-        logging.debug("Unmounted %s" % efi_mountpoint)
+        logging.debug("Unmounted %s", efi_mountpoint)
         os.rmdir(efi_mountpoint)
-        logging.debug("Removed directory %s" % efi_mountpoint)
+        logging.debug("Removed directory %s", efi_mountpoint)
     except Exception:
-        logging.critical("RuntimeError while umount %s" % efi_mountpoint)
+        logging.critical("RuntimeError while umount %s", efi_mountpoint)
         sys.exit(1)
 
 
@@ -1878,7 +1876,7 @@ def handle_mbr(device):
 
         if not mbrcode:
             str_locations = " or ".join(['"%s"' % x for x in mbr_locations])
-            logging.error("Cannot find syslinux MBR, install it at %s)", str_locations)
+            logging.error("Cannot find syslinux MBR, install it at %s", str_locations)
             raise CriticalException(
                 "syslinux MBR  can not be found at %s." % str_locations
             )
