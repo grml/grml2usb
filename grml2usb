@@ -369,7 +369,7 @@ def set_rw(device):
     proc = subprocess.Popen(["blockdev", "--setrw", device])
     proc.wait()
     if proc.returncode != 0:
-        raise Exception("error executing blockdev on %s" % device)
+        raise Exception(f"error executing blockdev on {device}")
 
 
 def execute(f, *exec_arguments):
@@ -419,9 +419,9 @@ def get_defaults_file(iso_mount, flavour, name):
     """get the default file for syslinux"""
     bootloader_dirs = ["/boot/isolinux/", "/boot/syslinux/"]
     for directory in bootloader_dirs:
-        for name in name, "%s_%s" % (get_flavour_filename(flavour), name):
-            if os.path.isfile(iso_mount + directory + name):
-                return (directory, name)
+        for filename in [name, f"{get_flavour_filename(flavour)}_{name}"]:
+            if os.path.isfile(iso_mount + directory + filename):
+                return (directory, filename)
     return ("", "")
 
 
@@ -460,9 +460,7 @@ def search_file(
                     break
 
     if required and not retval:
-        raise CriticalException(
-            "Required file %s not found in %s" % (filename, search_path)
-        )
+        raise CriticalException(f"Required file {filename} not found in {search_path}")
 
     if lst_return:
         return retval
@@ -499,13 +497,11 @@ def check_boot_flag(device):
         else:
             logging.debug("boot flag is NOT enabled on %s", device)
             raise VerifyException(
-                "Device %s does not have the boot flag set. "
-                "Please enable it to be able to boot." % device
+                f"Device {device} does not have the boot flag set. Please enable it to be able to boot."
             )
     except ImportError:
         raise VerifyException(
-            "Could not import parted to verify boot flag on %s, please make sure python3-parted is installed."
-            % device
+            f"Could not import parted to verify boot flag on {device}, please make sure python3-parted is installed."
         )
 
 
@@ -568,21 +564,18 @@ def generate_flavour_specific_syslinux_config(grml_flavour):
 
     @grml_flavour: name of grml flavour the configuration should be generated for"""
 
-    return """\
-menu begin grml %(grml_flavour)s
-    menu title %(display_name)s
+    return f"""\
+menu begin grml {grml_flavour}
+    menu title {get_flavour_filename(grml_flavour)}
     label mainmenu
     menu label ^Back to main menu...
     menu exit
     menu separator
     # include config for boot parameters from disk
-    include %(grml_flavour)s_grml.cfg
+    include {grml_flavour}_grml.cfg
     menu hide
 menu end
-""" % {
-        "grml_flavour": grml_flavour,
-        "display_name": get_flavour_filename(grml_flavour),
-    }
+"""
 
 
 def install_grub(device):
@@ -627,7 +620,7 @@ def install_grub(device):
                         "--recheck",
                         "--no-floppy",
                         "--target=i386-pc",
-                        "--root-directory=%s" % device_mountpoint,
+                        f"--root-directory={device_mountpoint}",
                         opt,
                         grub_device,
                     ],
@@ -737,7 +730,7 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
             'Error installing MBR (either try --syslinux-mbr or install missing file "%s"?)',
             mbrtemplate,
         )
-        raise CriticalException("%s can not be read." % mbrtemplate)
+        raise CriticalException(f"{mbrtemplate} can not be read.")
 
     if partition is not None and ((partition < 0) or (partition > 3)):
         logging.warning("Cannot activate partition %d", partition)
@@ -752,7 +745,7 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
 
     logging.debug("executing: dd if='%s' of='%s' bs=512 count=1", device, tmpf.name)
     proc = subprocess.Popen(
-        ["dd", "if=%s" % device, "of=%s" % tmpf.name, "bs=512", "count=1"],
+        ["dd", f"if={device}", f"of={tmpf.name}", "bs=512", "count=1"],
         stderr=open(os.devnull, "r+"),
     )
     proc.wait()
@@ -768,9 +761,9 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     proc = subprocess.Popen(
         [
             "dd",
-            "if=%s" % mbrtemplate,
-            "of=%s" % tmpf.name,
-            "bs=%s" % nmbrbytes,
+            f"if={mbrtemplate}",
+            f"of={tmpf.name}",
+            f"bs={nmbrbytes}",
             "count=1",
             "conv=notrunc",
         ],
@@ -782,7 +775,7 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
 
     mbrcode = tmpf.file.read(512)
     if len(mbrcode) < 512:
-        raise EOFError("MBR size (%d) < 512" % len(mbrcode))
+        raise EOFError(f"MBR size {len(mbrcode)} < 512")
 
     if partition is not None:
         if ismirbsdmbr:
@@ -823,8 +816,8 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     proc = subprocess.Popen(
         [
             "dd",
-            "if=%s" % tmpf.name,
-            "of=%s" % device,
+            f"if={tmpf.name}",
+            f"of={device}",
             "bs=512",
             "count=1",
             "conv=notrunc,fsync",
@@ -864,10 +857,7 @@ def mount(source, target, mount_options):
     for x in open("/proc/mounts", "r").readlines():
         if x.startswith(source):
             raise CriticalException(
-                (
-                    "Error executing mount: {0} already mounted - "
-                    "please unmount before invoking grml2usb"
-                ).format(source)
+                f"Error executing mount: {source} already mounted - please unmount before invoking grml2usb"
             )
 
     if os.path.isdir(source):
@@ -949,8 +939,7 @@ def check_for_fat(partition):
 
     if not os.access(partition, os.R_OK):
         raise CriticalException(
-            "Failed to read device %s"
-            " (wrong UID/permissions or device/directory not present?)" % partition
+            f"Failed to read device {partition} (wrong UID/permissions or device/directory not present?)"
         )
 
     try:
@@ -964,8 +953,7 @@ def check_for_fat(partition):
 
         if filesystem != "vfat":
             raise CriticalException(
-                "Partition %s does not contain a FAT filesystem. "
-                "(Use --format or run mkfs.vfat %s)" % (partition, partition)
+                f"Partition {partition} does not contain a FAT filesystem. (Use --format or run mkfs.vfat {partition})"
             )
 
     except OSError:
@@ -1102,7 +1090,7 @@ def copy_grml_files(grml_flavour, iso_mount, target):
 
     grml_prefixe = ["GRML", "grml"]
     for prefix in grml_prefixe:
-        filename = "{0}/{1}/{2}".format(iso_mount, prefix, grml_flavour)
+        filename = f"{iso_mount}/{prefix}/{grml_flavour}"
         if os.path.exists(filename):
             exec_rsync(filename, grml_target)
             break
@@ -1236,7 +1224,7 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
         )
 
     if syslinux_target:
-        for ffile in ["f%d" % number for number in range(1, 11)]:
+        for ffile in [f"f{number}" for number in range(1, 11)]:
             search_and_copy(ffile, iso_mount, syslinux_target + ffile)
 
         # avoid the "file is read only, overwrite anyway (y/n) ?" question
@@ -1442,14 +1430,12 @@ def handle_grub_config(grml_flavour, target, bootid):
                 line = bootid_re.sub("", line)
                 if shortname in filename:
                     line = live_media_path_re.sub("", line)
-                    line = line.rstrip() + " live-media-path=/live/%s/ " % (
-                        grml_flavour
-                    )
+                    line = line.rstrip() + f" live-media-path=/live/{grml_flavour}/ "
                 if bootopt.strip():
-                    line = line.replace(" {} ".format(bootopt.strip()), " ")
+                    line = line.replace(f" {bootopt.strip()} ", " ")
                     if line.endswith(bootopt):
                         line = line[: -len(bootopt)]
-                line = line.rstrip() + r" bootid=%s %s " % (bootid, bootopt)
+                line = line.rstrip() + f" bootid={bootid} {bootopt} "
                 for regex in remove_regexes:
                     line = regex.sub(" ", line)
             print(line)
@@ -1559,10 +1545,9 @@ def add_syslinux_entry(filename, grml_flavour):
     @grml_flavour: grml flavour to add
     """
 
-    entry_filename = "option_%s.cfg" % grml_flavour
-    entry = "include %s\n" % entry_filename
+    entry_filename = f"option_{grml_flavour}.cfg"
 
-    add_entry_if_not_present(filename, entry)
+    add_entry_if_not_present(filename, f"include {entry_filename}\n")
     path = os.path.dirname(filename)
 
     data = open(path + "/" + entry_filename, "w")
@@ -1579,8 +1564,8 @@ def modify_filenames(grml_flavour, target, filenames):
     """
     grml_filename = get_flavour_filename(grml_flavour)
     for filename in filenames:
-        old_filename = "%s/%s" % (target, filename)
-        new_filename = "%s/%s_%s" % (target, grml_filename, filename)
+        old_filename = f"{target}/{filename}"
+        new_filename = f"{target}/{grml_filename}_{filename}"
         os.rename(old_filename, new_filename)
 
 
@@ -1642,18 +1627,19 @@ def handle_syslinux_config(grml_flavour, target, bootid):
         os.rename(filename, new_hidden)
         adjust_syslinux_bootoptions(new_hidden, grml_flavour, bootid)
     else:
-        new_hidden_file = "%s/%s_hidden.cfg" % (syslinux_target, flavour_filename)
+        new_hidden_file = f"{syslinux_target}/{flavour_filename}_hidden.cfg"
         os.rename(filename, new_hidden_file)
         adjust_labels(new_hidden_file, r"\1 %s-\2" % grml_flavour)
         adjust_syslinux_bootoptions(new_hidden_file, grml_flavour, bootid)
-        entry = "include %s_hidden.cfg\n" % flavour_filename
-        add_entry_if_not_present("%s/hiddens.cfg" % syslinux_target, entry)
+        add_entry_if_not_present(
+            f"{syslinux_target}/hiddens.cfg", f"include {flavour_filename}_hidden.cfg\n"
+        )
 
-    new_default = "%s_default.cfg" % (flavour_filename)
-    entry = "include %s\n" % new_default
-    defaults_file = "%s/defaults.cfg" % syslinux_target
-    new_default_with_path = "%s/%s" % (syslinux_target, new_default)
-    new_grml_cfg = "%s/%s_grml.cfg" % (syslinux_target, flavour_filename)
+    new_default = f"{flavour_filename}_default.cfg"
+    entry = f"include {new_default}\n"
+    defaults_file = f"{syslinux_target}/defaults.cfg"
+    new_default_with_path = f"{syslinux_target}/{new_default}"
+    new_grml_cfg = f"{syslinux_target}/{flavour_filename}_grml.cfg"
 
     if os.path.isfile(defaults_file):
         # remove default menu entry in menu
@@ -1667,9 +1653,9 @@ def handle_syslinux_config(grml_flavour, target, bootid):
     adjust_syslinux_bootoptions(new_default_with_path, grml_flavour, bootid)
     adjust_syslinux_bootoptions(new_grml_cfg, grml_flavour, bootid)
 
-    add_entry_if_not_present("%s/defaults.cfg" % syslinux_target, entry)
+    add_entry_if_not_present(f"{syslinux_target}/defaults.cfg", entry)
 
-    add_syslinux_entry("%s/additional.cfg" % syslinux_target, flavour_filename)
+    add_syslinux_entry(f"{syslinux_target}/additional.cfg", flavour_filename)
 
 
 def handle_secure_boot(target, efi_img):
@@ -1752,8 +1738,8 @@ def install(image, device):
             logging.info("Using %s as install base", image)
         else:
             q = input(
-                "%s does not look like a Grml system. "
-                "Do you really want to use this image? y/N " % image
+                f"{image} does not look like a Grml system. "
+                "Do you really want to use this image? y/N "
             )
             if q.lower() == "y":
                 logging.info("Using %s as install base", image)
@@ -1864,10 +1850,10 @@ def handle_mbr(device):
                 break
 
         if not mbrcode:
-            str_locations = " or ".join(['"%s"' % x for x in mbr_locations])
+            str_locations = " or ".join([f'"{x}"' for x in mbr_locations])
             logging.error("Cannot find syslinux MBR, install it at %s", str_locations)
             raise CriticalException(
-                "syslinux MBR  can not be found at %s." % str_locations
+                f"syslinux MBR  can not be found at {str_locations}."
             )
     elif options.mbrmenu:
         mbrcode = GRML2USB_BASE + "/mbr/mbrldr"
@@ -1893,7 +1879,7 @@ def handle_vfat(device):
             sys.exit(1)
 
         if options.force:
-            print("Forcing mkfs.vfat on %s as requested via option --force." % device)
+            print(f"Forcing mkfs.vfat on {device} as requested via option --force.")
         else:
             # make sure the user is aware of what he is doing
             f = input("Are you sure you want to format the specified partition? y/N ")
@@ -1933,8 +1919,7 @@ def handle_vfat(device):
         and not options.force
     ):
         print(
-            "Warning: the specified device %s does not look like a removable usb device."
-            % device
+            f"Warning: the specified device {device} does not look like a removable usb device."
         )
         f = input("Do you really want to continue? y/N ")
         if f.lower() != "y":
