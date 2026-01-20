@@ -271,6 +271,12 @@ class VerifyException(Exception):
     @Exception: message"""
 
 
+def confirm(prompt):
+    """Prompt user for confirmation, return True if confirmed."""
+    answer = input(f"{prompt} y/N ")
+    return answer.lower() == "y"
+
+
 def cleanup():
     """Cleanup function to make sure there aren't any mounted devices left behind."""
 
@@ -1737,11 +1743,10 @@ def install(image, device):
         if options.force or os.path.exists(os.path.join(image, "live")):
             logging.info("Using %s as install base", image)
         else:
-            q = input(
+            if confirm(
                 f"{image} does not look like a Grml system. "
-                "Do you really want to use this image? y/N "
-            )
-            if q.lower() == "y":
+                "Do you really want to use this image?"
+            ):
                 logging.info("Using %s as install base", image)
             else:
                 logging.info("Skipping install base %s", image)
@@ -1882,8 +1887,7 @@ def handle_vfat(device):
             print(f"Forcing mkfs.vfat on {device} as requested via option --force.")
         else:
             # make sure the user is aware of what they are doing
-            f = input(f"Are you sure you want to format the device {device}? y/N ")
-            if f in ("y", "Y"):
+            if confirm(f"Are you sure you want to format the device {device}?"):
                 logging.info(
                     "Note: you can skip this question using the option --force"
                 )
@@ -1921,8 +1925,7 @@ def handle_vfat(device):
         print(
             f"Warning: the specified device {device} does not look like a removable usb device."
         )
-        f = input("Do you really want to continue? y/N ")
-        if f.lower() != "y":
+        if not confirm("Do you really want to continue?"):
             sys.exit(1)
 
 
