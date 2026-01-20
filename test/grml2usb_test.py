@@ -24,6 +24,28 @@ import pytest
 grml2usb = importlib.import_module("grml2usb", ".")
 
 
+def test_which_finds_existing_program():
+    """which should find programs existing in PATH"""
+    result = grml2usb.which("ls")
+    assert result is not None
+    assert result.endswith("/ls")
+    assert os.path.isfile(result)
+
+
+def test_which_returns_none_for_nonexistent_program():
+    """which should return None for non-existing programs"""
+    assert grml2usb.which("nonexistent_program_xyz123") is None
+
+
+def test_which_skips_non_executable_files(tmp_path, monkeypatch):
+    """which skips files that are not executable"""
+    non_exe = tmp_path / "program"
+    non_exe.touch()
+    non_exe.chmod(0o644)
+    monkeypatch.setenv("PATH", str(tmp_path))
+    assert grml2usb.which("program") is None
+
+
 @pytest.mark.check_for_usbdevice
 def test_extract_device_name():
     """Assert, that 'extract_device_name' returns a device name for a given path"""

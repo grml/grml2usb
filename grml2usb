@@ -396,28 +396,16 @@ def execute(f, *exec_arguments):
         return f(*exec_arguments)
 
 
-def is_exe(fpath):
-    """Check whether a given file can be executed
-
-    @fpath: full path to file
-    @return:"""
-    return os.path.exists(fpath) and os.access(fpath, os.X_OK)
-
-
 def which(program):
     """Check whether a given program is available in PATH
 
     @program: name of executable"""
-    fpath = os.path.split(program)[0]
-    if fpath:
-        if is_exe(program):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            exe_file = os.path.join(path, program)
-            if is_exe(exe_file):
-                return exe_file
+    assert os.sep not in program, "which() expects a program name, not a path"
 
+    for path in os.environ["PATH"].split(os.pathsep):
+        exe_file = os.path.join(path, program)
+        if os.access(exe_file, os.X_OK):
+            return exe_file
     return None
 
 
