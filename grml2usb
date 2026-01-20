@@ -26,6 +26,7 @@ import sys
 import tempfile
 import uuid
 from inspect import isclass, isroutine
+from pathlib import Path
 
 # The line following this line is patched by debian/rules and tarball.sh.
 PROG_VERSION = "***UNKNOWN***"
@@ -987,10 +988,8 @@ def write_uuid(target_file):
     @target_file: filename to write the uuid to
     """
 
-    fileh = open(target_file, "w")
     uid = str(uuid.uuid4())
-    fileh.write(uid)
-    fileh.close()
+    Path(target_file).write_text(uid)
     return uid
 
 

@@ -18,6 +18,7 @@ Runwith:
 import importlib
 import os
 import subprocess
+import uuid
 
 import pytest
 
@@ -44,6 +45,13 @@ def test_which_skips_non_executable_files(tmp_path, monkeypatch):
     non_exe.chmod(0o644)
     monkeypatch.setenv("PATH", str(tmp_path))
     assert grml2usb.which("program") is None
+
+
+def test_write_uuid(tmp_path):
+    target_file = tmp_path / "test_uuid.txt"
+    returned_uid = grml2usb.write_uuid(target_file)
+    assert str(uuid.UUID(returned_uid)) == returned_uid
+    assert target_file.read_text() == returned_uid
 
 
 @pytest.mark.check_for_usbdevice
