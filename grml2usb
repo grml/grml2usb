@@ -1860,7 +1860,7 @@ def handle_mbr(device):
 
     try:
         install_mbr(mbrcode, mbr_device, partition_number, True)
-    except (IOError, Exception) as error:
+    except (OSError, Exception) as error:
         logging.critical("Execution failed: %s", error)
         sys.exit(1)
 
