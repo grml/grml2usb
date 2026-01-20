@@ -959,13 +959,7 @@ def check_for_fat(partition):
 def mkdir(directory):
     """Simple wrapper around os.makedirs to get shell mkdir -p behaviour"""
 
-    # just silently pass as it's just fine it the directory exists
-    if not os.path.isdir(directory):
-        try:
-            os.makedirs(directory)
-        # pylint: disable-msg=W0704
-        except OSError:
-            pass
+    os.makedirs(directory, exist_ok=True)
 
 
 def exec_rsync(source, target):
