@@ -911,16 +911,16 @@ def check_for_fat(partition):
             capture_output=True,
             check=False,
         )
-        filesystem = result.stdout.decode().rstrip()
-
-        if result.returncode != 0 or filesystem != "vfat":
-            raise CriticalException(
-                f"Partition {partition} does not contain a FAT filesystem. (Use --format or run mkfs.vfat {partition})"
-            )
-
     except OSError:
         raise CriticalException(
             "Sorry, /sbin/blkid not available (install util-linux?)"
+        )
+
+    filesystem = result.stdout.decode().strip()
+
+    if result.returncode != 0 or filesystem != "vfat":
+        raise CriticalException(
+            f"Partition {partition} does not contain a FAT filesystem. (Use --format or run mkfs.vfat {partition})"
         )
 
 
