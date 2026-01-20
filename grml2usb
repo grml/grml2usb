@@ -906,16 +906,14 @@ def check_for_fat(partition):
         )
 
     try:
-        filesystem = (
-            run_program(
-                ["/sbin/blkid", "-s", "TYPE", "-o", "value", partition],
-                capture_output=True,
-            )
-            .stdout.decode()
-            .rstrip()
+        result = run_program(
+            ["/sbin/blkid", "-s", "TYPE", "-o", "value", partition],
+            capture_output=True,
+            check=False,
         )
+        filesystem = result.stdout.decode().rstrip()
 
-        if filesystem != "vfat":
+        if result.returncode != 0 or filesystem != "vfat":
             raise CriticalException(
                 f"Partition {partition} does not contain a FAT filesystem. (Use --format or run mkfs.vfat {partition})"
             )
