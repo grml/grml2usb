@@ -73,6 +73,30 @@ def test_get_target_bootid_new(tmp_path, monkeypatch):
     assert (conf_dir / "bootid.txt").read_text() == result
 
 
+def test_build_loopbackcfg(tmp_path):
+    # Create some config files to be sourced
+    grub_dir = tmp_path / "boot" / "grub"
+    grub_dir.mkdir(parents=True)
+    (grub_dir / "grml64_default.cfg").touch()
+    (grub_dir / "grml32_default.cfg").touch()
+    (grub_dir / "grml64_options.cfg").touch()
+
+    grml2usb.build_loopbackcfg(str(tmp_path))
+
+    loopback_cfg = grub_dir / "loopback.cfg"
+    lines = loopback_cfg.read_text().splitlines()
+
+    assert lines == [
+        "# grml2usb generated grub2 configuration file",
+        "source /boot/grub/header.cfg",
+        "source /boot/grub/grml32_default.cfg",
+        "source /boot/grub/grml64_default.cfg",
+        "source /boot/grub/grml64_options.cfg",
+        "source /boot/grub/addons.cfg",
+        "source /boot/grub/footer.cfg",
+    ]
+
+
 @pytest.mark.check_for_usbdevice
 def test_extract_device_name():
     """Assert, that 'extract_device_name' returns a device name for a given path"""

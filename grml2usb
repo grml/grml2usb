@@ -1099,37 +1099,34 @@ def copy_addons(iso_mount, target):
         exec_rsync(src_file, addons)
 
 
-def build_loopbackcfg(target):
+def build_loopbackcfg(target: str | Path):
     """Generate GRUB's loopback.cfg based on existing config files.
 
     @target: target directory
     """
 
-    grub_dir = "/boot/grub/"
-    mkdir(os.path.join(target, grub_dir))
+    target = Path(target)
+    target_grub = target / "boot" / "grub"
+    target_grub.mkdir(parents=True, exist_ok=True)
 
-    f = open(target + grub_dir + "loopback.cfg", "w")
+    with (target_grub / "loopback.cfg").open(mode="w") as f:
+        f.write("# grml2usb generated grub2 configuration file\n")
+        f.write("source /boot/grub/header.cfg\n")
 
-    f.write("# grml2usb generated grub2 configuration file\n")
-    f.write("source /boot/grub/header.cfg\n")
+        for filename in sorted(target_grub.glob("*_default.cfg")):
+            if not filename.is_file():
+                continue
+            logging.debug("Found source file %s", filename)
+            f.write(f"source /boot/grub/{filename.name}\n")
 
-    for defaults in glob.glob(
-        target + os.path.sep + grub_dir + os.path.sep + "*_default.cfg"
-    ):
-        sourcefile = defaults.split(target + os.path.sep)[1]
-        logging.debug("Found source file %s", sourcefile)
-        os.path.isfile(defaults) and f.write("source " + sourcefile + "\n")
+        for filename in sorted(target_grub.glob("*_options.cfg")):
+            if not filename.is_file():
+                continue
+            logging.debug("Found source file %s", filename)
+            f.write(f"source /boot/grub/{filename.name}\n")
 
-    for ops in glob.glob(
-        target + os.path.sep + grub_dir + os.path.sep + "*_options.cfg"
-    ):
-        sourcefile = ops.split(target + os.path.sep)[1]
-        logging.debug("Found source file %s", sourcefile)
-        os.path.isfile(ops) and f.write("source " + sourcefile + "\n")
-
-    f.write("source /boot/grub/addons.cfg\n")
-    f.write("source /boot/grub/footer.cfg\n")
-    f.close()
+        f.write("source /boot/grub/addons.cfg\n")
+        f.write("source /boot/grub/footer.cfg\n")
 
 
 def glob_and_copy(filepattern, dst):
