@@ -1259,8 +1259,8 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
         if os.path.isfile(syslinux_target + "ldlinux.sys"):
             os.unlink(syslinux_target + "ldlinux.sys")
 
-        (source_dir, name) = get_defaults_file(iso_mount, grml_flavour, "default.cfg")
-        (source_dir, defaults_file) = get_defaults_file(
+        source_dir, name = get_defaults_file(iso_mount, grml_flavour, "default.cfg")
+        source_dir, defaults_file = get_defaults_file(
             iso_mount, grml_flavour, "grml.cfg"
         )
 
