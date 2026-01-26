@@ -1226,7 +1226,7 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
         execute(mkdir, syslinux_target)
         exec_rsync(logo, syslinux_target + "logo.16")
     else:
-        # arm64 ISOs do not suport it
+        # arm64 ISOs do not support it
         syslinux_target = None
 
     for filename in ("bootx64.efi", "bootaa64.efi"):
@@ -1285,7 +1285,7 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
 
             for modules_dir in options.syslinuxlibs + SYSLINUX_LIBS:
                 if os.path.isdir(modules_dir):
-                    for filename in glob.glob1(syslinux_target, "*.c32"):
+                    for filename in glob.glob("*.c32", root_dir=syslinux_target):
                         copy_if_exist(
                             os.path.join(modules_dir, filename), syslinux_target
                         )
