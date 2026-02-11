@@ -1,0 +1,26 @@
+[project]
+name = "grml2usb"
+version = "0.0.0"
+description = "Install Grml system to USB device"
+requires-python = ">=3.10"
+dependencies = [
+    "pyparted; sys_platform == 'linux'",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+]
+
+[tool.pytest.ini_options]
+markers = [
+    "check_for_usbdevice",
+    "require_root: mark test to run only as root",
+]
+
+[tool.ruff]
+include = ["grml2usb", "*.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
