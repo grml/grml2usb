@@ -1,3 +1,47 @@
+grml2usb (0.20.11) unstable; urgency=medium
+
+  [ Chris Hofstaedtler ]
+  * [e4a233f] grml2usb: apply black 26.1.0
+  * [849f303] grml2usb: fix typo in comment
+  * [7848bd7] grml2usb: follow glob1 deprecation
+  * [baec39a] grml2usb: correctly pass a bool to fineput.input inplace argument
+  * [c8b72c4] grml2usb: do not pre-format logging format strings
+  * [288f5ed] grml2usb: remove obsolete utf-8 encoding declaration
+  * [1fa9eb6] test: remove unused argparse import
+  * [c3fafa9] Replace black, isort, flake8 with ruff
+  * [cd6693a] pyproject.toml: require pyparted only on linux
+  * [d1930bb] grml2usb: inline get_partition_for_path back into check_boot_flag
+  * [3ba43f6] grml2usb: use f-strings where trivially possible
+  * [16ec2e9] grml2usb: show device name in mkfs question
+  * [a5a34e8] grml2usb: lowercase local variable in handle_logging
+  * [2a7822c] grml2usb: replace depreated IOError name
+  * [8316e09] grml2usb: extract prompting for y/n into helper function
+  * [c9c8d08] grml2usb: simplify the "which" helper function
+  * [b65f072] grml2usb: remove unused argument to "unmount"
+  * [2b8a680] grml2usb: "mkdir": use exist_ok available since Python 3.2
+  * [4e54562] grml2usb: simplify "write_uuid"
+  * [b035c38] grml2usb: simplify "get_target_bootid"
+  * [2f13c5d] grml2usb: simplify "build_loopbackcfg"
+  * [5843648] grml2usb: simplify "initial_syslinux_config"
+  * [e6cbcf2] grml2usb: "add_entry_if_not_present": use with open instead of
+    f.close()
+  * [bb8bb57] grml2usb: "add_syslinux_entry": explicitly pass syslinux_target
+    instead of reconstructing it
+  * [c3f36c3] grml2usb: "handle_syslinux_config": use with open instead of
+    f.close()
+  * [90698dc] grml2usb: "check_uid_root": simplify check condition
+  * [41a1845] grml2usb: "get_bootoptions": swap if branches
+  * [a8ab92c] grml2usb: "check_options": swap if branches
+  * [534c9fa] grml2usb: "main": merge nested if
+  * [f066417] grml2usb: use run_program to replace log + subprocess pattern
+  * [ee9005b] grml2usb: check_for_fat: handle exit code 2 from blkid
+  * [08225ab] grml2usb: check_for_fat: make try block smaller
+  * [745e52b] grml2usb: "handle_secure_boot": remove duplicated mount debug
+    log
+  * [87030b3] grml2usb: "mount": stop passing "" as "no options"
+
+ -- Chris Hofstaedtler <ch@grml.org>  Thu, 12 Feb 2026 23:08:57 +0100
+
 grml2usb (0.20.10) unstable; urgency=medium
 
   [ Chris Hofstaedtler ]
