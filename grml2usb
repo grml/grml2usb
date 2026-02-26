@@ -119,7 +119,7 @@ parser.add_argument(
     "--grub-mbr",
     dest="grubmbr",
     action="store_true",
-    help="install grub into MBR instead of (default) PBR",
+    help="Deprecated: GRUB now always installs to MBR (this option is a no-op)",
 )
 parser.add_argument(
     "--mbr-menu",
@@ -581,12 +581,8 @@ def install_grub(device):
         device_mountpoint = tempfile.mkdtemp(prefix="grml2usb")
         register_tmpfile(device_mountpoint)
         try:
-            # If using --grub-mbr then make sure we install grub in MBR instead of PBR
-            if options.grubmbr:
-                logging.debug("Using option --grub-mbr ...")
-                grub_device, x = get_device_from_partition(device)
-            else:
-                grub_device = device
+            # Install GRUB to the MBR (whole disk device, not the partition)
+            grub_device, _ = get_device_from_partition(device)
 
             set_rw(device)
             mount(device, device_mountpoint)
@@ -618,10 +614,6 @@ def install_grub(device):
                 logging.critical(
                     "Fatal: error executing grub-install "
                     "(please check the grml2usb FAQ or drop the --grub option)"
-                )
-                logging.critical(
-                    "Note:  if using grub2 consider using "
-                    "the --grub-mbr option as grub considers PBR problematic."
                 )
                 cleanup()
                 sys.exit(1)
@@ -705,15 +697,6 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
         logging.info("Skipping MBR installation for EFI-boot")
         return
 
-    logging.info("Installing default MBR")
-
-    if not os.path.isfile(mbrtemplate):
-        logging.error(
-            'Error installing MBR (either try --syslinux-mbr or install missing file "%s"?)',
-            mbrtemplate,
-        )
-        raise CriticalException(f"{mbrtemplate} can not be read.")
-
     if partition is not None and ((partition < 0) or (partition > 3)):
         logging.warning("Cannot activate partition %d", partition)
         partition = None
@@ -730,17 +713,28 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
         stderr=subprocess.DEVNULL,
     )
 
-    run_program(
-        [
-            "dd",
-            f"if={mbrtemplate}",
-            f"of={tmpf.name}",
-            f"bs={nmbrbytes}",
-            "count=1",
-            "conv=notrunc",
-        ],
-        stderr=subprocess.DEVNULL,
-    )
+    if options.bootloader == "grub":
+        # GRUB installs its own MBR boot code via grub-install; only activate the partition
+        logging.info("Skipping MBR boot code installation - GRUB will install its own")
+    else:
+        logging.info("Installing default MBR")
+        if not os.path.isfile(mbrtemplate):
+            logging.error(
+                'Error installing MBR (either try --syslinux-mbr or install missing file "%s"?)',
+                mbrtemplate,
+            )
+            raise CriticalException(f"{mbrtemplate} can not be read.")
+        run_program(
+            [
+                "dd",
+                f"if={mbrtemplate}",
+                f"of={tmpf.name}",
+                f"bs={nmbrbytes}",
+                "count=1",
+                "conv=notrunc",
+            ],
+            stderr=subprocess.DEVNULL,
+        )
 
     mbrcode = tmpf.file.read(512)
     if len(mbrcode) < 512:
@@ -1136,18 +1130,43 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
     """
     assert options is not None
 
+    # Detect arm64 ISOs (have arm64 EFI loader but no x86 EFI loader) and switch to EFI-only mode
+    if (
+        search_file("bootaa64.efi", iso_mount)
+        and not search_file("bootx64.efi", iso_mount)
+        and options.bootloader in ("syslinux", "grub")
+    ):
+        logging.warning(
+            "Detected arm64 ISO (bootaa64.efi present, bootx64.efi absent) but bootloader '%s' requires x86. "
+            "Switching to EFI-only mode.",
+            options.bootloader,
+        )
+        options.bootloader = "efi"
+
     grub_target = target + "/boot/grub/"
     execute(mkdir, grub_target)
 
-    require_syslinux = options.bootloader == "syslinux"
-    logo = search_file("logo.16", iso_mount, required=require_syslinux)
+    logo = search_file("logo.16", iso_mount)
     if logo:
         syslinux_target = target + "/boot/syslinux/"
         execute(mkdir, syslinux_target)
         exec_rsync(logo, syslinux_target + "logo.16")
     else:
-        # arm64 ISOs do not support it
+        # ISO does not have syslinux files - fall back to GRUB or EFI
         syslinux_target = None
+        if options.bootloader == "syslinux":
+            if GRUB_INSTALL:
+                logging.warning(
+                    "ISO does not contain syslinux files (logo.16 not found). "
+                    "Falling back to GRUB for BIOS boot."
+                )
+                options.bootloader = "grub"
+            else:
+                logging.warning(
+                    "ISO does not contain syslinux files (logo.16 not found) "
+                    "and grub-install is not available. Switching to EFI-only mode."
+                )
+                options.bootloader = "efi"
 
     for filename in ("bootx64.efi", "bootaa64.efi"):
         efi_loader = search_file(filename, iso_mount)
@@ -1912,19 +1931,18 @@ def check_options(options: argparse.Namespace):
         if host_architecture() == "aarch64":
             options.bootloader = "efi"
         else:
-            if syslinux_program:
-                logging.info("Choosing syslinux as bootloader")
-                options.bootloader = "syslinux"
-            elif GRUB_INSTALL:
-                logging.info("Choosing GRUB as bootloader (syslinux not found)")
+            # Prefer GRUB over syslinux - GRUB supports both BIOS and EFI boot,
+            # and recent Grml ISOs no longer ship syslinux/isolinux files.
+            if GRUB_INSTALL:
+                logging.info("Choosing GRUB as bootloader")
                 options.bootloader = "grub"
+            elif syslinux_program:
+                logging.info("Choosing syslinux as bootloader (grub-install not found)")
+                options.bootloader = "syslinux"
             else:
                 logging.warning("Choosing EFI-boot as no x86 bootloaders were found")
-                logging.warning("Install syslinux and/or grub-install if needed")
+                logging.warning("Install grub and/or syslinux if needed")
                 options.bootloader = "efi"
-
-    if options.grubmbr and options.bootloader != "grub":
-        raise CriticalException("--grub-mbr requires --grub option.")
 
     if options.copyonly and options.bootloader == "grub":
         raise CriticalException("Cannot use --copy-only and --grub at the same time.")
