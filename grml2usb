@@ -1909,7 +1909,7 @@ def check_options(options: argparse.Namespace):
     syslinux_program = which("syslinux")
 
     if options.bootloader == "auto":
-        if host_architecture() == "arm64":
+        if host_architecture() == "aarch64":
             options.bootloader = "efi"
         else:
             if syslinux_program:
