@@ -15,7 +15,7 @@ PATH="${PATH}:/sbin:/usr/local/sbin:/usr/sbin"
 # path to the grml2usb script you'd like to use
 [ -n "$GRML2USB" ] || GRML2USB='grml2usb'
 
-if ! which xorriso >/dev/null 2>&1 ; then
+if ! command -v xorriso >/dev/null 2>&1 ; then
   echo "Error: xorriso not found - can not create ISO." >&2
   exit 1
 fi
@@ -44,7 +44,7 @@ Options:
                          created by mktemp(1).
 
      Examples:
-     $0 -s http://192.168.23.42:8000/grml/ -o small.iso grml64-small_2021.07.iso
+     $0 -s http://192.168.23.42:8000/grml/ -o small.iso grml-small-2025.12-amd64.iso
 
      Will generate a file small.iso which tries to download the squashfs file from
      http://192.168.23.42:8000/grml/ - the squashfs file is placed in the same
@@ -59,7 +59,6 @@ Options:
 
   ISOFILE=''
   DIR=''
-  ADD_OPTS=''
   FORCE=''
   URI=''
   typeset -a GRML2USB_OPTS
@@ -86,12 +85,12 @@ Options:
   [ -n "$ISOFILE" ] || usage 1
 
 # we don't to override any files by accident
-  if [ -e "$ISOFILE" -a ! -n "$FORCE" ]; then
+  if [ -e "$ISOFILE" ] && [ -z "$FORCE" ]; then
     echo "Error: target file $ISOFILE exists already." >&2
     exit 1
   fi
 
-  if [ ! -z "$DIR" -a ! -d "$DIR" ] ; then
+  if [ -n "$DIR" ] && [ ! -d "$DIR" ] ; then
      echo "Error: specified parameter for -c is not a directory" >&2
      exit 1
   fi
@@ -105,7 +104,7 @@ Options:
 # }}}
 
 # check for grml2usb {{{
-  if [ ! -x "$(which $GRML2USB)" ] && [ ! -x "$GRML2USB" ] ; then
+  if [ ! -x "$(command -v "$GRML2USB")" ] && [ ! -x "$GRML2USB" ] ; then
     echo "Error: Could not find grml2usb executable. Is /usr/sbin missing in PATH?" >&2
     echo "Tip: run GRML2USB=/usr/sbin/grml2usb grml2iso ... as workaround" >&2
     if [ -x "./$GRML2USB" ] ; then
@@ -138,16 +137,16 @@ Options:
 
   rm -rf "$WRKDIR/cddir" "$WRKDIR/grub_tmp"
   mkdir -p "$WRKDIR/cddir"
-# }}}}
+# }}}
 
 # execute grml2usb with all ISOs you'd like to install {{{
   # remove all parameters
-  shift $(($OPTIND - 1))
+  shift $(( OPTIND - 1 ))
 
   $GRML2USB "${GRML2USB_OPTS[@]}" "$@" "$WRKDIR/cddir"
 # }}}
 
-# change to $WRKDIR {{{
+# change to working directory {{{
   # make sure $WRKDIR is an absolute path, otherwise accessing files
   # in it will fail later in the code path if user provided a
   # relative directory
@@ -181,11 +180,9 @@ Options:
     echo "Warning: Neither syslinux nor GRUB boot files found." >&2
   fi
 
-  echo "Using xorriso for ISO generation."
-
   if [ "$USE_ISOLINUX" = "true" ] ; then
     # isolinux-based BIOS boot
-    if ! which isohybrid >/dev/null 2>&1 ; then
+    if ! command -v isohybrid >/dev/null 2>&1 ; then
       echo "Error: isohybrid executable not found (install syslinux/isolinux/syslinux-utils?)." >&2
       exit 1
     fi
@@ -216,7 +213,7 @@ Options:
       GRUB_BIOS_AVAILABLE=true
     elif [ -d "/usr/lib/grub/i386-pc" ] ; then
       # Try to generate GRUB BIOS boot image (requires i386-pc modules)
-      if which grub-mkimage >/dev/null 2>&1 ; then
+      if command -v grub-mkimage >/dev/null 2>&1 ; then
         echo "Generating GRUB BIOS boot image..."
         mkdir -p boot/grub/i386-pc
         if grub-mkimage -o boot/grub/i386-pc/eltorito.img -O i386-pc-eltorito -p /boot/grub \
@@ -257,7 +254,6 @@ Options:
       # Fall back to EFI-only boot
       echo "Warning: GRUB i386-pc modules not available, falling back to EFI-only boot." >&2
       echo "Hint: Install grub-pc-bin for BIOS boot support on non-x86 hosts." >&2
-      USE_GRUB=false
       BOOT_ARGS="-e boot/efi.img -no-emul-boot -isohybrid-gpt-basdat -no-pad"
     else
       echo "Error: Cannot create bootable ISO - no BIOS or EFI boot method available." >&2
@@ -286,7 +282,7 @@ Options:
         media_path="$(dirname "$squashfs")"
         filename="$(basename "$squashfs")"
         target="$output_dir/$filename"
-        if [ -f "$target" ] && [ ! -n "$FORCE" ] ; then
+        if [ -f "$target" ] && [ -z "$FORCE" ] ; then
            echo >&2 "Warning: $target already exists, and -force not specified, not overwriting"
         else
            mv $squashfs $target
@@ -302,7 +298,7 @@ Options:
   if [ -n "$DIR" ] ; then
      echo >&2 "Copying ${DIR} to generated ISO"
      for param in GRML_NAME VERSION RELEASENAME DATE SHORT_NAME \
-         VERSION BOOTID RELEASE_INFO ; do
+         BOOTID RELEASE_INFO ; do
        EXCLUDE_PARAM="$EXCLUDE_PARAM --exclude **%${param}%**"
      done
      rsync -a ${DIR}/ $EXCLUDE_PARAM .
@@ -319,7 +315,7 @@ Options:
     BOOTID=$(cat conf/bootid.txt)
 
     for param in GRML_NAME VERSION RELEASENAME DATE SHORT_NAME \
-        RELEASE_INFO BOOTID  ; do
+        RELEASE_INFO BOOTID ; do
       value="$(eval echo '$'"$param")"
 
       # copy parameterized files from the overlay directory
