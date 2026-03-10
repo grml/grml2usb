@@ -159,7 +159,6 @@ Options:
   BOOT_ARGS=""
   USE_ISOLINUX=false
   USE_GRUB=false
-  UEFI_ENABLE=false
   HOST_ARCH="$(uname -m)"
 
   # Check if syslinux/isolinux files are available
@@ -183,13 +182,6 @@ Options:
   fi
 
   echo "Using xorriso for ISO generation."
-  if ! dpkg --compare-versions $(dpkg-query -W -f='${Version}\n' xorriso 2>/dev/null) gt-nl 1.1.6-1 ; then
-    echo "Disabling (U)EFI boot support since xorriso version is not recent enough."
-    UEFI_ENABLE=false
-  else
-    echo "xorriso with -eltorito-alt-boot support present"
-    UEFI_ENABLE=true
-  fi
 
   if [ "$USE_ISOLINUX" = "true" ] ; then
     # isolinux-based BIOS boot
@@ -199,7 +191,7 @@ Options:
     fi
     BOOT_ARGS="-no-emul-boot -boot-load-size 4 -boot-info-table -b boot/isolinux/isolinux.bin -c boot/isolinux/boot.cat"
 
-    if [ "$UEFI_ENABLE" = "true" ] && [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
+    if [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
       echo "/boot/efi.img found, enabling (U)EFI boot support."
       if ! [ -r /usr/lib/ISOLINUX/isohdpfx.bin ] ; then
         echo "Error: /usr/lib/ISOLINUX/isohdpfx.bin not available, required for xorriso/isohybrid." >&2
@@ -249,7 +241,7 @@ Options:
       BOOT_ARGS="-no-emul-boot -boot-load-size 4 -boot-info-table -b boot/grub/i386-pc/eltorito.img -c boot/grub/boot.cat"
       BOOT_ARGS+=" --grub2-boot-info"
 
-      if [ "$UEFI_ENABLE" = "true" ] && [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
+      if [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
         echo "/boot/efi.img found, enabling (U)EFI boot support."
         BOOT_ARGS+=" -eltorito-alt-boot -e boot/efi.img -no-emul-boot"
         if [ -n "$GRUB_BOOT_IMG" ] ; then
@@ -261,7 +253,7 @@ Options:
       elif [ -n "$GRUB_BOOT_IMG" ] ; then
         BOOT_ARGS+=" --grub2-mbr $GRUB_BOOT_IMG -no-pad"
       fi
-    elif [ "$UEFI_ENABLE" = "true" ] && [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
+    elif [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
       # Fall back to EFI-only boot
       echo "Warning: GRUB i386-pc modules not available, falling back to EFI-only boot." >&2
       echo "Hint: Install grub-pc-bin for BIOS boot support on non-x86 hosts." >&2
@@ -274,7 +266,7 @@ Options:
 
   else
     # EFI-only boot (e.g., arm64)
-    if [ "$UEFI_ENABLE" = "true" ] && [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
+    if [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
       echo "Using EFI-only boot."
       BOOT_ARGS="-e boot/efi.img -no-emul-boot -isohybrid-gpt-basdat -no-pad"
     else
