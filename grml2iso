@@ -26,11 +26,6 @@ else
   echo "Error: neither xorriso nor mkisofs nor genisoimage available - can not create ISO." >&2
   exit 1
 fi
-
-if ! which isohybrid >/dev/null 2>&1 ; then
-  echo "Error: isohybrid executable not found (install syslinux/isolinux/syslinux-utils?)." >&2
-  exit 1
-fi
 # }}}
 
 # helper stuff {{{
@@ -159,12 +154,6 @@ Options:
   $GRML2USB "${GRML2USB_OPTS[@]}" "$@" "$WRKDIR/cddir"
 # }}}
 
-# move syslinux to isolinux {{{
-  mv "$WRKDIR"/cddir/boot/syslinux "$WRKDIR"/cddir/boot/isolinux
-  echo "menu label ^Isolinux prompt" > "$WRKDIR"/cddir/boot/isolinux/promptname.cfg
-  echo "include hd.cfg" >> "$WRKDIR"/cddir/boot/isolinux/grmlmain.cfg
-# }}}
-
 # change to $WRKDIR {{{
   # make sure $WRKDIR is an absolute path, otherwise accessing files
   # in it will fail later in the code path if user provided a
@@ -173,38 +162,144 @@ Options:
   cd "$WRKDIR/cddir"
 # }}}
 
-# efi boot {{{
-  # default, independent of UEFI support
-  BOOT_ARGS="-no-emul-boot -boot-load-size 4 -boot-info-table -b boot/isolinux/isolinux.bin -c boot/isolinux/boot.cat"
+# detect boot method and set up boot arguments {{{
+  BOOT_ARGS=""
+  USE_ISOLINUX=false
+  USE_GRUB=false
   UEFI_ENABLE=false
+  HOST_ARCH="$(uname -m)"
+
+  # Check if syslinux/isolinux files are available
+  # On arm64 hosts, prefer GRUB since isohybrid is not available
+  if [ -d "$WRKDIR/cddir/boot/syslinux" ] && [ "$HOST_ARCH" != "aarch64" ] ; then
+    echo "Found syslinux files, using isolinux for BIOS boot."
+    USE_ISOLINUX=true
+    mv "$WRKDIR"/cddir/boot/syslinux "$WRKDIR"/cddir/boot/isolinux
+    echo "menu label ^Isolinux prompt" > "$WRKDIR"/cddir/boot/isolinux/promptname.cfg
+    echo "include hd.cfg" >> "$WRKDIR"/cddir/boot/isolinux/grmlmain.cfg
+  elif [ -d "$WRKDIR/cddir/boot/grub" ] ; then
+    if [ -d "$WRKDIR/cddir/boot/syslinux" ] ; then
+      echo "Found syslinux files, but using GRUB for BIOS boot (running on $HOST_ARCH)."
+      rm -rf "$WRKDIR/cddir/boot/syslinux"
+    else
+      echo "No syslinux files found, using GRUB for BIOS boot."
+    fi
+    USE_GRUB=true
+  else
+    echo "Warning: Neither syslinux nor GRUB boot files found." >&2
+  fi
 
   case "$MKISOFS" in
     xorriso*)
       echo "Using xorriso for ISO generation."
       if ! dpkg --compare-versions $(dpkg-query -W -f='${Version}\n' xorriso 2>/dev/null) gt-nl 1.1.6-1 ; then
         echo "Disabling (U)EFI boot support since xorriso version is not recent enough."
+        UEFI_ENABLE=false
       else
         echo "xorriso with -eltorito-alt-boot support present"
         UEFI_ENABLE=true
+      fi
 
-        if ! [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
-          echo "Warning: File /boot/efi.img not found, not extending boot arguments for (U)EFI boot."
-          UEFI_ENABLE=false
-        else
-          echo "/boot/efi.img found, extending boot arguments for (U)EFI boot."
+      if [ "$USE_ISOLINUX" = "true" ] ; then
+        # isolinux-based BIOS boot
+        if ! which isohybrid >/dev/null 2>&1 ; then
+          echo "Error: isohybrid executable not found (install syslinux/isolinux/syslinux-utils?)." >&2
+          exit 1
+        fi
+        BOOT_ARGS="-no-emul-boot -boot-load-size 4 -boot-info-table -b boot/isolinux/isolinux.bin -c boot/isolinux/boot.cat"
+
+        if [ "$UEFI_ENABLE" = "true" ] && [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
+          echo "/boot/efi.img found, enabling (U)EFI boot support."
           if ! [ -r /usr/lib/ISOLINUX/isohdpfx.bin ] ; then
-            echo "Error: /usr/lib/ISOLINUX/isohdpfx.bin not available, required for xorriso/isohybrid though." >&2
+            echo "Error: /usr/lib/ISOLINUX/isohdpfx.bin not available, required for xorriso/isohybrid." >&2
             echo "Hint:  make sure isolinux is installed." >&2
             exit 1
-          else
-            BOOT_ARGS+=" -boot-info-table -eltorito-alt-boot -e boot/efi.img -no-emul-boot"
-            BOOT_ARGS+=" -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin -eltorito-alt-boot -e boot/efi.img -no-emul-boot -isohybrid-gpt-basdat -no-pad"
           fi
+          BOOT_ARGS+=" -eltorito-alt-boot -e boot/efi.img -no-emul-boot"
+          BOOT_ARGS+=" -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin -isohybrid-gpt-basdat -no-pad"
+        fi
+
+      elif [ "$USE_GRUB" = "true" ] ; then
+        # GRUB-based BIOS boot
+        GRUB_BIOS_AVAILABLE=false
+
+        # Check if source ISO already has GRUB BIOS boot image
+        if [ -r "boot/grub/i386-pc/eltorito.img" ] ; then
+          echo "Using existing GRUB BIOS boot image from source ISO."
+          GRUB_BIOS_AVAILABLE=true
+        elif [ -r "boot/grub/i386-pc/cdboot.img" ] ; then
+          echo "Using existing GRUB cdboot.img from source ISO."
+          cp boot/grub/i386-pc/cdboot.img boot/grub/i386-pc/eltorito.img
+          GRUB_BIOS_AVAILABLE=true
+        elif [ -d "/usr/lib/grub/i386-pc" ] ; then
+          # Try to generate GRUB BIOS boot image (requires i386-pc modules)
+          if which grub-mkimage >/dev/null 2>&1 ; then
+            echo "Generating GRUB BIOS boot image..."
+            mkdir -p boot/grub/i386-pc
+            if grub-mkimage -o boot/grub/i386-pc/eltorito.img -O i386-pc-eltorito -p /boot/grub \
+                biosdisk iso9660 linux configfile normal search search_fs_file search_label part_msdos part_gpt fat ext2 2>/dev/null ; then
+              GRUB_BIOS_AVAILABLE=true
+            else
+              echo "Warning: Failed to generate GRUB BIOS boot image." >&2
+            fi
+          fi
+        fi
+
+        if [ "$GRUB_BIOS_AVAILABLE" = "true" ] ; then
+          # Find GRUB's boot.img for hybrid MBR (check ISO first, then system)
+          GRUB_BOOT_IMG=""
+          for path in boot/grub/i386-pc/boot.img /usr/lib/grub/i386-pc/boot.img /usr/share/grub/i386-pc/boot.img ; do
+            if [ -r "$path" ] ; then
+              GRUB_BOOT_IMG="$path"
+              break
+            fi
+          done
+
+          BOOT_ARGS="-no-emul-boot -boot-load-size 4 -boot-info-table -b boot/grub/i386-pc/eltorito.img -c boot/grub/boot.cat"
+          BOOT_ARGS+=" --grub2-boot-info"
+
+          if [ "$UEFI_ENABLE" = "true" ] && [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
+            echo "/boot/efi.img found, enabling (U)EFI boot support."
+            BOOT_ARGS+=" -eltorito-alt-boot -e boot/efi.img -no-emul-boot"
+            if [ -n "$GRUB_BOOT_IMG" ] ; then
+              BOOT_ARGS+=" --grub2-mbr $GRUB_BOOT_IMG -isohybrid-gpt-basdat -no-pad"
+            else
+              echo "Warning: GRUB boot.img not found, ISO may not be hybrid-bootable from USB." >&2
+              BOOT_ARGS+=" -no-pad"
+            fi
+          elif [ -n "$GRUB_BOOT_IMG" ] ; then
+            BOOT_ARGS+=" --grub2-mbr $GRUB_BOOT_IMG -no-pad"
+          fi
+        elif [ "$UEFI_ENABLE" = "true" ] && [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
+          # Fall back to EFI-only boot
+          echo "Warning: GRUB i386-pc modules not available, falling back to EFI-only boot." >&2
+          echo "Hint: Install grub-pc-bin for BIOS boot support on non-x86 hosts." >&2
+          USE_GRUB=false
+          BOOT_ARGS="-e boot/efi.img -no-emul-boot -isohybrid-gpt-basdat -no-pad"
+        else
+          echo "Error: Cannot create bootable ISO - no BIOS or EFI boot method available." >&2
+          exit 1
+        fi
+
+      else
+        # EFI-only boot (e.g., arm64)
+        if [ "$UEFI_ENABLE" = "true" ] && [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
+          echo "Using EFI-only boot."
+          BOOT_ARGS="-e boot/efi.img -no-emul-boot -isohybrid-gpt-basdat -no-pad"
+        else
+          echo "Error: No bootable configuration found." >&2
+          exit 1
         fi
       fi
       ;;
     *)
-      echo "Using $MKISOFS for ISO generation (lacking UEFI option), disabling (U)EFI boot support."
+      echo "Using $MKISOFS for ISO generation."
+      if [ "$USE_ISOLINUX" = "true" ] ; then
+        BOOT_ARGS="-no-emul-boot -boot-load-size 4 -boot-info-table -b boot/isolinux/isolinux.bin -c boot/isolinux/boot.cat"
+      else
+        echo "Error: $MKISOFS does not support GRUB-based ISO boot. Please install xorriso." >&2
+        exit 1
+      fi
       ;;
   esac
 # }}}
