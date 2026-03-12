@@ -63,12 +63,6 @@ install -m 644 \${BASE}/splash.xpm.gz /usr/share/grml2usb/grub/splash.xpm.gz
 printf "  - /usr/share/grml2usb/grub/grml.png\n"
 install -m 644 \${BASE}/grml.png      /usr/share/grml2usb/grub/grml.png
 
-[ -d /usr/share/grml2usb/mbr ] || mkdir -p /usr/share/grml2usb/mbr
-printf "  - /usr/share/grml2usb/mbr/mbrmgr\n"
-install -m 644 \${BASE}/mbrmgr /usr/share/grml2usb/mbr/mbrmgr
-printf "  - /usr/share/grml2usb/mbr/mbrldr\n"
-install -m 644 \${BASE}/mbrldr /usr/share/grml2usb/mbr/mbrldr
-
 [ -d /usr/share/man/man8/ ] || mkdir -p /usr/share/man/man8
 printf "  - /usr/share/man/man8/grml2usb.8.gz\n"
 install -m 644 \${BASE}/grml2usb.8.gz /usr/share/man/man8/grml2usb.8.gz
@@ -93,8 +87,6 @@ for file in \\
   /usr/sbin/grml2iso \\
   /usr/share/grml2usb/grub/splash.xpm.gz \\
   /usr/share/grml2usb/grub/grml.png \\
-  /usr/share/grml2usb/mbr/mbrmgr \\
-  /usr/share/grml2usb/mbr/mbrldr \\
   /usr/share/man/man8/grml2usb.8.gz \\
 ; do
   printf "Removing \$file: "
@@ -115,7 +107,7 @@ rm grml2usb-$VERSION/grml2usb.8.adoc
 rm grml2usb-$VERSION/grml2iso.8.adoc
 
 # binaries, grub
-cp grml2usb grml2iso mbr/mbrldr mbr/mbrmgr grub/* grml2usb-$VERSION/
+cp grml2usb grml2iso grub/* grml2usb-$VERSION/
 sed -i -e "s/PROG_VERSION = '\*\*\*UNKNOWN\*\*\*'/PROG_VERSION = '${VERSION}'/" grml2usb-$VERSION/grml2usb
 
 tar zcf grml2usb.tgz "${DIR}"
