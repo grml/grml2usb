@@ -152,7 +152,15 @@ def check_partition_table(path):
 
 
 @pytest.mark.require_root
-def test_smoke(tmp_path):
+@pytest.mark.parametrize(
+    "options",
+    [
+        pytest.param([], id="defaults"),
+        pytest.param(["--bootloader=syslinux"], id="bootloader=syslinux"),
+        pytest.param(["--bootloader=efi"], id="bootloader=efi"),
+    ],
+)
+def test_smoke(tmp_path, options):
     loop_dev = _find_free_loopdev()
     partition = f"{loop_dev!s}p1"
 
@@ -162,7 +170,7 @@ def test_smoke(tmp_path):
         _run_x(["curl", "-fSl#", "--output", iso_name, iso_url])
 
     grml2usb_options = grml2usb.parser.parse_args(
-        ["--format", "--force", iso_name, partition]
+        ["--format", "--force", iso_name, partition] + options
     )
     print("Options:", grml2usb_options)
 
