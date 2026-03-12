@@ -161,14 +161,21 @@ def iso_amd64(tmp_path_factory):
 
 @pytest.mark.require_root
 @pytest.mark.parametrize(
-    "options, expect_x86_mbr",
+    "options, expect_x86_mbr, expect_bootloader_message",
     [
-        pytest.param([], True, id="defaults"),
-        pytest.param(["--bootloader=syslinux"], True, id="bootloader=syslinux"),
-        pytest.param(["--bootloader=efi"], False, id="bootloader=efi"),
+        pytest.param([], True, "Using grub as bootloader", id="defaults"),
+        pytest.param(["--bootloader=efi"], False, None, id="bootloader=efi"),
     ],
 )
-def test_smoke(tmp_path, iso_amd64, caplog, monkeypatch, options, expect_x86_mbr):
+def test_smoke(
+    tmp_path,
+    iso_amd64,
+    caplog,
+    monkeypatch,
+    options,
+    expect_x86_mbr,
+    expect_bootloader_message,
+):
     caplog.set_level(logging.DEBUG)
     monkeypatch.setattr(grml2usb, "handle_logging", lambda: None)
 
@@ -226,3 +233,6 @@ def test_smoke(tmp_path, iso_amd64, caplog, monkeypatch, options, expect_x86_mbr
         )
 
     check_partition_table(loop_backing_file)
+
+    if expect_bootloader_message:
+        assert expect_bootloader_message in caplog.text
