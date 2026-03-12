@@ -693,38 +693,28 @@ def install_mbr(mbrtemplate, device, partition):
         logging.warning("Cannot activate partition %d", partition)
         partition = None
 
-    tmpf = tempfile.NamedTemporaryFile()
-
-    run_program(
-        ["dd", f"if={device}", f"of={tmpf.name}", "bs=512", "count=1"],
-        stderr=subprocess.DEVNULL,
-    )
+    with Path(device).open("rb") as fh:
+        mbrcode = fh.read(512)
+    logging.info("MBR from device %s: %s", device, mbrcode.hex())
 
     if options.bootloader == "grub":
         # GRUB installs its own MBR boot code via grub-install; only activate the partition
         logging.info("Skipping MBR boot code installation - GRUB will install its own")
     else:
-        logging.info("Installing syslinux MBR")
+        print("Installing syslinux MBR")
         if not os.path.isfile(mbrtemplate):
             logging.error('Error installing MBR: "%s" not found', mbrtemplate)
             raise CriticalException(f"{mbrtemplate} can not be read.")
         statinfo = os.stat(mbrtemplate)
-        logging.info("MBR file %s is of length %s", mbrtemplate, statinfo.st_size)
-        run_program(
-            [
-                "dd",
-                f"if={mbrtemplate}",
-                f"of={tmpf.name}",
-                "bs=440",
-                "count=1",
-                "conv=notrunc",
-            ],
-            stderr=subprocess.DEVNULL,
-        )
-
-    mbrcode = tmpf.file.read(512)
-    if len(mbrcode) < 512:
-        raise EOFError(f"MBR size {len(mbrcode)} < 512")
+        print("MBR file", mbrtemplate, "is of length", statinfo.st_size)
+        with Path(mbrtemplate).open("rb") as fh:
+            mbrtemplate_code = mbrtemplate.read()
+        print("MBR template code length:", len(mbrtemplate_code))
+        print("MBR template code:", mbrtemplate_code.hex())
+        maxsize = 446
+        mbrtemplate_code = mbrtemplate_code[0:maxsize]
+        mbrcode = mbrtemplate_code + mbrcode[len(mbrtemplate_code) : 512]
+        print("Merged MBR template code:", mbrcode.hex())
 
     if partition is not None:
         actives = [b"\x00", b"\x00", b"\x00", b"\x00"]
@@ -742,30 +732,14 @@ def install_mbr(mbrtemplate, device, partition):
             + b"\x55\xaa"
         )
 
-    tmpf.file.seek(0)
-    tmpf.file.truncate()
-    tmpf.file.write(mbrcode)
-    tmpf.file.close()
+    print("Final MBR template code:", mbrcode.hex())
 
     set_rw(device)
 
-    logging.debug(
-        "executing: dd if='%s' of='%s' bs=512 count=1 conv=notrunc,fsync",
-        tmpf.name,
-        device,
-    )
-    run_program(
-        [
-            "dd",
-            f"if={tmpf.name}",
-            f"of={device}",
-            "bs=512",
-            "count=1",
-            "conv=notrunc,fsync",
-        ],
-        stderr=subprocess.DEVNULL,
-    )
-    del tmpf
+    with Path(device).open("ab") as fh:
+        fh.seek(0)
+        fh.write(mbrcode)
+    os.sync()
 
     blockdev_args = ["blockdev", "--rereadpt", device]
     result = run_program(blockdev_args, check=False)
