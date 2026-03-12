@@ -161,13 +161,13 @@ def iso_amd64(tmp_path_factory):
 
 @pytest.mark.require_root
 @pytest.mark.parametrize(
-    "options",
+    "options, expect_x86_mbr",
     [
-        pytest.param([], id="defaults"),
-        pytest.param(["--bootloader=efi"], id="bootloader=efi"),
+        pytest.param([], True, id="defaults"),
+        pytest.param(["--bootloader=efi"], False, id="bootloader=efi"),
     ],
 )
-def test_smoke(tmp_path, iso_amd64, caplog, monkeypatch, options):
+def test_smoke(tmp_path, iso_amd64, caplog, monkeypatch, options, expect_x86_mbr):
     caplog.set_level(logging.DEBUG)
     monkeypatch.setattr(grml2usb, "handle_logging", lambda: None)
 
@@ -219,8 +219,9 @@ def test_smoke(tmp_path, iso_amd64, caplog, monkeypatch, options):
         mbr = fh.read(512)
     print("Finalized MBR contents:", mbr.hex())
 
-    assert not mbr.startswith(b"0000"), (
-        "MBR starts with zero-bytes, x86 BIOS will not boot"
-    )
+    if expect_x86_mbr:
+        assert not mbr.startswith(b"\x00\x00"), (
+            "MBR starts with zero-bytes, x86 BIOS will not boot"
+        )
 
     check_partition_table(loop_backing_file)
