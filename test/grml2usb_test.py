@@ -151,6 +151,14 @@ def check_partition_table(path):
     )  # should still be active/bootable
 
 
+@pytest.fixture(scope="session")
+def iso_amd64(tmp_path_factory):
+    iso_url = "https://daily.grml.org/grml-small-amd64-unstable/latest/grml-small-amd64-unstable_latest.iso"
+    iso_name = str(tmp_path_factory.mktemp("isos") / "grml-amd64.iso")
+    _run_x(["curl", "-fSl#", "--output", iso_name, iso_url])
+    yield iso_name
+
+
 @pytest.mark.require_root
 @pytest.mark.parametrize(
     "options",
@@ -159,17 +167,12 @@ def check_partition_table(path):
         pytest.param(["--bootloader=efi"], id="bootloader=efi"),
     ],
 )
-def test_smoke(tmp_path, options):
+def test_smoke(tmp_path, iso_amd64, options):
     loop_dev = _find_free_loopdev()
     partition = f"{loop_dev!s}p1"
 
-    iso_url = "https://daily.grml.org/grml-small-amd64-unstable/latest/grml-small-amd64-unstable_latest.iso"
-    iso_name = "grml.iso"
-    if not os.path.exists(iso_name):
-        _run_x(["curl", "-fSl#", "--output", iso_name, iso_url])
-
     grml2usb_options = grml2usb.parser.parse_args(
-        ["--format", "--force", iso_name, partition] + options
+        ["--format", "--force", iso_amd64, partition] + options
     )
     print("Options:", grml2usb_options)
 
