@@ -168,7 +168,10 @@ def iso_amd64(tmp_path_factory):
         pytest.param(["--bootloader=efi"], id="bootloader=efi"),
     ],
 )
-def test_smoke(tmp_path, iso_amd64, options):
+def test_smoke(tmp_path, iso_amd64, caplog, monkeypatch, options):
+    caplog.set_level(logging.DEBUG)
+    monkeypatch.setattr(grml2usb, "handle_logging", lambda: None)
+
     loop_dev = _find_free_loopdev()
     partition = f"{loop_dev!s}p1"
 
@@ -209,7 +212,6 @@ def test_smoke(tmp_path, iso_amd64, options):
     _run_x(["partprobe", loop_dev])
 
     try:
-        logging.root.setLevel(logging.DEBUG)
         grml2usb.main(grml2usb_options)
     finally:
         _run_x(["losetup", "-d", loop_dev])
