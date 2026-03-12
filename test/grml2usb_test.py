@@ -16,6 +16,7 @@ Runwith:
 """
 
 import importlib
+import logging
 import os
 import subprocess
 import uuid
@@ -176,6 +177,7 @@ def test_smoke(tmp_path):
     _run_x(["partprobe", loop_dev])
 
     try:
+        logging.root.setLevel(logging.DEBUG)
         grml2usb.main(grml2usb_options)
     finally:
         _run_x(["losetup", "-d", loop_dev])
