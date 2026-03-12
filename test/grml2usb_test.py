@@ -198,9 +198,12 @@ def loopdev_with_partition(tmp_path):
 @pytest.fixture(scope="session")
 def iso_amd64(tmp_path_factory):
     iso_url = "https://daily.grml.org/grml-small-amd64-unstable/latest/grml-small-amd64-unstable_latest.iso"
-    iso_name = str(tmp_path_factory.mktemp("isos") / "grml-amd64.iso")
-    _run_x(["curl", "-fSl#", "--output", iso_name, iso_url])
-    yield iso_name
+    iso_name = tmp_path_factory.mktemp("isos") / "grml-amd64.iso"
+    if iso_name.exists():
+        print(f"ISO {iso_name} already exists")
+    else:
+        _run_x(["curl", "-fSl#", "--output", iso_name, iso_url])
+    yield str(iso_name)
 
 
 @pytest.mark.require_root
