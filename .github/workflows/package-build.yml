@@ -34,6 +34,9 @@ jobs:
            -- Automated Build <builder@localhost>  $(date -R)
           EOT
       - uses: jtdor/build-deb-action@v1
+      - name: "Make tarball"
+        run: |
+          make prepare-release
       - name: Archive build result
         uses: actions/upload-artifact@v7
         with:
@@ -43,6 +46,7 @@ jobs:
           path: |
             debian/artifacts/*.deb
             debian/artifacts/*.tar.*
+            grml2usb.tgz*
       - name: Comment PR with artifact link
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v8
