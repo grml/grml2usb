@@ -16,6 +16,7 @@ Runwith:
 """
 
 import importlib
+import json
 import logging
 import os
 import subprocess
@@ -127,13 +128,27 @@ def _find_free_loopdev() -> str:
     return _run_x(["losetup", "-f"], capture_output=True).stdout.decode().strip()
 
 
-def _identify_file(path) -> str:
-    return (
-        _run_x(["file", path], capture_output=True)
+def _sfdisk_partitiontable(path) -> dict:
+    data = json.loads(
+        _run_x(["/sbin/sfdisk", "--json", path], capture_output=True)
         .stdout.decode()
         .strip()
-        .split(": ", 1)[1]
     )
+    return data["partitiontable"]
+
+
+def check_partition_table(path):
+    partitiontable = _sfdisk_partitiontable(path)
+    assert partitiontable["label"] == "dos"
+    assert (
+        len(partitiontable["partitions"]) == 1
+    )  # should still have exactly one partition
+    assert (
+        partitiontable["partitions"][0]["type"] == "ef"
+    )  # should still be an EFI partition
+    assert (
+        partitiontable["partitions"][0]["bootable"] is True
+    )  # should still be active/bootable
 
 
 @pytest.mark.require_root
@@ -173,6 +188,12 @@ def test_smoke(tmp_path):
     with sfdisk_input_file.open() as fh:
         _run_x(["/sbin/sfdisk", loop_backing_file], stdin=fh)
 
+    check_partition_table(loop_backing_file)
+
+    with loop_backing_file.open("rb") as fh:
+        mbr = fh.read(512)
+    print("Pristine MBR contents:", mbr.hex())
+
     _run_x(["losetup", loop_dev, loop_backing_file])
     _run_x(["partprobe", loop_dev])
 
@@ -182,6 +203,12 @@ def test_smoke(tmp_path):
     finally:
         _run_x(["losetup", "-d", loop_dev])
 
-    assert _identify_file(loop_backing_file).startswith(
-        "DOS/MBR boot sector; partition 1 : ID=0xef, active"
+    with loop_backing_file.open("rb") as fh:
+        mbr = fh.read(512)
+    print("Finalized MBR contents:", mbr.hex())
+
+    assert not mbr.startswith(b"0000"), (
+        "MBR starts with zero-bytes, x86 BIOS will not boot"
     )
+
+    check_partition_table(loop_backing_file)
