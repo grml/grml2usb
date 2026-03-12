@@ -708,6 +708,8 @@ def install_mbr(mbrtemplate, device, partition):
         if not os.path.isfile(mbrtemplate):
             logging.error('Error installing MBR: "%s" not found', mbrtemplate)
             raise CriticalException(f"{mbrtemplate} can not be read.")
+        statinfo = os.stat(mbrtemplate)
+        logging.info("MBR file %s is of length %s", mbrtemplate, statinfo.st_size)
         run_program(
             [
                 "dd",
