@@ -11,7 +11,6 @@ Build-Depends:
  asciidoc,
  debhelper-compat (= 12),
  docbook-xsl,
- nasm,
  xsltproc,
 Standards-Version: 4.6.2
 Rules-Requires-Root: no

@@ -125,7 +125,7 @@ parser.add_argument(
     "--mbr-menu",
     dest="mbrmenu",
     action="store_true",
-    help="enable interactive boot menu in MBR",
+    help="Deprecated: no-op, will be removed in a future version",
 )
 parser.add_argument(
     "--quiet",
@@ -184,7 +184,7 @@ parser.add_argument(
     "--syslinux-mbr",
     dest="syslinuxmbr",
     action="store_true",
-    help="install syslinux master boot record (MBR) instead of default",
+    help="Deprecated: syslinux MBR is now always used when syslinux is the bootloader (this option is a no-op)",
 )
 parser.add_argument(
     "--syslinux-libs",
@@ -671,27 +671,19 @@ def install_bootloader(device):
             sys.exit(1)
 
 
-def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
-    """install 'mbr' master boot record (MBR) on a device
+def install_mbr(mbrtemplate, device, partition):
+    """install Master Boot Record (MBR) on a device
 
     Retrieve the partition table from "device", install an MBR from the
     "mbrtemplate" file, set the "partition" (0..3) active, and install the
     result back to "device".
 
-    @mbrtemplate: default MBR file (must be a valid MBR file of at least 440
-    (or 439 if ismirbsdmbr) bytes)
+    @mbrtemplate: MBR file (must be a valid MBR file of at least 440 bytes)
 
     @device: name of a file assumed to be a hard disc (or USB stick) image, or
     something like "/dev/sdb"
 
-    @partition: must be a number between 0 and 3, inclusive
-
-    @ismirbsdmbr: if true then ignore the active flag, set the mirbsdmbr
-    specific flag to 0/1/2/3 and set the MBR's default value accordingly. If
-    false then leave the mirbsdmbr specific flag set to FFh, set all
-    active flags to 0 and set the active flag of the partition to 80h.  Note:
-    behaviour of mirbsdmbr: if flag = 0/1/2/3 then use it, otherwise search for
-    the active flag."""
+    @partition: must be a number between 0 and 3, inclusive"""
     assert options is not None
     if options.bootloader == "efi":
         logging.info("Skipping MBR installation for EFI-boot")
@@ -700,11 +692,6 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
     if partition is not None and ((partition < 0) or (partition > 3)):
         logging.warning("Cannot activate partition %d", partition)
         partition = None
-
-    if ismirbsdmbr:
-        nmbrbytes = 439
-    else:
-        nmbrbytes = 440
 
     tmpf = tempfile.NamedTemporaryFile()
 
@@ -717,19 +704,16 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
         # GRUB installs its own MBR boot code via grub-install; only activate the partition
         logging.info("Skipping MBR boot code installation - GRUB will install its own")
     else:
-        logging.info("Installing default MBR")
+        logging.info("Installing syslinux MBR")
         if not os.path.isfile(mbrtemplate):
-            logging.error(
-                'Error installing MBR (either try --syslinux-mbr or install missing file "%s"?)',
-                mbrtemplate,
-            )
+            logging.error('Error installing MBR: "%s" not found', mbrtemplate)
             raise CriticalException(f"{mbrtemplate} can not be read.")
         run_program(
             [
                 "dd",
                 f"if={mbrtemplate}",
                 f"of={tmpf.name}",
-                f"bs={nmbrbytes}",
+                "bs=440",
                 "count=1",
                 "conv=notrunc",
             ],
@@ -741,28 +725,20 @@ def install_mbr(mbrtemplate, device, partition, ismirbsdmbr=True):
         raise EOFError(f"MBR size {len(mbrcode)} < 512")
 
     if partition is not None:
-        if ismirbsdmbr:
-            mbrcode = (
-                mbrcode[0:439]
-                + chr(partition).encode("latin-1")
-                + mbrcode[440:510]
-                + b"\x55\xaa"
-            )
-        else:
-            actives = [b"\x00", b"\x00", b"\x00", b"\x00"]
-            actives[partition] = b"\x80"
-            mbrcode = (
-                mbrcode[0:446]
-                + actives[0]
-                + mbrcode[447:462]
-                + actives[1]
-                + mbrcode[463:478]
-                + actives[2]
-                + mbrcode[479:494]
-                + actives[3]
-                + mbrcode[495:510]
-                + b"\x55\xaa"
-            )
+        actives = [b"\x00", b"\x00", b"\x00", b"\x00"]
+        actives[partition] = b"\x80"
+        mbrcode = (
+            mbrcode[0:446]
+            + actives[0]
+            + mbrcode[447:462]
+            + actives[1]
+            + mbrcode[463:478]
+            + actives[2]
+            + mbrcode[479:494]
+            + actives[3]
+            + mbrcode[495:510]
+            + b"\x55\xaa"
+        )
 
     tmpf.file.seek(0)
     tmpf.file.truncate()
@@ -1792,30 +1768,25 @@ def handle_mbr(device):
             "Detected loop device - using %s as MBR device therefore", mbr_device
         )
 
-    mbrcode = GRML2USB_BASE + "/mbr/mbrldr"
-    if options.syslinuxmbr:
-        mbrcode = ""
-        mbr_locations = (
-            "/usr/lib/syslinux/mbr.bin",
-            "/usr/lib/syslinux/bios/mbr.bin",
-            "/usr/share/syslinux/mbr.bin",
-        )
-        for mbrpath in mbr_locations:
-            if os.path.isfile(mbrpath):
-                mbrcode = mbrpath
-                break
+    mbrcode = ""
+    mbr_locations = (
+        "/usr/lib/syslinux/mbr/mbr.bin",
+        "/usr/lib/syslinux/mbr.bin",
+        "/usr/lib/syslinux/bios/mbr.bin",
+        "/usr/share/syslinux/mbr.bin",
+    )
+    for mbrpath in mbr_locations:
+        if os.path.isfile(mbrpath):
+            mbrcode = mbrpath
+            break
 
-        if not mbrcode:
-            str_locations = " or ".join([f'"{x}"' for x in mbr_locations])
-            logging.error("Cannot find syslinux MBR, install it at %s", str_locations)
-            raise CriticalException(
-                f"syslinux MBR  can not be found at {str_locations}."
-            )
-    elif options.mbrmenu:
-        mbrcode = GRML2USB_BASE + "/mbr/mbrldr"
+    if not mbrcode:
+        str_locations = " or ".join([f'"{x}"' for x in mbr_locations])
+        logging.error("Cannot find syslinux MBR, install it at %s", str_locations)
+        raise CriticalException(f"syslinux MBR can not be found at {str_locations}.")
 
     try:
-        install_mbr(mbrcode, mbr_device, partition_number, True)
+        install_mbr(mbrcode, mbr_device, partition_number)
     except (OSError, Exception) as error:
         logging.critical("Execution failed: %s", error)
         sys.exit(1)
@@ -1923,6 +1894,11 @@ def check_options(options: argparse.Namespace):
     """
     Check compatibility of user-provided options, and pick correct default bootloader
     """
+    if options.mbrmenu:
+        logging.warning("--mbr-menu is deprecated and has no effect, ignoring")
+    if options.syslinuxmbr:
+        logging.warning("--syslinux-mbr is deprecated and has no effect, ignoring")
+
     global GRUB_INSTALL
     GRUB_INSTALL = which("grub-install") or which("grub2-install")
     syslinux_program = which("syslinux")
