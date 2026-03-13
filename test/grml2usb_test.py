@@ -151,18 +151,39 @@ def check_partition_table(path):
     )  # should still be active/bootable
 
 
+@pytest.fixture(scope="session")
+def iso_amd64(tmp_path_factory):
+    iso_url = "https://daily.grml.org/grml-small-amd64-unstable/latest/grml-small-amd64-unstable_latest.iso"
+    iso_name = str(tmp_path_factory.mktemp("isos") / "grml-amd64.iso")
+    _run_x(["curl", "-fSl#", "--output", iso_name, iso_url])
+    yield iso_name
+
+
 @pytest.mark.require_root
-def test_smoke(tmp_path):
+@pytest.mark.parametrize(
+    "options, expect_x86_mbr, expect_bootloader_message",
+    [
+        pytest.param([], True, "Using grub as bootloader", id="defaults"),
+        pytest.param(["--bootloader=efi"], False, None, id="bootloader=efi"),
+    ],
+)
+def test_smoke(
+    tmp_path,
+    iso_amd64,
+    caplog,
+    monkeypatch,
+    options,
+    expect_x86_mbr,
+    expect_bootloader_message,
+):
+    caplog.set_level(logging.DEBUG)
+    monkeypatch.setattr(grml2usb, "handle_logging", lambda: None)
+
     loop_dev = _find_free_loopdev()
     partition = f"{loop_dev!s}p1"
 
-    iso_url = "https://daily.grml.org/grml-small-amd64-unstable/latest/grml-small-amd64-unstable_latest.iso"
-    iso_name = "grml.iso"
-    if not os.path.exists(iso_name):
-        _run_x(["curl", "-fSl#", "--output", iso_name, iso_url])
-
     grml2usb_options = grml2usb.parser.parse_args(
-        ["--format", "--force", iso_name, partition]
+        ["--format", "--force", iso_amd64, partition] + options
     )
     print("Options:", grml2usb_options)
 
@@ -198,7 +219,6 @@ def test_smoke(tmp_path):
     _run_x(["partprobe", loop_dev])
 
     try:
-        logging.root.setLevel(logging.DEBUG)
         grml2usb.main(grml2usb_options)
     finally:
         _run_x(["losetup", "-d", loop_dev])
@@ -207,8 +227,12 @@ def test_smoke(tmp_path):
         mbr = fh.read(512)
     print("Finalized MBR contents:", mbr.hex())
 
-    assert not mbr.startswith(b"0000"), (
-        "MBR starts with zero-bytes, x86 BIOS will not boot"
-    )
+    if expect_x86_mbr:
+        assert not mbr.startswith(b"\x00\x00"), (
+            "MBR starts with zero-bytes, x86 BIOS will not boot"
+        )
 
     check_partition_table(loop_backing_file)
+
+    if expect_bootloader_message:
+        assert expect_bootloader_message in caplog.text
