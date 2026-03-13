@@ -151,56 +151,27 @@ def check_partition_table(path):
     )  # should still be active/bootable
 
 
-@pytest.fixture(scope="session")
-def iso_amd64(tmp_path_factory):
-    iso_url = "https://daily.grml.org/grml-small-amd64-unstable/latest/grml-small-amd64-unstable_latest.iso"
-    iso_name = str(tmp_path_factory.mktemp("isos") / "grml-amd64.iso")
-    _run_x(["curl", "-fSl#", "--output", iso_name, iso_url])
-    yield iso_name
-
-
-@pytest.mark.require_root
-@pytest.mark.parametrize(
-    "options, expect_x86_mbr, expect_bootloader_message",
-    [
-        pytest.param([], True, "Using grub as bootloader", id="defaults"),
-        pytest.param(["--bootloader=efi"], False, None, id="bootloader=efi"),
-    ],
-)
-def test_smoke(
-    tmp_path,
-    iso_amd64,
-    caplog,
-    monkeypatch,
-    options,
-    expect_x86_mbr,
-    expect_bootloader_message,
-):
-    caplog.set_level(logging.DEBUG)
-    monkeypatch.setattr(grml2usb, "handle_logging", lambda: None)
-
+@pytest.fixture
+def loopdev_with_partition(tmp_path):
     loop_dev = _find_free_loopdev()
     partition = f"{loop_dev!s}p1"
 
-    grml2usb_options = grml2usb.parser.parse_args(
-        ["--format", "--force", iso_amd64, partition] + options
-    )
-    print("Options:", grml2usb_options)
+    sector_size = 512
+    start_sectors = 2048
+    start_size = start_sectors * sector_size
+    part_size = 2 * 1024 * 1024 * 1024  # 2 GB
+    part_size_sectors = int(part_size / sector_size)
 
-    part_size = 1 * 1024 * 1024  # 1 GB
-    part_size_sectors = int(part_size * (1024 / 512))
-    dd_size = str(int((part_size / 1024) + 100))
+    loop_backing_file = tmp_path / "loop"
+    with loop_backing_file.open("wb") as fh:
+        fh.truncate(start_size + part_size)
 
     # format (see sfdisk manual page):
     # <start>,<size_in_sectors>,<id>,<bootable>
     # 1st partition, EFI (FAT-12/16/32, ID ef) + bootable flag
     sfdisk_template = f"2048,{part_size_sectors},ef,*\n"
     print("Using sfdisk template:\n", sfdisk_template, "\n---")
-    loop_backing_file = tmp_path / "loop"
 
-    _run_x(
-        ["dd", "if=/dev/zero", f"of={loop_backing_file!s}", "bs=1M", f"count={dd_size}"]
-    )
     sfdisk_input_file = tmp_path / "sfdisk.txt"
     with sfdisk_input_file.open("wt") as fh:
         fh.write(sfdisk_template)
@@ -219,9 +190,50 @@ def test_smoke(
     _run_x(["partprobe", loop_dev])
 
     try:
-        grml2usb.main(grml2usb_options)
+        yield (loop_backing_file, loop_dev, partition)
     finally:
         _run_x(["losetup", "-d", loop_dev])
+
+
+@pytest.fixture(scope="session")
+def iso_amd64(tmp_path_factory):
+    iso_url = "https://daily.grml.org/grml-small-amd64-unstable/latest/grml-small-amd64-unstable_latest.iso"
+    iso_name = tmp_path_factory.mktemp("isos") / "grml-amd64.iso"
+    if iso_name.exists():
+        print(f"ISO {iso_name} already exists")
+    else:
+        _run_x(["curl", "-fSl#", "--output", iso_name, iso_url])
+    yield str(iso_name)
+
+
+@pytest.mark.require_root
+@pytest.mark.parametrize(
+    "options, expect_x86_mbr, expect_bootloader_message",
+    [
+        pytest.param([], True, "Using grub as bootloader", id="defaults"),
+        pytest.param(["--bootloader=efi"], False, None, id="bootloader=efi"),
+    ],
+)
+def test_smoke(
+    iso_amd64,
+    loopdev_with_partition,
+    caplog,
+    monkeypatch,
+    options,
+    expect_x86_mbr,
+    expect_bootloader_message,
+):
+    caplog.set_level(logging.DEBUG)
+    monkeypatch.setattr(grml2usb, "handle_logging", lambda: None)
+
+    (loop_backing_file, loop_dev, partition) = loopdev_with_partition
+
+    grml2usb_options = grml2usb.parser.parse_args(
+        ["--format", "--force", iso_amd64, partition] + options
+    )
+    print("Options:", grml2usb_options)
+
+    grml2usb.main(grml2usb_options)
 
     with loop_backing_file.open("rb") as fh:
         mbr = fh.read(512)
