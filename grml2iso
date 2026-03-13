@@ -15,20 +15,8 @@ PATH="${PATH}:/sbin:/usr/local/sbin:/usr/sbin"
 # path to the grml2usb script you'd like to use
 [ -n "$GRML2USB" ] || GRML2USB='grml2usb'
 
-# support mkisofs as well as genisoimage
-if which xorriso >/dev/null 2>&1 ; then
-  MKISOFS='xorriso -as mkisofs'
-elif which mkisofs >/dev/null 2>&1; then
-  MKISOFS='mkisofs'
-elif which genisoimage >/dev/null 2>&1; then
-  MKISOFS='genisoimage'
-else
-  echo "Error: neither xorriso nor mkisofs nor genisoimage available - can not create ISO." >&2
-  exit 1
-fi
-
-if ! which isohybrid >/dev/null 2>&1 ; then
-  echo "Error: isohybrid executable not found (install syslinux/isolinux/syslinux-utils?)." >&2
+if ! command -v xorriso >/dev/null 2>&1 ; then
+  echo "Error: xorriso not found - can not create ISO." >&2
   exit 1
 fi
 # }}}
@@ -56,7 +44,7 @@ Options:
                          created by mktemp(1).
 
      Examples:
-     $0 -s http://192.168.23.42:8000/grml/ -o small.iso grml64-small_2021.07.iso
+     $0 -s http://192.168.23.42:8000/grml/ -o small.iso grml-small-2025.12-amd64.iso
 
      Will generate a file small.iso which tries to download the squashfs file from
      http://192.168.23.42:8000/grml/ - the squashfs file is placed in the same
@@ -71,7 +59,6 @@ Options:
 
   ISOFILE=''
   DIR=''
-  ADD_OPTS=''
   FORCE=''
   URI=''
   typeset -a GRML2USB_OPTS
@@ -98,12 +85,12 @@ Options:
   [ -n "$ISOFILE" ] || usage 1
 
 # we don't to override any files by accident
-  if [ -e "$ISOFILE" -a ! -n "$FORCE" ]; then
+  if [ -e "$ISOFILE" ] && [ -z "$FORCE" ]; then
     echo "Error: target file $ISOFILE exists already." >&2
     exit 1
   fi
 
-  if [ ! -z "$DIR" -a ! -d "$DIR" ] ; then
+  if [ -n "$DIR" ] && [ ! -d "$DIR" ] ; then
      echo "Error: specified parameter for -c is not a directory" >&2
      exit 1
   fi
@@ -117,7 +104,7 @@ Options:
 # }}}
 
 # check for grml2usb {{{
-  if [ ! -x "$(which $GRML2USB)" ] && [ ! -x "$GRML2USB" ] ; then
+  if [ ! -x "$(command -v "$GRML2USB")" ] && [ ! -x "$GRML2USB" ] ; then
     echo "Error: Could not find grml2usb executable. Is /usr/sbin missing in PATH?" >&2
     echo "Tip: run GRML2USB=/usr/sbin/grml2usb grml2iso ... as workaround" >&2
     if [ -x "./$GRML2USB" ] ; then
@@ -150,22 +137,16 @@ Options:
 
   rm -rf "$WRKDIR/cddir" "$WRKDIR/grub_tmp"
   mkdir -p "$WRKDIR/cddir"
-# }}}}
+# }}}
 
 # execute grml2usb with all ISOs you'd like to install {{{
   # remove all parameters
-  shift $(($OPTIND - 1))
+  shift $(( OPTIND - 1 ))
 
   $GRML2USB "${GRML2USB_OPTS[@]}" "$@" "$WRKDIR/cddir"
 # }}}
 
-# move syslinux to isolinux {{{
-  mv "$WRKDIR"/cddir/boot/syslinux "$WRKDIR"/cddir/boot/isolinux
-  echo "menu label ^Isolinux prompt" > "$WRKDIR"/cddir/boot/isolinux/promptname.cfg
-  echo "include hd.cfg" >> "$WRKDIR"/cddir/boot/isolinux/grmlmain.cfg
-# }}}
-
-# change to $WRKDIR {{{
+# change to working directory {{{
   # make sure $WRKDIR is an absolute path, otherwise accessing files
   # in it will fail later in the code path if user provided a
   # relative directory
@@ -173,40 +154,122 @@ Options:
   cd "$WRKDIR/cddir"
 # }}}
 
-# efi boot {{{
-  # default, independent of UEFI support
-  BOOT_ARGS="-no-emul-boot -boot-load-size 4 -boot-info-table -b boot/isolinux/isolinux.bin -c boot/isolinux/boot.cat"
-  UEFI_ENABLE=false
+# detect boot method and set up boot arguments {{{
+  BOOT_ARGS=""
+  USE_ISOLINUX=false
+  USE_GRUB=false
+  HOST_ARCH="$(uname -m)"
 
-  case "$MKISOFS" in
-    xorriso*)
-      echo "Using xorriso for ISO generation."
-      if ! dpkg --compare-versions $(dpkg-query -W -f='${Version}\n' xorriso 2>/dev/null) gt-nl 1.1.6-1 ; then
-        echo "Disabling (U)EFI boot support since xorriso version is not recent enough."
-      else
-        echo "xorriso with -eltorito-alt-boot support present"
-        UEFI_ENABLE=true
+  # Check if syslinux/isolinux files are available
+  # On arm64 hosts, prefer GRUB since isohybrid is not available
+  if [ -d "$WRKDIR/cddir/boot/syslinux" ] && [ "$HOST_ARCH" != "aarch64" ] ; then
+    echo "Found syslinux files, using isolinux for BIOS boot."
+    USE_ISOLINUX=true
+    mv "$WRKDIR"/cddir/boot/syslinux "$WRKDIR"/cddir/boot/isolinux
+    echo "menu label ^Isolinux prompt" > "$WRKDIR"/cddir/boot/isolinux/promptname.cfg
+    echo "include hd.cfg" >> "$WRKDIR"/cddir/boot/isolinux/grmlmain.cfg
+  elif [ -d "$WRKDIR/cddir/boot/grub" ] ; then
+    if [ -d "$WRKDIR/cddir/boot/syslinux" ] ; then
+      echo "Found syslinux files, but using GRUB for BIOS boot (running on $HOST_ARCH)."
+      rm -rf "$WRKDIR/cddir/boot/syslinux"
+    else
+      echo "No syslinux files found, using GRUB for BIOS boot."
+    fi
+    USE_GRUB=true
+  else
+    echo "Warning: Neither syslinux nor GRUB boot files found." >&2
+  fi
 
-        if ! [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
-          echo "Warning: File /boot/efi.img not found, not extending boot arguments for (U)EFI boot."
-          UEFI_ENABLE=false
+  if [ "$USE_ISOLINUX" = "true" ] ; then
+    # isolinux-based BIOS boot
+    if ! command -v isohybrid >/dev/null 2>&1 ; then
+      echo "Error: isohybrid executable not found (install syslinux/isolinux/syslinux-utils?)." >&2
+      exit 1
+    fi
+    BOOT_ARGS="-no-emul-boot -boot-load-size 4 -boot-info-table -b boot/isolinux/isolinux.bin -c boot/isolinux/boot.cat"
+
+    if [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
+      echo "/boot/efi.img found, enabling (U)EFI boot support."
+      if ! [ -r /usr/lib/ISOLINUX/isohdpfx.bin ] ; then
+        echo "Error: /usr/lib/ISOLINUX/isohdpfx.bin not available, required for xorriso/isohybrid." >&2
+        echo "Hint:  make sure isolinux is installed." >&2
+        exit 1
+      fi
+      BOOT_ARGS+=" -eltorito-alt-boot -e boot/efi.img -no-emul-boot"
+      BOOT_ARGS+=" -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin -isohybrid-gpt-basdat -no-pad"
+    fi
+
+  elif [ "$USE_GRUB" = "true" ] ; then
+    # GRUB-based BIOS boot
+    GRUB_BIOS_AVAILABLE=false
+
+    # Check if source ISO already has GRUB BIOS boot image
+    if [ -r "boot/grub/i386-pc/eltorito.img" ] ; then
+      echo "Using existing GRUB BIOS boot image from source ISO."
+      GRUB_BIOS_AVAILABLE=true
+    elif [ -r "boot/grub/i386-pc/cdboot.img" ] ; then
+      echo "Using existing GRUB cdboot.img from source ISO."
+      cp boot/grub/i386-pc/cdboot.img boot/grub/i386-pc/eltorito.img
+      GRUB_BIOS_AVAILABLE=true
+    elif [ -d "/usr/lib/grub/i386-pc" ] ; then
+      # Try to generate GRUB BIOS boot image (requires i386-pc modules)
+      if command -v grub-mkimage >/dev/null 2>&1 ; then
+        echo "Generating GRUB BIOS boot image..."
+        mkdir -p boot/grub/i386-pc
+        if grub-mkimage -o boot/grub/i386-pc/eltorito.img -O i386-pc-eltorito -p /boot/grub \
+            biosdisk iso9660 linux configfile normal search search_fs_file search_label part_msdos part_gpt fat ext2 2>/dev/null ; then
+          GRUB_BIOS_AVAILABLE=true
         else
-          echo "/boot/efi.img found, extending boot arguments for (U)EFI boot."
-          if ! [ -r /usr/lib/ISOLINUX/isohdpfx.bin ] ; then
-            echo "Error: /usr/lib/ISOLINUX/isohdpfx.bin not available, required for xorriso/isohybrid though." >&2
-            echo "Hint:  make sure isolinux is installed." >&2
-            exit 1
-          else
-            BOOT_ARGS+=" -boot-info-table -eltorito-alt-boot -e boot/efi.img -no-emul-boot"
-            BOOT_ARGS+=" -isohybrid-mbr /usr/lib/ISOLINUX/isohdpfx.bin -eltorito-alt-boot -e boot/efi.img -no-emul-boot -isohybrid-gpt-basdat -no-pad"
-          fi
+          echo "Warning: Failed to generate GRUB BIOS boot image." >&2
         fi
       fi
-      ;;
-    *)
-      echo "Using $MKISOFS for ISO generation (lacking UEFI option), disabling (U)EFI boot support."
-      ;;
-  esac
+    fi
+
+    if [ "$GRUB_BIOS_AVAILABLE" = "true" ] ; then
+      # Find GRUB's boot.img for hybrid MBR (check ISO first, then system)
+      GRUB_BOOT_IMG=""
+      for path in boot/grub/i386-pc/boot.img /usr/lib/grub/i386-pc/boot.img /usr/share/grub/i386-pc/boot.img ; do
+        if [ -r "$path" ] ; then
+          GRUB_BOOT_IMG="$path"
+          break
+        fi
+      done
+
+      BOOT_ARGS="-no-emul-boot -boot-load-size 4 -boot-info-table -b boot/grub/i386-pc/eltorito.img -c boot/grub/boot.cat"
+      BOOT_ARGS+=" --grub2-boot-info"
+
+      if [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
+        echo "/boot/efi.img found, enabling (U)EFI boot support."
+        BOOT_ARGS+=" -eltorito-alt-boot -e boot/efi.img -no-emul-boot"
+        if [ -n "$GRUB_BOOT_IMG" ] ; then
+          BOOT_ARGS+=" --grub2-mbr $GRUB_BOOT_IMG -isohybrid-gpt-basdat -no-pad"
+        else
+          echo "Warning: GRUB boot.img not found, ISO may not be hybrid-bootable from USB." >&2
+          BOOT_ARGS+=" -no-pad"
+        fi
+      elif [ -n "$GRUB_BOOT_IMG" ] ; then
+        BOOT_ARGS+=" --grub2-mbr $GRUB_BOOT_IMG -no-pad"
+      fi
+    elif [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
+      # Fall back to EFI-only boot
+      echo "Warning: GRUB i386-pc modules not available, falling back to EFI-only boot." >&2
+      echo "Hint: Install grub-pc-bin for BIOS boot support on non-x86 hosts." >&2
+      BOOT_ARGS="-e boot/efi.img -no-emul-boot -isohybrid-gpt-basdat -no-pad"
+    else
+      echo "Error: Cannot create bootable ISO - no BIOS or EFI boot method available." >&2
+      exit 1
+    fi
+
+  else
+    # EFI-only boot (e.g., arm64)
+    if [ -r "${WRKDIR}/cddir/boot/efi.img" ] ; then
+      echo "Using EFI-only boot."
+      BOOT_ARGS="-e boot/efi.img -no-emul-boot -isohybrid-gpt-basdat -no-pad"
+    else
+      echo "Error: No bootable configuration found." >&2
+      exit 1
+    fi
+  fi
 # }}}
 
 # adjust ISO for small output if necessary {{{
@@ -219,7 +282,7 @@ Options:
         media_path="$(dirname "$squashfs")"
         filename="$(basename "$squashfs")"
         target="$output_dir/$filename"
-        if [ -f "$target" ] && [ ! -n "$FORCE" ] ; then
+        if [ -f "$target" ] && [ -z "$FORCE" ] ; then
            echo >&2 "Warning: $target already exists, and -force not specified, not overwriting"
         else
            mv $squashfs $target
@@ -235,7 +298,7 @@ Options:
   if [ -n "$DIR" ] ; then
      echo >&2 "Copying ${DIR} to generated ISO"
      for param in GRML_NAME VERSION RELEASENAME DATE SHORT_NAME \
-         VERSION BOOTID RELEASE_INFO ; do
+         BOOTID RELEASE_INFO ; do
        EXCLUDE_PARAM="$EXCLUDE_PARAM --exclude **%${param}%**"
      done
      rsync -a ${DIR}/ $EXCLUDE_PARAM .
@@ -252,7 +315,7 @@ Options:
     BOOTID=$(cat conf/bootid.txt)
 
     for param in GRML_NAME VERSION RELEASENAME DATE SHORT_NAME \
-        RELEASE_INFO BOOTID  ; do
+        RELEASE_INFO BOOTID ; do
       value="$(eval echo '$'"$param")"
 
       # copy parameterized files from the overlay directory
@@ -273,7 +336,7 @@ Options:
 # }}}
 
 # generate the CD/DVD ISO {{{
-  $MKISOFS -V 'grml-multiboot' -l -r -J $BOOT_ARGS \
+  xorriso -as mkisofs -V 'grml-multiboot' -l -r -J $BOOT_ARGS \
     -o "$ISOFILE" .
 # }}}
 

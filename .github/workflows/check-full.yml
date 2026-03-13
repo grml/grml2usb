@@ -35,9 +35,6 @@ jobs:
       - name: Install pytest and deps
         run: sudo apt install python3-pytest python3-parted syslinux grub-efi-amd64-signed grub2-common parted curl nasm make
 
-      - name: Compile mbr
-        run: make -C mbr
-
       # tests need root, as they manage loopdevs etc.
       - name: Run Pytest
         run: sudo pytest-3

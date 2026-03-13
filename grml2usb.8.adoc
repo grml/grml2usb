@@ -357,7 +357,6 @@ use the grml2usb git tree running:
 
   git clone https://github.com/grml/grml2usb.git
   cd grml2usb
-  make -C mbr
   sudo ./grml2usb ...
 
 [NOTE]
