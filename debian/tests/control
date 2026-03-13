@@ -1,4 +1,5 @@
-Tests: smoke-grml2usb-py3
+Tests:
+ smoke-grml2usb-py3,
 Depends:
  dosfstools,
  isolinux,
@@ -8,4 +9,7 @@ Depends:
  syslinux-common,
  xorriso,
  @,
-Restrictions: needs-root, isolation-machine, breaks-testbed
+Restrictions:
+ breaks-testbed,
+ isolation-machine,
+ needs-root,
