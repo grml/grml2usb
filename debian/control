@@ -8,8 +8,8 @@ Uploaders:
  Chris Hofstaedtler <zeha@debian.org>,
  Ulrich Dangel <mru@spamt.net>,
 Build-Depends:
- asciidoc,
  debhelper-compat (= 12),
+ asciidoc,
  docbook-xsl,
  xsltproc,
 Standards-Version: 4.6.2
@@ -17,6 +17,7 @@ Rules-Requires-Root: no
 Homepage: https://grml.org/grml2usb/
 Vcs-Git: https://github.com/grml/grml2usb.git
 Vcs-Browser: https://github.com/grml/grml2usb
+X-Style: black
 
 Package: grml2usb
 Architecture: all
@@ -26,8 +27,8 @@ Depends:
  python3,
  python3-parted,
  rsync,
- syslinux | grub-efi-amd64-signed | grub-pc-bin | grub-efi-arm64-bin | grub-common,
  syslinux | grub-common,
+ syslinux | grub-efi-amd64-signed | grub-pc-bin | grub-efi-arm64-bin | grub-common,
  ${misc:Depends},
  ${shlibs:Depends},
 Recommends:
