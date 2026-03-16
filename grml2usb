@@ -407,7 +407,6 @@ def search_file(
     filename: str,
     search_path: str,
     lst_return=False,
-    required=False,
 ) -> str | None | list[str]:
     """Given a search path, find file
 
@@ -435,9 +434,6 @@ def search_file(
                 retval.append(os.path.abspath(os.path.join(current_dir, filename)))
                 if not lst_return:
                     break
-
-    if required and not retval:
-        raise CriticalException(f"Required file {filename} not found in {search_path}")
 
     if lst_return:
         return retval
