@@ -415,7 +415,6 @@ def search_file(
     @search_path: path where searching for the specified filename
     @lst_return: return list of matching files instead one file"""
     paths = search_path.split(os.pathsep)
-    current_dir = ""  # make pylint happy :)
     retval = []
 
     def match_file(cwd):
