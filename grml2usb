@@ -1242,7 +1242,7 @@ def get_device_from_partition(partition: str) -> tuple[str, int | None]:
         if m:
             device = m.group(1)
             partition_number = int(m.group(2)) - 1
-    return (device, partition_number)
+    return device, partition_number
 
 
 def get_flavour(flavour_str: str) -> str:
