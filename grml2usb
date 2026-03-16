@@ -835,15 +835,14 @@ def check_for_usbdevice(device: str) -> bool:
 
     usbdevice = extract_device_name(device)
     # newer systems:
-    usbdev = os.path.realpath("/sys/class/block/" + usbdevice + "/removable")
-    if not os.path.isfile(usbdev):
+    usbdev = Path("/sys/class/block") / usbdevice / "removable"
+    if not usbdev.is_file():
         # Ubuntu with kernel 2.6.24 for example:
-        usbdev = os.path.realpath("/sys/block/" + usbdevice + "/removable")
+        usbdev = Path("/sys/block") / usbdevice / "removable"
 
-    if os.path.isfile(usbdev):
-        is_usb = open(usbdev).readline()
-        if is_usb.find("1"):
-            return False
+    if usbdev.is_file():
+        is_usb = usbdev.read_text().strip()
+        return is_usb == "1"
 
     return True
 
