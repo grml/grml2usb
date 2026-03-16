@@ -114,6 +114,8 @@ def test_extract_device_name_invalid():
         assert grml2usb.extract_device_name("/dev")
     with pytest.raises(AttributeError):
         assert grml2usb.extract_device_name("foobar")
+    with pytest.raises(AttributeError):
+        assert grml2usb.extract_device_name("asdf/dev/sda")
 
 
 def _run_x(args, check: bool = True, **kwargs):
