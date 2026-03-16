@@ -413,7 +413,6 @@ def search_file(
     @filename: name of file to search for
     @search_path: path where searching for the specified filename
     @lst_return: return list of matching files instead one file"""
-    paths = search_path.split(os.pathsep)
     retval = []
 
     def match_file(cwd):
@@ -423,17 +422,16 @@ def search_file(
         """
         return os.path.exists(os.path.join(cwd, filename))
 
-    for path in paths:
-        current_dir = path
+    current_dir = search_path
+    if match_file(current_dir):
+        retval.append(os.path.abspath(os.path.join(current_dir, filename)))
+        if not lst_return:
+            return retval[0]
+    for current_dir, _directories, _files in os.walk(search_path):
         if match_file(current_dir):
             retval.append(os.path.abspath(os.path.join(current_dir, filename)))
             if not lst_return:
-                break
-        for current_dir, _directories, _files in os.walk(path):
-            if match_file(current_dir):
-                retval.append(os.path.abspath(os.path.join(current_dir, filename)))
-                if not lst_return:
-                    break
+                return retval[0]
 
     if lst_return:
         return retval
