@@ -95,9 +95,7 @@ parser.add_argument(
     action="store_true",
     help="copy files only but do not install bootloader",
 )
-parser.add_argument(
-    "--dry-run", dest="dryrun", action="store_true", help="avoid executing commands"
-)
+parser.add_argument("--dry-run", dest="dryrun", action="store_true", help="avoid executing commands")
 fat_group.add_argument(
     "--format",
     action="store_true",
@@ -198,11 +196,7 @@ parser.add_argument(
     default="/tmp",
     help="directory to be used for temporary files",
 )
-parser.add_argument(
-    "--verbose",
-    action="store_true",
-    help="enable verbose mode",
-)
+parser.add_argument("--verbose", action="store_true", help="enable verbose mode")
 parser.add_argument(
     "--version",
     "-v",
@@ -234,15 +228,8 @@ bootloader_group.add_argument(
     help="install syslinux bootloader (deprecated option)",
 )
 
-parser.add_argument(
-    "isos",
-    nargs="+",
-    help="ISOs to install",
-)
-parser.add_argument(
-    "device",
-    help="Partition on USB Device to install on",
-)
+parser.add_argument("isos", nargs="+", help="ISOs to install")
+parser.add_argument("device", help="Partition on USB Device to install on")
 
 # will be overwritten at the bottom of this file.
 options: argparse.Namespace | None = None
@@ -374,9 +361,11 @@ def set_rw(device):
 
 
 def execute(f, *exec_arguments):
-    """Wrapper for executing a command. Either really executes
-    the command (default) or when using --dry-run commandline option
-    just displays what would be executed."""
+    """Wrapper for executing a command.
+
+    Either really executes the command (default) or when using --dry-run commandline option
+    just displays what would be executed.
+    """
     assert options is not None
     # usage: execute(subprocess.Popen, (["ls", "-la"]))
     if options.dryrun:
@@ -574,9 +563,7 @@ def install_grub(device):
     assert options is not None
 
     if options.dryrun:
-        logging.info(
-            "Would execute grub-install [--root-directory=mount_point] %s now.", device
-        )
+        logging.info("Would execute grub-install [--root-directory=mount_point] %s now.", device)
     else:
         device_mountpoint = tempfile.mkdtemp(prefix="grml2usb")
         register_tmpfile(device_mountpoint)
@@ -612,8 +599,7 @@ def install_grub(device):
             if not grub_install_succeeded:
                 # raise Exception("error executing grub-install")
                 logging.critical(
-                    "Fatal: error executing grub-install "
-                    "(please check the grml2usb FAQ or drop the --grub option)"
+                    "Fatal: error executing grub-install (please check the grml2usb FAQ or drop the --grub option)"
                 )
                 cleanup()
                 sys.exit(1)
@@ -643,9 +629,7 @@ def install_syslinux(device):
     logging.debug("syslinux -d boot/syslinux %s", device)
     result = run_program(["syslinux", "-d", "boot/syslinux", device], check=False)
     if result.returncode != 0:
-        raise CriticalException(
-            "Error executing syslinux (either try --format or use grub?)"
-        )
+        raise CriticalException("Error executing syslinux (either try --format or use grub?)")
 
 
 def install_bootloader(device):
@@ -802,9 +786,7 @@ def mount(source, target, mount_options: list[str] | None = None):
     try:
         run_program(["mount"] + mount_options + [source, target])
     except subprocess.CalledProcessError:
-        raise CriticalException(
-            "Error executing mount (no filesystem on the partition?)"
-        )
+        raise CriticalException("Error executing mount (no filesystem on the partition?)")
 
     logging.debug("register_mountpoint(%s)", target)
     register_mountpoint(target)
@@ -883,9 +865,7 @@ def check_for_fat(partition):
             check=False,
         )
     except OSError:
-        raise CriticalException(
-            "Sorry, /sbin/blkid not available (install util-linux?)"
-        )
+        raise CriticalException("Sorry, /sbin/blkid not available (install util-linux?)")
 
     filesystem = result.stdout.decode().strip()
 
@@ -964,9 +944,7 @@ def copy_system_files(grml_flavour, iso_mount, target):
     squashfs = search_file(grml_flavour + ".squashfs", iso_mount)
     if squashfs is None:
         logging.error("error locating squashfs file")
-        raise CriticalException(
-            "squashfs file not found, please check that your iso is not corrupt"
-        )
+        raise CriticalException("squashfs file not found, please check that your iso is not corrupt")
     else:
         squashfs_target = target + "/live/" + grml_flavour + "/"
         execute(mkdir, squashfs_target)
@@ -1015,9 +993,7 @@ def copy_grml_files(grml_flavour, iso_mount, target):
             exec_rsync(filename, grml_target)
             break
     else:
-        logging.warning(
-            "Warning: could not find flavour directory for %s ", grml_flavour
-        )
+        logging.warning("Warning: could not find flavour directory for %s ", grml_flavour)
 
 
 def copy_addons(iso_mount, target):
@@ -1133,8 +1109,7 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
         if options.bootloader == "syslinux":
             if GRUB_INSTALL:
                 logging.warning(
-                    "ISO does not contain syslinux files (logo.16 not found). "
-                    "Falling back to GRUB for BIOS boot."
+                    "ISO does not contain syslinux files (logo.16 not found). Falling back to GRUB for BIOS boot."
                 )
                 options.bootloader = "grub"
             else:
@@ -1161,9 +1136,7 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
     bootid = get_target_bootid(target)
 
     if not os.path.exists(iso_mount + "/boot/grub/footer.cfg"):
-        logging.warning(
-            "Warning: Grml releases older than 2011.12 support only one flavour in grub."
-        )
+        logging.warning("Warning: Grml releases older than 2011.12 support only one flavour in grub.")
 
     if syslinux_target:
         for ffile in [f"f{number}" for number in range(1, 11)]:
@@ -1175,9 +1148,7 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
             os.unlink(syslinux_target + "ldlinux.sys")
 
         source_dir, name = get_defaults_file(iso_mount, grml_flavour, "default.cfg")
-        source_dir, defaults_file = get_defaults_file(
-            iso_mount, grml_flavour, "grml.cfg"
-        )
+        source_dir, defaults_file = get_defaults_file(iso_mount, grml_flavour, "grml.cfg")
 
         if source_dir:
             # Copy syslinux files if they exist on the ISO. arm64 ISOs no longer have them.
@@ -1201,9 +1172,7 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
             for modules_dir in options.syslinuxlibs + SYSLINUX_LIBS:
                 if os.path.isdir(modules_dir):
                     for filename in glob.glob("*.c32", root_dir=syslinux_target):
-                        copy_if_exist(
-                            os.path.join(modules_dir, filename), syslinux_target
-                        )
+                        copy_if_exist(os.path.join(modules_dir, filename), syslinux_target)
                     break
 
             # copy the addons_*.cfg file to the new syslinux directory
@@ -1293,12 +1262,8 @@ def identify_grml_flavour(mountpath):
     if not version_files:
         if mountpath.startswith("/run/live/medium"):
             logging.critical("Error: could not find grml-version file.")
-            logging.critical(
-                "Looks like your system is running from RAM but required files are not available."
-            )
-            logging.critical(
-                "Please either boot without toram=... or use boot option toram instead of toram=..."
-            )
+            logging.critical("Looks like your system is running from RAM but required files are not available.")
+            logging.critical("Please either boot without toram=... or use boot option toram instead of toram=...")
         else:
             logging.critical("Error: could not find grml-version file.")
         cleanup()
@@ -1484,13 +1449,9 @@ def add_syslinux_entry(syslinux_target: str | Path, filename: str | Path, grml_f
 
     entry_filename = f"option_{grml_flavour}.cfg"
 
-    add_entry_if_not_present(
-        Path(syslinux_target) / filename, f"include {entry_filename}\n"
-    )
+    add_entry_if_not_present(Path(syslinux_target) / filename, f"include {entry_filename}\n")
 
-    (Path(syslinux_target) / entry_filename).write_text(
-        generate_flavour_specific_syslinux_config(grml_flavour)
-    )
+    (Path(syslinux_target) / entry_filename).write_text(generate_flavour_specific_syslinux_config(grml_flavour))
 
 
 def modify_filenames(grml_flavour, target, filenames):
@@ -1567,9 +1528,7 @@ def handle_syslinux_config(grml_flavour, target, bootid):
         os.rename(filename, new_hidden_file)
         adjust_labels(new_hidden_file, r"\1 %s-\2" % grml_flavour)
         adjust_syslinux_bootoptions(new_hidden_file, grml_flavour, bootid)
-        add_entry_if_not_present(
-            f"{syslinux_target}/hiddens.cfg", f"include {flavour_filename}_hidden.cfg\n"
-        )
+        add_entry_if_not_present(f"{syslinux_target}/hiddens.cfg", f"include {flavour_filename}_hidden.cfg\n")
 
     new_default = f"{flavour_filename}_default.cfg"
     entry = f"include {new_default}\n"
@@ -1603,9 +1562,7 @@ def handle_secure_boot(target, efi_img):
     assert options is not None
 
     mkdir(target + "/efi/boot/")
-    efi_mountpoint = tempfile.mkdtemp(
-        prefix="grml2usb", dir=os.path.abspath(options.tmpdir)
-    )
+    efi_mountpoint = tempfile.mkdtemp(prefix="grml2usb", dir=os.path.abspath(options.tmpdir))
     logging.debug("efi_mountpoint = %s", efi_mountpoint)
     register_tmpfile(efi_mountpoint)
 
@@ -1618,14 +1575,10 @@ def handle_secure_boot(target, efi_img):
     grub_cfg = search_file("grub.cfg", efi_mountpoint + "/boot/grub/")
     logging.debug("grub_cfg = %s", grub_cfg)
     if not grub_cfg:
-        logging.info(
-            "No /boot/grub/grub.cfg found inside EFI image, looks like Secure Boot support is missing."
-        )
+        logging.info("No /boot/grub/grub.cfg found inside EFI image, looks like Secure Boot support is missing.")
     else:
         mkdir(target + "/boot/grub/x86_64-efi/")
-        logging.debug(
-            "exec_rsync(%s, %s + '/boot/grub/x86_64-efi/grub.cfg')", grub_cfg, target
-        )
+        logging.debug("exec_rsync(%s, %s + '/boot/grub/x86_64-efi/grub.cfg')", grub_cfg, target)
         exec_rsync(grub_cfg, target + "/boot/grub/x86_64-efi/grub.cfg")
 
         logging.debug(
@@ -1633,9 +1586,7 @@ def handle_secure_boot(target, efi_img):
             efi_mountpoint,
             target,
         )
-        exec_rsync(
-            efi_mountpoint + "/EFI/BOOT/grubx64.efi", target + "/efi/boot/grubx64.efi"
-        )
+        exec_rsync(efi_mountpoint + "/EFI/BOOT/grubx64.efi", target + "/efi/boot/grubx64.efi")
 
         # NOTE - we're overwriting /efi/boot/bootx64.efi from copy_bootloader_files here
         logging.debug(
@@ -1643,9 +1594,7 @@ def handle_secure_boot(target, efi_img):
             efi_mountpoint,
             target,
         )
-        exec_rsync(
-            efi_mountpoint + "/EFI/BOOT/bootx64.efi", target + "/efi/boot/bootx64.efi"
-        )
+        exec_rsync(efi_mountpoint + "/EFI/BOOT/bootx64.efi", target + "/efi/boot/bootx64.efi")
 
     try:
         unmount(efi_mountpoint)
@@ -1670,18 +1619,13 @@ def install(image, device):
         if options.force or os.path.exists(os.path.join(image, "live")):
             logging.info("Using %s as install base", image)
         else:
-            if confirm(
-                f"{image} does not look like a Grml system. "
-                "Do you really want to use this image?"
-            ):
+            if confirm(f"{image} does not look like a Grml system. Do you really want to use this image?"):
                 logging.info("Using %s as install base", image)
             else:
                 logging.info("Skipping install base %s", image)
     else:
         logging.info("Using ISO %s", image)
-        iso_mountpoint = tempfile.mkdtemp(
-            prefix="grml2usb", dir=os.path.abspath(options.tmpdir)
-        )
+        iso_mountpoint = tempfile.mkdtemp(prefix="grml2usb", dir=os.path.abspath(options.tmpdir))
         register_tmpfile(iso_mountpoint)
         remove_image_mountpoint = True
         try:
@@ -1764,9 +1708,7 @@ def handle_mbr(device):
     # into /dev/loop of course, therefore use /dev/loop1 as mbr_device
     if mbr_device == "/dev/loop":
         mbr_device = device
-        logging.info(
-            "Detected loop device - using %s as MBR device therefore", mbr_device
-        )
+        logging.info("Detected loop device - using %s as MBR device therefore", mbr_device)
 
     mbrcode = ""
     mbr_locations = (
@@ -1810,9 +1752,7 @@ def handle_vfat(device):
         else:
             # make sure the user is aware of what they are doing
             if confirm(f"Are you sure you want to format the device {device}?"):
-                logging.info(
-                    "Note: you can skip this question using the option --force"
-                )
+                logging.info("Note: you can skip this question using the option --force")
             else:
                 sys.exit(1)
         try:
@@ -1822,11 +1762,7 @@ def handle_vfat(device):
             sys.exit(1)
 
     # check for fat filesystem
-    if (
-        device is not None
-        and not os.path.isdir(device)
-        and options.bootloader in ("syslinux", "efi")
-    ):
+    if device is not None and not os.path.isdir(device) and options.bootloader in ("syslinux", "efi"):
         try:
             check_for_fat(device)
         except CriticalException as error:
@@ -1834,19 +1770,11 @@ def handle_vfat(device):
             sys.exit(1)
 
     if options.skipusbcheck:
-        logging.info(
-            "Not checking for removable USB device as requested via option --skip-usb-check."
-        )
+        logging.info("Not checking for removable USB device as requested via option --skip-usb-check.")
         return
 
-    if (
-        not os.path.isdir(device)
-        and not check_for_usbdevice(device)
-        and not options.force
-    ):
-        print(
-            f"Warning: the specified device {device} does not look like a removable usb device."
-        )
+    if not os.path.isdir(device) and not check_for_usbdevice(device) and not options.force:
+        print(f"Warning: the specified device {device} does not look like a removable usb device.")
         if not confirm("Do you really want to continue?"):
             sys.exit(1)
 
@@ -1876,9 +1804,7 @@ def handle_bootloader(device):
 
     # Install bootloader only if not using the --copy-only option
     if options.copyonly:
-        logging.info(
-            "Not installing bootloader and its files as requested via option copyonly."
-        )
+        logging.info("Not installing bootloader and its files as requested via option copyonly.")
     elif os.path.isdir(device):
         logging.info("Not installing bootloader as %s is a directory.", device)
     else:
@@ -1928,8 +1854,7 @@ def check_options(options: argparse.Namespace):
             logging.info("Using %s as bootloader", options.bootloader)
         else:
             logging.critical(
-                "Fatal: grub-install not available (please install the "
-                "grub package or drop the --grub option)"
+                "Fatal: grub-install not available (please install the grub package or drop the --grub option)"
             )
             sys.exit(1)
 
@@ -1938,8 +1863,7 @@ def check_options(options: argparse.Namespace):
             logging.info("Using %s as bootloader", options.bootloader)
         else:
             logging.critical(
-                "Fatal: syslinux not available (please install the "
-                "syslinux package or use the --grub option)"
+                "Fatal: syslinux not available (please install the syslinux package or use the --grub option)"
             )
             sys.exit(1)
 
@@ -1955,9 +1879,7 @@ def load_loop():
         logging.critical("Hint: is /sbin missing in PATH?")
         sys.exit(1)
 
-    proc = subprocess.Popen(
-        ["modprobe", "loop"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
+    proc = subprocess.Popen(["modprobe", "loop"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     proc.communicate()
 
 
@@ -1986,14 +1908,8 @@ def main(grml2usb_options: argparse.Namespace):
     # specified arguments
     device = os.path.realpath(options.device)
 
-    if (
-        (not os.path.isdir(device))
-        and device[-1:].isdigit()
-        and (int(device[-1:]) > 4 or device[-2:].isdigit())
-    ):
-        logging.warning(
-            "Warning: installing on partition number >4, booting *might* fail depending on your system."
-        )
+    if (not os.path.isdir(device)) and device[-1:].isdigit() and (int(device[-1:]) > 4 or device[-2:].isdigit()):
+        logging.warning("Warning: installing on partition number >4, booting *might* fail depending on your system.")
 
     if not options.skipbootflag:
         check_boot_flag(device)

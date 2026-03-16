@@ -129,26 +129,16 @@ def _find_free_loopdev() -> str:
 
 
 def _sfdisk_partitiontable(path) -> dict:
-    data = json.loads(
-        _run_x(["/sbin/sfdisk", "--json", path], capture_output=True)
-        .stdout.decode()
-        .strip()
-    )
+    data = json.loads(_run_x(["/sbin/sfdisk", "--json", path], capture_output=True).stdout.decode().strip())
     return data["partitiontable"]
 
 
 def check_partition_table(path):
     partitiontable = _sfdisk_partitiontable(path)
     assert partitiontable["label"] == "dos"
-    assert (
-        len(partitiontable["partitions"]) == 1
-    )  # should still have exactly one partition
-    assert (
-        partitiontable["partitions"][0]["type"] == "ef"
-    )  # should still be an EFI partition
-    assert (
-        partitiontable["partitions"][0]["bootable"] is True
-    )  # should still be active/bootable
+    assert len(partitiontable["partitions"]) == 1  # should still have exactly one partition
+    assert partitiontable["partitions"][0]["type"] == "ef"  # should still be an EFI partition
+    assert partitiontable["partitions"][0]["bootable"] is True  # should still be active/bootable
 
 
 @pytest.fixture
@@ -228,9 +218,7 @@ def test_smoke(
 
     (loop_backing_file, loop_dev, partition) = loopdev_with_partition
 
-    grml2usb_options = grml2usb.parser.parse_args(
-        ["--format", "--force", iso_amd64, partition] + options
-    )
+    grml2usb_options = grml2usb.parser.parse_args(["--format", "--force", iso_amd64, partition] + options)
     print("Options:", grml2usb_options)
 
     grml2usb.main(grml2usb_options)
@@ -240,9 +228,7 @@ def test_smoke(
     print("Finalized MBR contents:", mbr.hex())
 
     if expect_x86_mbr:
-        assert not mbr.startswith(b"\x00\x00"), (
-            "MBR starts with zero-bytes, x86 BIOS will not boot"
-        )
+        assert not mbr.startswith(b"\x00\x00"), "MBR starts with zero-bytes, x86 BIOS will not boot"
 
     check_partition_table(loop_backing_file)
 

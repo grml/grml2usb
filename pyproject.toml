@@ -21,6 +21,7 @@ markers = [
 ]
 
 [tool.ruff]
+line-length = 120
 include = ["grml2usb", "*.py"]
 
 [tool.ruff.lint]
