@@ -1198,7 +1198,7 @@ def copy_bootloader_files(iso_mount: str, target: str, grml_flavour: str):
     handle_grub_config(grml_flavour, target, bootid)
 
 
-def install_iso_files(grml_flavour: str, iso_mount: str, device, target: str) -> None | int:
+def install_iso_files(grml_flavour: str, iso_mount: str, device, target: str) -> None:
     """Copy files from ISO to given target
 
     @grml_flavour: name of grml flavour the configuration should be generated for
@@ -1210,7 +1210,7 @@ def install_iso_files(grml_flavour: str, iso_mount: str, device, target: str) ->
     global GRML_DEFAULT
     GRML_DEFAULT = GRML_DEFAULT or grml_flavour
     if options.dryrun:
-        return 0
+        return
     elif not options.bootloaderonly:
         logging.info("Copying files. This might take a while....")
         try:
