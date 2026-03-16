@@ -118,6 +118,44 @@ def test_extract_device_name_invalid():
         assert grml2usb.extract_device_name("asdf/dev/sda")
 
 
+def test_search_file(tmp_path):
+    filename = "filename"
+    (tmp_path / filename).write_text("test")
+    assert grml2usb.search_file(filename, str(tmp_path)) == str(tmp_path / filename)
+
+
+def test_search_file_subdir(tmp_path):
+    filename = "filename"
+    subdir = tmp_path / "subdir"
+    subdir.mkdir()
+    (subdir / filename).write_text("test")
+    assert grml2usb.search_file(filename, str(tmp_path)) == str(subdir / filename)
+
+
+def test_search_file_not_found(tmp_path):
+    filename = "filename"
+    assert grml2usb.search_file(filename, str(tmp_path)) is None
+
+
+def test_search_dirs(tmp_path):
+    filename = "filename"
+    (tmp_path / filename).write_text("test")
+    assert grml2usb.search_dirs(filename, str(tmp_path)) == [str(tmp_path / filename)]
+
+
+def test_search_dirs_subdir(tmp_path):
+    filename = "filename"
+    subdir = tmp_path / "subdir"
+    subdir.mkdir()
+    (subdir / filename).write_text("test")
+    assert grml2usb.search_dirs(filename, str(tmp_path)) == [str(subdir / filename)]
+
+
+def test_search_dirs_not_found(tmp_path):
+    filename = "filename"
+    assert grml2usb.search_dirs(filename, str(tmp_path)) == []
+
+
 def _run_x(args, check: bool = True, **kwargs):
     # str-ify Paths, not necessary, but for readability in logs.
     args = [arg if isinstance(arg, str) else str(arg) for arg in args]
