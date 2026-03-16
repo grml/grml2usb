@@ -10,6 +10,7 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     "pytest",
+    "ruff",
 ]
 
 [tool.pytest.ini_options]
