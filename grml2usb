@@ -258,13 +258,13 @@ class VerifyException(Exception):
     @Exception: message"""
 
 
-def confirm(prompt):
+def confirm(prompt: str) -> bool:
     """Prompt user for confirmation, return True if confirmed."""
     answer = input(f"{prompt} y/N ")
     return answer.lower() == "y"
 
 
-def cleanup():
+def cleanup() -> None:
     """Cleanup function to make sure there aren't any mounted devices left behind."""
 
     def del_failed(_fn, path, _exc):
@@ -296,7 +296,7 @@ def cleanup():
             logging.debug("Exception while removing temporary %s, ignoring", tmppath)
 
 
-def register_tmpfile(path):
+def register_tmpfile(path: str) -> None:
     """
     register tmpfile
     """
@@ -304,7 +304,7 @@ def register_tmpfile(path):
     TMPFILES.add(path)
 
 
-def unregister_tmpfile(path):
+def unregister_tmpfile(path: str) -> None:
     """
     remove registered tmpfile
     """
@@ -315,7 +315,7 @@ def unregister_tmpfile(path):
         pass
 
 
-def register_mountpoint(target):
+def register_mountpoint(target: str) -> None:
     """register specified target in a set() for handling clean exiting
 
     @target: destination target of mountpoint
@@ -324,7 +324,7 @@ def register_mountpoint(target):
     MOUNTED.add(target)
 
 
-def unregister_mountpoint(target):
+def unregister_mountpoint(target: str) -> None:
     """unregister specified target in a set() for handling clean exiting
 
     @target: destination target of mountpoint
@@ -334,7 +334,7 @@ def unregister_mountpoint(target):
         MOUNTED.remove(target)
 
 
-def get_function_name(obj):
+def get_function_name(obj) -> str:
     """Helper function for use in execute() to retrieve name of a function
 
     @obj: the function object
@@ -344,7 +344,7 @@ def get_function_name(obj):
     return obj.__module__ + "." + obj.__name__
 
 
-def run_program(args, check: bool = True, **kwargs):
+def run_program(args, check: bool = True, **kwargs) -> subprocess.CompletedProcess:
     # str-ify Paths, not necessary, but for readability in logs.
     args = [arg if isinstance(arg, str) else str(arg) for arg in args]
     args_str = '" "'.join(args)
@@ -352,7 +352,7 @@ def run_program(args, check: bool = True, **kwargs):
     return subprocess.run(args, check=check, **kwargs)
 
 
-def set_rw(device):
+def set_rw(device: str) -> None:
     assert options is not None
     if not options.rwblockdev:
         return
@@ -380,7 +380,7 @@ def execute(f, *exec_arguments):
         return f(*exec_arguments)
 
 
-def which(program):
+def which(program: str) -> str | None:
     """Check whether a given program is available in PATH
 
     @program: name of executable"""
@@ -393,7 +393,7 @@ def which(program):
     return None
 
 
-def get_defaults_file(iso_mount, flavour, name):
+def get_defaults_file(iso_mount: str, flavour: str, name: str) -> tuple[str, str]:
     """get the default file for syslinux"""
     bootloader_dirs = ["/boot/isolinux/", "/boot/syslinux/"]
     for directory in bootloader_dirs:
@@ -404,11 +404,11 @@ def get_defaults_file(iso_mount, flavour, name):
 
 
 def search_file(
-    filename,
+    filename: str,
     search_path="/bin" + os.pathsep + "/usr/bin",
     lst_return=False,
     required=False,
-):
+) -> str | None | list[str]:
     """Given a search path, find file
 
     @filename: name of file to search for
@@ -448,13 +448,13 @@ def search_file(
         return None
 
 
-def check_uid_root():
+def check_uid_root() -> None:
     """Check for root permissions"""
     if os.geteuid() != 0:
         raise CriticalException("please run this script with uid 0 (root).")
 
 
-def check_boot_flag(device):
+def check_boot_flag(device: str) -> None:
     if os.path.isdir(device):
         logging.debug("Device %s is a directory, skipping check for boot flag.", device)
         return
@@ -483,7 +483,7 @@ def check_boot_flag(device):
         )
 
 
-def mkfs_vfat(device):
+def mkfs_vfat(device: str) -> None:
     """Format specified device with FAT filesystem.
 
     @device: partition that should be formated"""
@@ -500,7 +500,7 @@ def mkfs_vfat(device):
         raise CriticalException("error executing mkfs.vfat")
 
 
-def generate_main_syslinux_config():
+def generate_main_syslinux_config() -> str:
     """Generate main configuration for use in syslinux.cfg"""
 
     return """\
@@ -536,7 +536,7 @@ include hiddens.cfg
 """
 
 
-def generate_flavour_specific_syslinux_config(grml_flavour):
+def generate_flavour_specific_syslinux_config(grml_flavour: str) -> str:
     """Generate flavour specific configuration for use in syslinux.cfg
 
     @grml_flavour: name of grml flavour the configuration should be generated for"""
@@ -555,7 +555,7 @@ menu end
 """
 
 
-def install_grub(device):
+def install_grub(device: str) -> None:
     """Install grub on specified device.
 
     @mntpoint: mountpoint of device where grub should install its files to
@@ -613,11 +613,11 @@ def install_grub(device):
             unregister_tmpfile(device_mountpoint)
 
 
-def install_syslinux(device):
+def install_syslinux(device: str) -> None:
     """Install syslinux on specified device.
 
     @device: partition where syslinux should be installed to"""
-
+    assert options is not None
     if options.dryrun:
         logging.info("Would install syslinux as bootloader on %s", device)
         return
@@ -632,7 +632,7 @@ def install_syslinux(device):
         raise CriticalException("Error executing syslinux (either try --format or use grub?)")
 
 
-def install_bootloader(device):
+def install_bootloader(device: str) -> None:
     """Install bootloader on specified device.
 
     @device: partition where bootloader should be installed to"""
@@ -655,7 +655,7 @@ def install_bootloader(device):
             sys.exit(1)
 
 
-def install_mbr(mbrtemplate, device, partition):
+def install_mbr(mbrtemplate: str, device: str, partition: int | None):
     """install Master Boot Record (MBR) on a device
 
     Retrieve the partition table from "device", install an MBR from the
@@ -762,7 +762,7 @@ def install_mbr(mbrtemplate, device, partition):
     set_rw(device)
 
 
-def mount(source, target, mount_options: list[str] | None = None):
+def mount(source: str, target: str, mount_options: list[str] | None = None) -> None:
     """Mount specified source on given target
 
     @source: name of device/ISO that should be mounted
@@ -792,7 +792,7 @@ def mount(source, target, mount_options: list[str] | None = None):
     register_mountpoint(target)
 
 
-def unmount(target):
+def unmount(target: str) -> None:
     """Unmount specified target
 
     @target: target where something is mounted on and which should be unmounted
@@ -819,7 +819,7 @@ def unmount(target):
     unregister_mountpoint(target)
 
 
-def extract_device_name(device):
+def extract_device_name(device: str) -> str:
     """Extract the device name of a given path
 
     @device: device name, like /dev/sda1 or /dev/sda
@@ -827,7 +827,7 @@ def extract_device_name(device):
     return re.match(r"/dev/(.*?)\d*$", device).group(1)
 
 
-def check_for_usbdevice(device):
+def check_for_usbdevice(device: str) -> int:
     """Check whether the specified device is a removable USB device
 
     @device: device name, like /dev/sda1 or /dev/sda
@@ -848,7 +848,7 @@ def check_for_usbdevice(device):
     return 1
 
 
-def check_for_fat(partition):
+def check_for_fat(partition: str) -> None:
     """Check whether specified partition is a valid FAT filesystem
 
     @partition: device name of partition"""
@@ -875,13 +875,13 @@ def check_for_fat(partition):
         )
 
 
-def mkdir(directory):
+def mkdir(directory: str) -> None:
     """Simple wrapper around os.makedirs to get shell mkdir -p behaviour"""
 
     os.makedirs(directory, exist_ok=True)
 
 
-def exec_rsync(source, target):
+def exec_rsync(source: str, target: str) -> None:
     """Simple wrapper around rsync to install files
 
     @source: source file/directory
@@ -899,8 +899,8 @@ def exec_rsync(source, target):
         sys.exit(1)
 
 
-def write_uuid(target_file):
-    """Generates an returns uuid and write it to the specified file
+def write_uuid(target_file: Path) -> str:
+    """Generates and returns uuid and write it to the specified file
 
     @target_file: filename to write the uuid to
     """
@@ -910,7 +910,7 @@ def write_uuid(target_file):
     return uid
 
 
-def get_target_bootid(target: str | Path):
+def get_target_bootid(target: str | Path) -> str:
     """Get the uuid of the specified target. Will generate an uuid if none exist.
 
     @target: directory/mountpoint containing the grml layout
@@ -927,21 +927,21 @@ def get_target_bootid(target: str | Path):
     return write_uuid(uuid_file_name)
 
 
-def get_shortname(grml_flavour):
+def get_shortname(grml_flavour: str) -> str:
     """Get shortname based from grml_flavour name. The rules applied are the same as in grml-live
     @grml_flavour: flavour name which shold be translated to shortname"""
 
     return re.sub(r"[,._-]", "", grml_flavour)
 
 
-def copy_system_files(grml_flavour, iso_mount, target):
+def copy_system_files(grml_flavour: str, iso_mount: str, target: str) -> None:
     """copy grml's main files (like squashfs, kernel and initrd) to a given target
 
     @grml_flavour: name of grml flavour the configuration should be generated for
     @iso_mount: path where a grml ISO is mounted on
     @target: path where grml's main files should be copied to"""
 
-    squashfs = search_file(grml_flavour + ".squashfs", iso_mount)
+    squashfs: str | None = search_file(grml_flavour + ".squashfs", iso_mount)
     if squashfs is None:
         logging.error("error locating squashfs file")
         raise CriticalException("squashfs file not found, please check that your iso is not corrupt")
@@ -976,7 +976,7 @@ def copy_system_files(grml_flavour, iso_mount, target):
         exec_rsync(source, dest)
 
 
-def copy_grml_files(grml_flavour, iso_mount, target):
+def copy_grml_files(grml_flavour: str, iso_mount: str, target: str):
     """copy some minor grml files to a given target
 
     @grml_flavour: the current grml_flavour
@@ -996,7 +996,7 @@ def copy_grml_files(grml_flavour, iso_mount, target):
         logging.warning("Warning: could not find flavour directory for %s ", grml_flavour)
 
 
-def copy_addons(iso_mount, target):
+def copy_addons(iso_mount: str, target: str) -> None:
     """copy grml's addons files to a given target
 
     @iso_mount: path where a grml ISO is mounted on
@@ -1012,7 +1012,7 @@ def copy_addons(iso_mount, target):
         exec_rsync(src_file, addons)
 
 
-def build_loopbackcfg(target: str | Path):
+def build_loopbackcfg(target: str | Path) -> None:
     """Generate GRUB's loopback.cfg based on existing config files.
 
     @target: target directory
@@ -1042,7 +1042,7 @@ def build_loopbackcfg(target: str | Path):
         f.write("source /boot/grub/footer.cfg\n")
 
 
-def glob_and_copy(filepattern, dst):
+def glob_and_copy(filepattern: str, dst: str):
     """Glob on specified filepattern and copy the result to dst
 
     @filepattern: globbing pattern
@@ -1052,7 +1052,7 @@ def glob_and_copy(filepattern, dst):
         copy_if_exist(name, dst)
 
 
-def search_and_copy(filename, search_path, dst):
+def search_and_copy(filename: str, search_path: str, dst: str):
     """Search for the specified filename at searchpath and copy it to dst
 
     @filename: filename to look for
@@ -1063,7 +1063,7 @@ def search_and_copy(filename, search_path, dst):
     copy_if_exist(file_location, dst)
 
 
-def copy_if_exist(filename, dst):
+def copy_if_exist(filename: str | None, dst: str):
     """Copy filename to dst if filename is set.
 
     @filename: a filename
@@ -1073,7 +1073,7 @@ def copy_if_exist(filename, dst):
         exec_rsync(filename, dst)
 
 
-def copy_bootloader_files(iso_mount, target, grml_flavour):
+def copy_bootloader_files(iso_mount: str, target: str, grml_flavour: str):
     """Copy grml's bootloader files to a given target
 
     @iso_mount: path where a grml ISO is mounted on
@@ -1199,7 +1199,7 @@ def copy_bootloader_files(iso_mount, target, grml_flavour):
     handle_grub_config(grml_flavour, target, bootid)
 
 
-def install_iso_files(grml_flavour, iso_mount, device, target):
+def install_iso_files(grml_flavour: str, iso_mount: str, device, target: str) -> None | int:
     """Copy files from ISO to given target
 
     @grml_flavour: name of grml flavour the configuration should be generated for
@@ -1235,7 +1235,7 @@ def install_iso_files(grml_flavour, iso_mount, device, target):
     run_program(["sync"], check=False)
 
 
-def get_device_from_partition(partition):
+def get_device_from_partition(partition: str) -> tuple[str, int | None]:
     device = partition
     partition_number = None
     if partition[-1].isdigit() and not RE_LOOP_DEVICE.match(partition):
@@ -1246,12 +1246,12 @@ def get_device_from_partition(partition):
     return (device, partition_number)
 
 
-def get_flavour(flavour_str):
+def get_flavour(flavour_str: str) -> str:
     """Returns the flavour of a grml version string"""
     return re.match(r"[\w-]*", flavour_str).group()
 
 
-def identify_grml_flavour(mountpath):
+def identify_grml_flavour(mountpath: str) -> list[str]:
     """Get name of grml flavour
 
     @mountpath: path where the grml ISO is mounted to
@@ -1284,7 +1284,7 @@ def identify_grml_flavour(mountpath):
     return flavours
 
 
-def get_bootoptions(grml_flavour):
+def get_bootoptions(grml_flavour: str) -> str:
     """Returns bootoptions for specific flavour
 
     @grml_flavour: name of the grml_flavour
@@ -1300,7 +1300,7 @@ def get_bootoptions(grml_flavour):
     return bootopt
 
 
-def handle_grub_config(grml_flavour, target, bootid):
+def handle_grub_config(grml_flavour: str, target: str, bootid: str) -> None:
     """Main handler for generating grub (v1 and v2) configuration
 
     @grml_flavour: name of grml flavour the configuration should be generated for
@@ -1349,7 +1349,7 @@ def handle_grub_config(grml_flavour, target, bootid):
         fileinput.close()
 
 
-def initial_syslinux_config(target: str | Path):
+def initial_syslinux_config(target: str | Path) -> None:
     """Generates initial syslinux configuration
 
     @target path of syslinux's configuration files"""
@@ -1365,7 +1365,7 @@ def initial_syslinux_config(target: str | Path):
     hiddens_cfg.write_text("include hidden.cfg\n")
 
 
-def add_entry_if_not_present(filename: str | Path, entry):
+def add_entry_if_not_present(filename: str | Path, entry) -> None:
     """Write entry into filename if entry is not already in the file
 
     @filename: name of the file
@@ -1380,7 +1380,7 @@ def add_entry_if_not_present(filename: str | Path, entry):
             data.write(entry)
 
 
-def get_flavour_filename(flavour):
+def get_flavour_filename(flavour: str) -> str:
     """Generate an iso9960-safe filename out of the specified flavour string.
 
     @flavour: grml flavour
@@ -1388,7 +1388,7 @@ def get_flavour_filename(flavour):
     return flavour.replace("-", "_")
 
 
-def adjust_syslinux_bootoptions(src, flavour, bootid):
+def adjust_syslinux_bootoptions(src: str, flavour: str, bootid: str) -> None:
     """Adjust existing bootoptions of specified syslinux config to
     grml2usb specific ones, e.g. change the location of the kernel...
 
@@ -1429,7 +1429,7 @@ def adjust_syslinux_bootoptions(src, flavour, bootid):
     fileinput.close()
 
 
-def adjust_labels(src, replacement):
+def adjust_labels(src: str, replacement: str) -> None:
     """Adjust the specified labels in the syslinux config file src with
     specified replacement
     """
@@ -1440,7 +1440,7 @@ def adjust_labels(src, replacement):
     fileinput.close()
 
 
-def add_syslinux_entry(syslinux_target: str | Path, filename: str | Path, grml_flavour):
+def add_syslinux_entry(syslinux_target: str | Path, filename: str | Path, grml_flavour) -> None:
     """Add includes for a specific grml_flavour to the specified filename
 
     @filename: syslinux config file
@@ -1454,7 +1454,7 @@ def add_syslinux_entry(syslinux_target: str | Path, filename: str | Path, grml_f
     (Path(syslinux_target) / entry_filename).write_text(generate_flavour_specific_syslinux_config(grml_flavour))
 
 
-def modify_filenames(grml_flavour, target, filenames):
+def modify_filenames(grml_flavour: str, target: str, filenames: list[str]) -> None:
     """Replace the standard filenames with the new ones
 
     @grml_flavour: grml-flavour strin
@@ -1468,7 +1468,7 @@ def modify_filenames(grml_flavour, target, filenames):
         os.rename(old_filename, new_filename)
 
 
-def remove_default_entry(filename):
+def remove_default_entry(filename: str) -> None:
     """Remove the default entry from specified syslinux file
 
     @filename: syslinux config file
@@ -1481,7 +1481,7 @@ def remove_default_entry(filename):
     fileinput.close()
 
 
-def handle_syslinux_config(grml_flavour, target, bootid):
+def handle_syslinux_config(grml_flavour: str, target: str, bootid: str) -> None:
     """Main handler for generating syslinux configuration
 
     @grml_flavour: name of grml flavour the configuration should be generated for
@@ -1553,7 +1553,7 @@ def handle_syslinux_config(grml_flavour, target, bootid):
     add_syslinux_entry(syslinux_target, "additional.cfg", flavour_filename)
 
 
-def handle_secure_boot(target, efi_img):
+def handle_secure_boot(target: str, efi_img: str) -> None:
     """Provide secure boot support by extracting files from /boot/efi.img
 
     @target: path where grml's main files should be copied to
@@ -1606,7 +1606,7 @@ def handle_secure_boot(target, efi_img):
         sys.exit(1)
 
 
-def install(image, device):
+def install(image: str, device: str) -> None:
     """Install a grml image to the specified device
 
     @image: directory or is file
@@ -1645,7 +1645,7 @@ def install(image, device):
                 raise
 
 
-def install_grml(mountpoint, device):
+def install_grml(mountpoint: str, device: str) -> None:
     """Main logic for copying files of the currently running Grml system.
 
     @mountpoint: directory where currently running live system resides (usually /run/live/medium)
@@ -1677,7 +1677,7 @@ def install_grml(mountpoint, device):
             remove_mountpoint(device_mountpoint)
 
 
-def remove_mountpoint(mountpoint):
+def remove_mountpoint(mountpoint: str) -> None:
     """remove a registered mountpoint"""
 
     try:
@@ -1690,7 +1690,7 @@ def remove_mountpoint(mountpoint):
         raise
 
 
-def handle_mbr(device):
+def handle_mbr(device: str) -> int | None:
     """Main handler for installing master boot record (MBR)
 
     @device: device where the MBR should be installed to"""
@@ -1734,7 +1734,7 @@ def handle_mbr(device):
         sys.exit(1)
 
 
-def handle_vfat(device):
+def handle_vfat(device: str) -> None:
     """Check for FAT specific settings and options
 
     @device: device that should be checked / formatted"""
@@ -1779,7 +1779,7 @@ def handle_vfat(device):
             sys.exit(1)
 
 
-def handle_logging():
+def handle_logging() -> None:
     """Log handling and configuration"""
     assert options is not None
 
@@ -1796,7 +1796,7 @@ def handle_logging():
         logging.basicConfig(level=logging.INFO, format=log_format)
 
 
-def handle_bootloader(device):
+def handle_bootloader(device: str) -> None:
     """wrapper for installing bootloader
 
     @device: device where bootloader should be installed to"""
@@ -1816,7 +1816,7 @@ def host_architecture() -> str:
     return run_program(["uname", "-m"], capture_output=True).stdout.decode().strip()
 
 
-def check_options(options: argparse.Namespace):
+def check_options(options: argparse.Namespace) -> None:
     """
     Check compatibility of user-provided options, and pick correct default bootloader
     """
@@ -1872,7 +1872,7 @@ def check_options(options: argparse.Namespace):
         sys.exit(1)
 
 
-def load_loop():
+def load_loop() -> None:
     """Runs modprobe loop and throws away its output"""
     if not which("modprobe"):
         logging.critical("Fatal: modprobe not available, can not continue - sorry.")
@@ -1883,7 +1883,7 @@ def load_loop():
     proc.communicate()
 
 
-def main(grml2usb_options: argparse.Namespace):
+def main(grml2usb_options: argparse.Namespace) -> None:
     """Main invocation"""
     global options
 
