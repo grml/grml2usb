@@ -1381,7 +1381,7 @@ def add_entry_if_not_present(filename: str | Path, entry):
 
 
 def get_flavour_filename(flavour):
-    """Generate a iso9960 save filename out of the specified flavour
+    """Generate an iso9960-safe filename out of the specified flavour string.
 
     @flavour: grml flavour
     """
