@@ -1,3 +1,28 @@
+grml2usb (0.20.12) unstable; urgency=medium
+
+  [ Michael Prokop ]
+  * [e12dffe] Fix host architecture detection when running on arm64
+  * [bb37f29] grml2usb: use GRUB for BIOS boot, support ISOs without syslinux
+  * [ca7bb90] grml2iso: use GRUB for BIOS boot, support ISOs without syslinux
+  * [ff92ca9] grml2iso: drop mkisofs/genisoimage support, require xorriso
+  * [d76053a] grml2iso: drop xorriso version check
+  * [1be5b7e] grml2iso: various cleanups
+  * [c695dda] grml2usb: replace mbrldr/mbrmgr with syslinux MBR
+
+  [ Chris Hofstaedtler ]
+  * [7b1dc65] Setup ignore list for Git
+  * [5f56fd6] test_smoke: setup log level
+  * [01aedfe] test_smoke: improve MBR tests
+  * [a682abc] test_smoke: test different bootloader options
+  * [ad0115c] test_smoke: extract ISO download into a fixture
+  * [82fab88] test_smoke: defuse handle_logging completely
+  * [747f0bc] test_smoke: fix zero-MBR assert
+  * [a729182] test_smoke: assert chosen bootloader in log output
+  * [5087325] test_smoke: extract loop dev management into a fixture
+  * [a98da8d] tests: avoid redownloading ISO
+
+ -- Chris Hofstaedtler <ch@grml.org>  Mon, 16 Mar 2026 15:57:54 +0100
+
 grml2usb (0.20.11) unstable; urgency=medium
 
   [ Chris Hofstaedtler ]
