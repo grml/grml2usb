@@ -1271,14 +1271,7 @@ def identify_grml_flavour(mountpath: str) -> list[str]:
     flavours = []
     logging.debug("version_files = %s", version_files)
     for version_file in version_files:
-        tmpfile = None
-        try:
-            tmpfile = open(version_file, "r")
-            for line in tmpfile.readlines():
-                flavours.append(get_flavour(line))
-        finally:
-            if tmpfile:
-                tmpfile.close()
+        flavours.extend([get_flavour(line) for line in Path(version_file).read_text().splitlines()])
 
     return flavours
 
