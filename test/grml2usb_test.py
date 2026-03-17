@@ -75,7 +75,7 @@ def test_get_target_bootid_new(tmp_path, monkeypatch):
     assert (conf_dir / "bootid.txt").read_text() == result
 
 
-def test_build_loopbackcfg(tmp_path):
+def test_build_grub_loopbackcfg(tmp_path):
     # Create some config files to be sourced
     grub_dir = tmp_path / "boot" / "grub"
     grub_dir.mkdir(parents=True)
@@ -83,7 +83,7 @@ def test_build_loopbackcfg(tmp_path):
     (grub_dir / "grml32_default.cfg").touch()
     (grub_dir / "grml64_options.cfg").touch()
 
-    grml2usb.build_loopbackcfg(str(tmp_path))
+    grml2usb.build_grub_loopbackcfg(str(tmp_path))
 
     loopback_cfg = grub_dir / "loopback.cfg"
     lines = loopback_cfg.read_text().splitlines()

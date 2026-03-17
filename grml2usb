@@ -1019,7 +1019,7 @@ def copy_addons(iso_mount: str, target: str) -> None:
         exec_rsync(src_file, addons)
 
 
-def build_loopbackcfg(target: str | Path) -> None:
+def build_grub_loopbackcfg(target: str | Path) -> None:
     """Generate GRUB's loopback.cfg based on existing config files.
 
     @target: target directory
@@ -1102,8 +1102,9 @@ def copy_bootloader_files(iso_mount: str, target: str, grml_flavour: str):
         )
         options.bootloader = "efi"
 
-    grub_target = target + "/boot/grub/"
-    execute(mkdir, grub_target)
+    execute(mkdir, target + "/conf/")
+    glob_and_copy(iso_mount + "/conf/bootfile_*", target + "/conf/")
+    bootid = get_target_bootid(target)
 
     if search_file("logo.16", iso_mount):
         # syslinux logo file found, assume ISO has full set of syslinux files.
@@ -1135,13 +1136,6 @@ def copy_bootloader_files(iso_mount: str, target: str, grml_flavour: str):
         mkdir(target + "/boot/")
         exec_rsync(efi_img, target + "/boot/efi.img")
         handle_secure_boot(target, efi_img)
-
-    execute(mkdir, target + "/conf/")
-    glob_and_copy(iso_mount + "/conf/bootfile_*", target + "/conf/")
-    bootid = get_target_bootid(target)
-
-    if not os.path.exists(iso_mount + "/boot/grub/footer.cfg"):
-        logging.warning("Warning: Grml releases older than 2011.12 support only one flavour in grub.")
 
     if syslinux_target:
         execute(mkdir, syslinux_target)
@@ -1199,12 +1193,14 @@ def copy_bootloader_files(iso_mount: str, target: str, grml_flavour: str):
         logging.info("Skipping syslinux installation, ISO does not support it")
 
     # copy all grub files from ISO
+    if not os.path.exists(iso_mount + "/boot/grub/footer.cfg"):
+        logging.warning("Warning: Grml releases older than 2011.12 support only one flavour in grub.")
+    grub_target = target + "/boot/grub/"
+    execute(mkdir, grub_target)
     glob_and_copy(iso_mount + "/boot/grub/*", grub_target)
-
     # finally (after all GRUB files have been installed) build static loopback.cfg
-    build_loopbackcfg(target)
-
-    handle_grub_config(grml_flavour, target, bootid)
+    build_grub_loopbackcfg(target)
+    handle_grub_config(grml_flavour, grub_target, bootid)
 
 
 def install_iso_files(grml_flavour: str, iso_mount: str, device, target: str) -> None:
@@ -1301,7 +1297,7 @@ def get_bootoptions(grml_flavour: str) -> str:
     return bootopt
 
 
-def handle_grub_config(grml_flavour: str, target: str, bootid: str) -> None:
+def handle_grub_config(grml_flavour: str, grub_target: str, bootid: str) -> None:
     """Main handler for generating grub (v1 and v2) configuration
 
     @grml_flavour: name of grml flavour the configuration should be generated for
@@ -1315,8 +1311,6 @@ def handle_grub_config(grml_flavour: str, target: str, bootid: str) -> None:
         return
 
     logging.debug("Updating grub configuration")
-
-    grub_target = target + "/boot/grub/"
 
     bootid_re = re.compile(r"bootid=[\w_-]+")
     live_media_path_re = re.compile(r"live-media-path=[\w_/-]+")
