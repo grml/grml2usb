@@ -353,15 +353,16 @@ def run_program(args, check: bool = True, **kwargs) -> subprocess.CompletedProce
 
 
 def reread_partition_table(device: str) -> None:
-    blockdev_args = ["blockdev", "--rereadpt", device]
-    result = run_program(blockdev_args, check=False)
-    if result.returncode != 0:
-        logging.warning(
-            "Probing device failed with return code: %d (command: %s)",
-            result.returncode,
-            " ".join(blockdev_args),
-        )
-        logging.warning("(Install util-linux?)")
+    command = ["blockdev", "--rereadpt", device]
+    try:
+        result = run_program(command, check=False)
+        if result.returncode != 0:
+            logging.warning(
+                "Probing device failed with return code: %d (command: %s)", result.returncode, " ".join(command)
+            )
+    except FileNotFoundError as error:
+        # subprocess.run raises FileNotFoundError when the program to be run does not exist
+        logging.warning("Failed running %s: %s - install util-linux?", " ".join(command), error)
 
 
 def set_rw(device: str) -> None:
