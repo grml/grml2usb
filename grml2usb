@@ -1204,11 +1204,7 @@ def copy_and_configure_isolinux(iso_mount: str, syslinux_target: str, grml_flavo
         # copy the addons_*.cfg file to the new syslinux directory
         glob_and_copy(iso_mount + source_dir + "addon*.cfg", syslinux_target)
 
-        search_and_copy(
-            "hidden.cfg",
-            iso_mount + source_dir,
-            syslinux_target + "new_" + "hidden.cfg",
-        )
+        search_and_copy("hidden.cfg", iso_mount + source_dir, syslinux_target + "new_hidden.cfg")
 
         if options.skipsyslinuxconfig:
             logging.info("Skipping generation of syslinux configuration as requested.")
