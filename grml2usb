@@ -1585,22 +1585,9 @@ def handle_secure_boot(target: str, efi_img: str) -> None:
         logging.info("No /boot/grub/grub.cfg found inside EFI image, looks like Secure Boot support is missing.")
     else:
         mkdir(target + "/boot/grub/x86_64-efi/")
-        logging.debug("exec_rsync(%s, %s + '/boot/grub/x86_64-efi/grub.cfg')", grub_cfg, target)
         exec_rsync(grub_cfg, target + "/boot/grub/x86_64-efi/grub.cfg")
-
-        logging.debug(
-            "exec_rsync(%s + '/EFI/BOOT/grubx64.efi', %s + '/efi/boot/grubx64.efi')'",
-            efi_mountpoint,
-            target,
-        )
         exec_rsync(efi_mountpoint + "/EFI/BOOT/grubx64.efi", target + "/efi/boot/grubx64.efi")
-
         # NOTE - we're overwriting /efi/boot/bootx64.efi from copy_bootloader_files here
-        logging.debug(
-            "exec_rsync(%s + '/EFI/BOOT/bootx64.efi', %s + '/efi/boot/bootx64.efi')'",
-            efi_mountpoint,
-            target,
-        )
         exec_rsync(efi_mountpoint + "/EFI/BOOT/bootx64.efi", target + "/efi/boot/bootx64.efi")
 
     try:
