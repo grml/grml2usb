@@ -1161,6 +1161,7 @@ def copy_and_configure_isolinux(iso_mount: str, syslinux_target: str, grml_flavo
     @grml_flavour: name of grml flavour the configuration should be generated for
     @bootid: unique id of the target usb key
     """
+    assert options is not None
     execute(mkdir, syslinux_target)
     search_and_copy("logo.16", iso_mount, syslinux_target + "logo.16")
 
@@ -1209,7 +1210,10 @@ def copy_and_configure_isolinux(iso_mount: str, syslinux_target: str, grml_flavo
             syslinux_target + "new_" + "hidden.cfg",
         )
 
-        if not options.dryrun:
+        if options.skipsyslinuxconfig:
+            logging.info("Skipping generation of syslinux configuration as requested.")
+            return
+        elif not options.dryrun:
             handle_syslinux_config(grml_flavour, syslinux_target, bootid)
 
 
@@ -1493,12 +1497,6 @@ def handle_syslinux_config(grml_flavour: str, syslinux_target: str, bootid: str)
     @syslinux_target: path of syslinux's configuration files
     @bootid: unique id of the target usb key
     """
-    assert options is not None
-
-    if options.skipsyslinuxconfig:
-        logging.info("Skipping generation of syslinux configuration as requested.")
-        return
-
     logging.debug("Generating syslinux configuration in %s", syslinux_target)
 
     syslinux_cfg = syslinux_target + "syslinux.cfg"
