@@ -677,9 +677,6 @@ def install_mbr(mbrtemplate: str, device: str, partition: int | None):
 
     @partition: must be a number between 0 and 3, inclusive"""
     assert options is not None
-    if options.bootloader == "efi":
-        logging.info("Skipping MBR installation for EFI-boot")
-        return
 
     if partition is not None and ((partition < 0) or (partition > 3)):
         logging.warning("Cannot activate partition %d", partition)
@@ -1690,6 +1687,9 @@ def handle_mbr(device: str) -> int | None:
     @device: device where the MBR should be installed to"""
     assert options is not None
 
+    if options.bootloader == "efi":
+        logging.info("Skipping MBR installation for EFI-boot")
+        return
     if options.dryrun:
         logging.info("Would install MBR")
         return 0
