@@ -1500,9 +1500,6 @@ def handle_syslinux_config(grml_flavour: str, syslinux_target: str, bootid: str)
         return
 
     logging.debug("Generating syslinux configuration in %s", syslinux_target)
-    if not os.path.exists(syslinux_target):
-        logging.info("Skipping syslinux configuration, ISO does not support it")
-        return
 
     syslinux_cfg = syslinux_target + "syslinux.cfg"
 
