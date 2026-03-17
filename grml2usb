@@ -1214,12 +1214,11 @@ def copy_and_configure_isolinux(iso_mount: str, syslinux_target: str, grml_flavo
                 handle_syslinux_config(grml_flavour, syslinux_target, bootid, removeoptions, bootoptions)
 
 
-def install_iso_files(grml_flavour: str, iso_mount: str, device, target: str) -> None:
+def install_iso_files(grml_flavour: str, iso_mount: str, target: str) -> None:
     """Copy files from ISO to given target
 
     @grml_flavour: name of grml flavour the configuration should be generated for
     @iso_mount: path where a grml ISO is mounted on
-    @device: device/partition where bootloader should be installed to
     @target: path where grml's main files should be copied to"""
     assert options is not None
 
@@ -1663,7 +1662,7 @@ def install_grml(mountpoint: str, device: str) -> None:
             if not flavour:
                 logging.warning("No valid flavour found, please check your iso")
             logging.info('Identified grml flavour "%s".', flavour)
-            install_iso_files(flavour, mountpoint, device, device_mountpoint)
+            install_iso_files(flavour, mountpoint, device_mountpoint)
             GRML_FLAVOURS.add(flavour)
     finally:
         if remove_device_mountpoint:
