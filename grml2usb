@@ -1105,8 +1105,8 @@ def copy_bootloader_files(iso_mount: str, target: str, grml_flavour: str):
     grub_target = target + "/boot/grub/"
     execute(mkdir, grub_target)
 
-    logo = search_file("logo.16", iso_mount)
-    if logo:
+    if search_file("logo.16", iso_mount):
+        # syslinux logo file found, assume ISO has full set of syslinux files.
         syslinux_target = target + "/boot/syslinux/"
     else:
         # ISO does not have syslinux files - fall back to GRUB or EFI
@@ -1145,7 +1145,7 @@ def copy_bootloader_files(iso_mount: str, target: str, grml_flavour: str):
 
     if syslinux_target:
         execute(mkdir, syslinux_target)
-        exec_rsync(logo, syslinux_target + "logo.16")
+        search_and_copy("logo.16", iso_mount, syslinux_target + "logo.16")
 
         for ffile in [f"f{number}" for number in range(1, 11)]:
             search_and_copy(ffile, iso_mount, syslinux_target + ffile)
