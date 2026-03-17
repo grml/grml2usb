@@ -1520,16 +1520,18 @@ def handle_syslinux_config(
     if search_file("default.cfg", syslinux_target):
         modify_filenames(grml_flavour, syslinux_target, ["grml.cfg", "default.cfg"])
 
-    filename = search_file("new_hidden.cfg", syslinux_target)
+    new_hidden_filename = search_file("new_hidden.cfg", syslinux_target)
+    if new_hidden_filename is None:
+        raise CriticalException("new_hidden.cfg not found, expected copy_and_configure_isolinux to create it")
 
     # process hidden file
     if not search_file("hidden.cfg", syslinux_target):
         new_hidden = syslinux_target + "hidden.cfg"
-        os.rename(filename, new_hidden)
+        os.rename(new_hidden_filename, new_hidden)
         adjust_syslinux_bootoptions(new_hidden, grml_flavour, bootid, removeoptions, bootoptions)
     else:
         new_hidden_file = f"{syslinux_target}/{flavour_filename}_hidden.cfg"
-        os.rename(filename, new_hidden_file)
+        os.rename(new_hidden_filename, new_hidden_file)
         adjust_labels(new_hidden_file, r"\1 %s-\2" % grml_flavour)
         adjust_syslinux_bootoptions(new_hidden_file, grml_flavour, bootid, removeoptions, bootoptions)
         add_entry_if_not_present(f"{syslinux_target}/hiddens.cfg", f"include {flavour_filename}_hidden.cfg\n")
