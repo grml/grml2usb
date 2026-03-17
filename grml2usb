@@ -1705,7 +1705,6 @@ def handle_mbr(device: str) -> None:
         mbr_device = device
         logging.info("Detected loop device - using %s as MBR device therefore", mbr_device)
 
-    mbrcode = ""
     mbr_locations = (
         "/usr/lib/syslinux/mbr/mbr.bin",
         "/usr/lib/syslinux/mbr.bin",
@@ -1714,16 +1713,14 @@ def handle_mbr(device: str) -> None:
     )
     for mbrpath in mbr_locations:
         if os.path.isfile(mbrpath):
-            mbrcode = mbrpath
             break
-
-    if not mbrcode:
+    else:
         str_locations = " or ".join([f'"{x}"' for x in mbr_locations])
         logging.error("Cannot find syslinux MBR, install it at %s", str_locations)
         raise CriticalException(f"syslinux MBR can not be found at {str_locations}.")
 
     try:
-        install_mbr(mbrcode, mbr_device, partition_number)
+        install_mbr(mbrpath, mbr_device, partition_number)
     except (OSError, Exception) as error:
         logging.critical("Execution failed: %s", error)
         sys.exit(1)
