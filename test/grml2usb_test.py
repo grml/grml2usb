@@ -231,10 +231,14 @@ def test_copy_and_configure_isolinux(tmp_path, monkeypatch, iso_contents: Path):
 
 
 @pytest.mark.parametrize(
-    "iso_name,flavour,flavour_safe,installs_syslinux,efiloader",
+    "iso_name,request_bootloader,result_bootloader,flavour,flavour_safe,installs_syslinux,efiloader",
     [
-        ("grml-full-2025.12-amd64", "grml-full-amd64", "grml_full_amd64", True, "bootx64.efi"),
-        ("grml-full-2025.12-arm64", "grml-full-arm64", "grml_full_arm64", False, "bootaa64.efi"),
+        ("grml-full-2025.12-amd64", "syslinux", "syslinux", "grml-full-amd64", "grml_full_amd64", True, "bootx64.efi"),
+        ("grml-full-2025.12-amd64", "grub", "grub", "grml-full-amd64", "grml_full_amd64", True, "bootx64.efi"),
+        ("grml-full-2025.12-amd64", "efi", "efi", "grml-full-amd64", "grml_full_amd64", True, "bootx64.efi"),
+        # arm64 ISOs support only EFI boot with GRUB
+        ("grml-full-2025.12-arm64", "syslinux", "efi", "grml-full-arm64", "grml_full_arm64", False, "bootaa64.efi"),
+        ("grml-full-2025.12-arm64", "grub", "efi", "grml-full-arm64", "grml_full_arm64", False, "bootaa64.efi"),
     ],
 )
 def test_copy_bootloader_files(
@@ -242,13 +246,15 @@ def test_copy_bootloader_files(
     monkeypatch,
     iso_contents: Path,
     iso_name: str,
+    request_bootloader: str,
+    result_bootloader: str,
     flavour: str,
     flavour_safe: str,
     installs_syslinux: bool,
     efiloader: str,
 ) -> None:
     options = argparse.Namespace()
-    options.bootloader = "syslinux"
+    options.bootloader = request_bootloader
     options.bootoptions = []
     options.dryrun = False
     options.removeoption = []
@@ -271,6 +277,8 @@ def test_copy_bootloader_files(
     target = tmp_path / "target"
     target.mkdir()
     grml2usb.copy_bootloader_files(str(iso_mount), str(target), grml_flavours[0])
+    # copy_bootloader_files modifies options.bootloader
+    assert options.bootloader == result_bootloader
 
     assert (target / "efi" / "boot" / efiloader).exists()
 
