@@ -693,77 +693,59 @@ def install_mbr(mbrtemplate: str, device: str, partition: int | None, only_activ
     @only_activate: if True skips installing the MBR, just updates the partition bootable flags
     """
     if partition is not None and ((partition < 0) or (partition > 3)):
-        logging.warning("Cannot activate partition %d", partition)
+        logging.warning("Cannot activate partition %s", partition)
         partition = None
 
-    tmpf = tempfile.NamedTemporaryFile()
-
-    run_program(
-        ["dd", f"if={device}", f"of={tmpf.name}", "bs=512", "count=1"],
-        stderr=subprocess.DEVNULL,
-    )
+    with open(device, "rb") as fh:
+        mbr_sector = fh.read(512)
+        if len(mbr_sector) != 512:
+            raise EOFError(f"Existing MBR size {len(mbr_sector)} unexpected")
 
     if not only_activate:
         logging.info("Installing syslinux MBR")
         if not os.path.isfile(mbrtemplate):
             logging.error('Error installing MBR: "%s" not found', mbrtemplate)
             raise CriticalException(f"{mbrtemplate} can not be read.")
-        run_program(
-            [
-                "dd",
-                f"if={mbrtemplate}",
-                f"of={tmpf.name}",
-                "bs=440",
-                "count=1",
-                "conv=notrunc",
-            ],
-            stderr=subprocess.DEVNULL,
-        )
-
-    mbrcode = tmpf.file.read(512)
-    if len(mbrcode) < 512:
-        raise EOFError(f"MBR size {len(mbrcode)} < 512")
+        with open(mbrtemplate, "rb") as fh:
+            new_mbr_code = fh.read(440)
+            if len(new_mbr_code) != 440:
+                raise EOFError(f"MBR size {len(new_mbr_code)} unexpected")
+        mbr_sector = new_mbr_code + mbr_sector[len(new_mbr_code) :]
 
     if partition is not None:
         actives = [b"\x00", b"\x00", b"\x00", b"\x00"]
         actives[partition] = b"\x80"
-        mbrcode = (
-            mbrcode[0:446]
+        mbr_sector = (
+            mbr_sector[0:446]
             + actives[0]
-            + mbrcode[447:462]
+            + mbr_sector[447:462]
             + actives[1]
-            + mbrcode[463:478]
+            + mbr_sector[463:478]
             + actives[2]
-            + mbrcode[479:494]
+            + mbr_sector[479:494]
             + actives[3]
-            + mbrcode[495:510]
+            + mbr_sector[495:510]
             + b"\x55\xaa"
         )
 
-    tmpf.file.seek(0)
-    tmpf.file.truncate()
-    tmpf.file.write(mbrcode)
-    tmpf.file.close()
-
     set_rw(device)
 
-    logging.debug(
-        "executing: dd if='%s' of='%s' bs=512 count=1 conv=notrunc,fsync",
-        tmpf.name,
-        device,
-    )
-    run_program(
-        [
-            "dd",
-            f"if={tmpf.name}",
-            f"of={device}",
-            "bs=512",
-            "count=1",
-            "conv=notrunc,fsync",
-        ],
-        stderr=subprocess.DEVNULL,
-    )
-    del tmpf
+    with tempfile.NamedTemporaryFile("wb", delete=True, delete_on_close=False) as tmpf:
+        tmpf.write(mbr_sector)
+        tmpf.flush()
+        tmpf.close()
+
+        run_program(
+            [
+                "dd",
+                f"if={tmpf.name}",
+                f"of={device}",
+                "bs=512",
+                "count=1",
+                "conv=notrunc,fsync",
+            ],
+            stderr=subprocess.DEVNULL,
+        )
 
     reread_partition_table(device)
 

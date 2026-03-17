@@ -297,7 +297,8 @@ def test_copy_bootloader_files(
         assert (target / "boot" / "syslinux" / "syslinux.c32").exists()
 
 
-def test_install_mbr(tmp_path, monkeypatch):
+@pytest.mark.parametrize("only_activate", [True, False])
+def test_install_mbr(tmp_path, monkeypatch, only_activate: bool) -> None:
     monkeypatch.setattr(grml2usb, "set_rw", lambda *args: None)
     monkeypatch.setattr(grml2usb, "reread_partition_table", lambda *args: None)
     fake_mbr_code = b"\x1a" * 440  # syslinux mbr.bin is exactly 440 bytes long
@@ -314,7 +315,6 @@ def test_install_mbr(tmp_path, monkeypatch):
     fake_block_device = tmp_path / "fake_block_device"
     fake_block_device.write_bytes(fake_block_device_mbr + (b"\0" * 4096))
     partition = 1
-    only_activate = False
     grml2usb.install_mbr(str(fake_mbr_code_file), str(fake_block_device), partition, only_activate)
 
     partition_table_with_active = b"\0" + partition_table[1:16] + b"\x80" + partition_table[17:]
@@ -322,7 +322,11 @@ def test_install_mbr(tmp_path, monkeypatch):
     assert len(partition_table_with_active) == 64
 
     written_mbr = fake_block_device.read_bytes()
-    assert written_mbr[0:440] == fake_mbr_code
+    if only_activate:
+        assert written_mbr[0:440] == (b"\0" * 440)
+    else:
+        assert written_mbr[0:440] == fake_mbr_code
+
     assert written_mbr[440:446] == b"\0" * 6
     assert len(written_mbr[446:510]) == 64
     assert written_mbr[446:510] == partition_table_with_active
