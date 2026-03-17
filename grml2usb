@@ -1108,8 +1108,6 @@ def copy_bootloader_files(iso_mount: str, target: str, grml_flavour: str):
     logo = search_file("logo.16", iso_mount)
     if logo:
         syslinux_target = target + "/boot/syslinux/"
-        execute(mkdir, syslinux_target)
-        exec_rsync(logo, syslinux_target + "logo.16")
     else:
         # ISO does not have syslinux files - fall back to GRUB or EFI
         syslinux_target = None
@@ -1146,6 +1144,9 @@ def copy_bootloader_files(iso_mount: str, target: str, grml_flavour: str):
         logging.warning("Warning: Grml releases older than 2011.12 support only one flavour in grub.")
 
     if syslinux_target:
+        execute(mkdir, syslinux_target)
+        exec_rsync(logo, syslinux_target + "logo.16")
+
         for ffile in [f"f{number}" for number in range(1, 11)]:
             search_and_copy(ffile, iso_mount, syslinux_target + ffile)
 
