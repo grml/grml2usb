@@ -676,7 +676,7 @@ def install_bootloader(device: str) -> None:
             sys.exit(1)
 
 
-def install_mbr(mbrtemplate: str, device: str, partition: int | None):
+def install_mbr(mbrtemplate: str, device: str, partition: int | None, only_activate: bool):
     """install Master Boot Record (MBR) on a device
 
     Retrieve the partition table from "device", install an MBR from the
@@ -688,9 +688,10 @@ def install_mbr(mbrtemplate: str, device: str, partition: int | None):
     @device: name of a file assumed to be a hard disc (or USB stick) image, or
     something like "/dev/sdb"
 
-    @partition: must be a number between 0 and 3, inclusive"""
-    assert options is not None
+    @partition: must be a number between 0 and 3, inclusive
 
+    @only_activate: if True skips installing the MBR, just updates the partition bootable flags
+    """
     if partition is not None and ((partition < 0) or (partition > 3)):
         logging.warning("Cannot activate partition %d", partition)
         partition = None
@@ -702,10 +703,7 @@ def install_mbr(mbrtemplate: str, device: str, partition: int | None):
         stderr=subprocess.DEVNULL,
     )
 
-    if options.bootloader == "grub":
-        # GRUB installs its own MBR boot code via grub-install; only activate the partition
-        logging.info("Skipping MBR boot code installation - GRUB will install its own")
-    else:
+    if not only_activate:
         logging.info("Installing syslinux MBR")
         if not os.path.isfile(mbrtemplate):
             logging.error('Error installing MBR: "%s" not found', mbrtemplate)
@@ -1724,8 +1722,15 @@ def handle_mbr(device: str) -> None:
         logging.error("Cannot find syslinux MBR, install it at %s", str_locations)
         raise CriticalException(f"syslinux MBR can not be found at {str_locations}.")
 
+    if options.bootloader == "grub":
+        # GRUB installs its own MBR boot code via grub-install; only activate the partition
+        logging.info("Skipping MBR boot code installation - GRUB will install its own")
+        only_activate = True
+    else:
+        only_activate = False
+
     try:
-        install_mbr(mbrpath, mbr_device, partition_number)
+        install_mbr(mbrpath, mbr_device, partition_number, only_activate)
     except (OSError, Exception) as error:
         logging.critical("Execution failed: %s", error)
         sys.exit(1)
