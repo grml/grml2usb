@@ -230,6 +230,65 @@ def test_copy_and_configure_isolinux(tmp_path, monkeypatch, iso_contents: Path):
     assert (syslinux_target / "hidden.cfg").exists()
 
 
+@pytest.mark.parametrize(
+    "iso_name,flavour,flavour_safe,installs_syslinux,efiloader",
+    [
+        ("grml-full-2025.12-amd64", "grml-full-amd64", "grml_full_amd64", True, "bootx64.efi"),
+        ("grml-full-2025.12-arm64", "grml-full-arm64", "grml_full_arm64", False, "bootaa64.efi"),
+    ],
+)
+def test_copy_bootloader_files(
+    tmp_path,
+    monkeypatch,
+    iso_contents: Path,
+    iso_name: str,
+    flavour: str,
+    flavour_safe: str,
+    installs_syslinux: bool,
+    efiloader: str,
+) -> None:
+    options = argparse.Namespace()
+    options.bootloader = "syslinux"
+    options.bootoptions = []
+    options.dryrun = False
+    options.removeoption = []
+    options.skipsyslinuxconfig = False
+    options.skipgrubconfig = False
+    options.syslinuxlibs = []
+    tmpdir = tmp_path / "tmp"
+    tmpdir.mkdir()
+    options.tmpdir = str(tmpdir)
+    monkeypatch.setattr(grml2usb, "options", options)
+
+    iso_mount = iso_contents / iso_name
+
+    grml_flavours = grml2usb.identify_grml_flavour(str(iso_mount))
+    assert grml_flavours == [flavour]
+
+    # calls mount and requires a valid efi.img, cannot be tested at the moment
+    monkeypatch.setattr(grml2usb, "handle_secure_boot", lambda *args: None)
+
+    target = tmp_path / "target"
+    target.mkdir()
+    grml2usb.copy_bootloader_files(str(iso_mount), str(target), grml_flavours[0])
+
+    assert (target / "efi" / "boot" / efiloader).exists()
+
+    assert (target / "boot" / "grub" / "grub.cfg").exists()
+    assert (target / "boot" / "grub" / "loopback.cfg").exists()
+    assert (
+        f"live-media-path=/live/{flavour}/"
+        in (target / "boot" / "grub" / f"{flavour.replace('-', '')}_default.cfg").read_text()
+    )
+
+    if installs_syslinux:
+        assert (
+            target / "boot" / "syslinux" / "defaults.cfg"
+        ).read_text().strip() == f"include {flavour_safe}_default.cfg"
+        assert (target / "boot" / "syslinux" / "syslinux.cfg").exists()
+        assert (target / "boot" / "syslinux" / "syslinux.c32").exists()
+
+
 @pytest.fixture
 def loopdev_with_partition(tmp_path):
     loop_dev = _find_free_loopdev()
