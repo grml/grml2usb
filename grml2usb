@@ -1162,6 +1162,7 @@ def copy_and_configure_isolinux(iso_mount: str, syslinux_target: str, grml_flavo
     @bootid: unique id of the target usb key
     """
     assert options is not None
+    assert syslinux_target.endswith("/")  # the code below and called functions expect the trailing slash
     execute(mkdir, syslinux_target)
     search_and_copy("logo.16", iso_mount, syslinux_target + "logo.16")
 

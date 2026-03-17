@@ -15,6 +15,7 @@ Runwith:
 :bugreports: http://grml.org/bugs/
 """
 
+import argparse
 import importlib
 import json
 import logging
@@ -22,6 +23,7 @@ import os
 import shutil
 import subprocess
 import uuid
+from pathlib import Path
 
 import pytest
 
@@ -200,6 +202,32 @@ def check_partition_table(path):
     assert len(partitiontable["partitions"]) == 1  # should still have exactly one partition
     assert partitiontable["partitions"][0]["type"] == "ef"  # should still be an EFI partition
     assert partitiontable["partitions"][0]["bootable"] is True  # should still be active/bootable
+
+
+def test_copy_and_configure_isolinux(tmp_path, monkeypatch, iso_contents: Path):
+    options = argparse.Namespace()
+    options.bootoptions = []
+    options.dryrun = False
+    options.removeoption = []
+    options.skipsyslinuxconfig = False
+    options.syslinuxlibs = []
+    monkeypatch.setattr(grml2usb, "options", options)
+
+    iso_name = "grml-full-2025.12-amd64"
+    iso_mount = iso_contents / iso_name
+
+    grml_flavours = grml2usb.identify_grml_flavour(str(iso_mount))
+    assert grml_flavours == ["grml-full-amd64"]
+
+    syslinux_target = tmp_path / "target" / "boot" / "syslinux"
+    grml2usb.copy_and_configure_isolinux(str(iso_mount), str(syslinux_target) + "/", grml_flavours[0], "bootid")
+
+    assert (syslinux_target / "syslinux.c32").exists()
+    assert (syslinux_target / "isolinux.bin").exists()
+    assert (syslinux_target / "f1").exists()
+    assert (syslinux_target / "option_grml_full_amd64.cfg").exists()
+    assert (syslinux_target / "defaults.cfg").read_text().strip() == "include grml_full_amd64_default.cfg"
+    assert (syslinux_target / "hidden.cfg").exists()
 
 
 @pytest.fixture
