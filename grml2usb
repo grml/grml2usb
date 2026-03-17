@@ -1681,7 +1681,7 @@ def remove_mountpoint(mountpoint: str) -> None:
         raise
 
 
-def handle_mbr(device: str) -> int | None:
+def handle_mbr(device: str) -> None:
     """Main handler for installing master boot record (MBR)
 
     @device: device where the MBR should be installed to"""
@@ -1692,7 +1692,7 @@ def handle_mbr(device: str) -> int | None:
         return
     if options.dryrun:
         logging.info("Would install MBR")
-        return 0
+        return
 
     mbr_device, partition_number = get_device_from_partition(device)
     if partition_number is None:
