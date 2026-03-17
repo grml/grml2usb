@@ -1942,7 +1942,7 @@ def main(grml2usb_options: argparse.Namespace) -> None:
     )
 
 
-if __name__ == "__main__":
+def toplevel_main() -> None:
     _options = parser.parse_args()
     try:
         main(_options)
@@ -1954,6 +1954,11 @@ if __name__ == "__main__":
         if _options.verbose:
             logging.exception("Exception:")
         sys.exit(1)
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    toplevel_main()
 
 # END OF FILE ##################################################################
 # vim:foldmethod=indent expandtab ai ft=python tw=120 fileencoding=utf-8
