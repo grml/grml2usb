@@ -352,6 +352,18 @@ def run_program(args, check: bool = True, **kwargs) -> subprocess.CompletedProce
     return subprocess.run(args, check=check, **kwargs)
 
 
+def reread_partition_table(device: str) -> None:
+    blockdev_args = ["blockdev", "--rereadpt", device]
+    result = run_program(blockdev_args, check=False)
+    if result.returncode != 0:
+        logging.warning(
+            "Probing device failed with return code: %d (command: %s)",
+            result.returncode,
+            " ".join(blockdev_args),
+        )
+        logging.warning("(Install util-linux?)")
+
+
 def set_rw(device: str) -> None:
     assert options is not None
     if not options.rwblockdev:
@@ -754,15 +766,7 @@ def install_mbr(mbrtemplate: str, device: str, partition: int | None):
     )
     del tmpf
 
-    blockdev_args = ["blockdev", "--rereadpt", device]
-    result = run_program(blockdev_args, check=False)
-    if result.returncode != 0:
-        logging.warning(
-            "Probing device failed with return code: %d (command: %s)",
-            result.returncode,
-            " ".join(blockdev_args),
-        )
-        logging.warning("(Install util-linux?)")
+    reread_partition_table(device)
 
     set_rw(device)
 
