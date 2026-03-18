@@ -19,12 +19,33 @@ import importlib
 import json
 import logging
 import os
+import shutil
 import subprocess
 import uuid
 
 import pytest
 
 grml2usb = importlib.import_module("grml2usb", ".")
+
+
+@pytest.fixture(scope="session")
+def iso_contents(tmp_path_factory):
+    test_root = Path(__file__).absolute().parent
+    base_contents_root = test_root / "iso-contents"
+    synthesized_iso_root = tmp_path_factory.mktemp("isos")
+
+    for base_iso in base_contents_root.glob("*/"):
+        iso_name = base_iso.name
+        synthesized_iso = synthesized_iso_root / iso_name
+        shutil.copytree(base_iso, synthesized_iso)
+        zeroed_file = base_contents_root / (iso_name + ".zeroed")
+
+        for filename in zeroed_file.read_text().splitlines():
+            dest_filename = synthesized_iso / Path(filename)
+            dest_filename.parent.mkdir(parents=True, exist_ok=True)
+            dest_filename.touch()
+
+    yield synthesized_iso_root
 
 
 def test_which_finds_existing_program():
