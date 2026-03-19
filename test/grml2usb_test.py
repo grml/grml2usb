@@ -15,16 +15,39 @@ Runwith:
 :bugreports: http://grml.org/bugs/
 """
 
+import argparse
 import importlib
 import json
 import logging
 import os
+import shutil
 import subprocess
 import uuid
+from pathlib import Path
 
 import pytest
 
 grml2usb = importlib.import_module("grml2usb", ".")
+
+
+@pytest.fixture(scope="session")
+def iso_contents(tmp_path_factory):
+    test_root = Path(__file__).absolute().parent
+    base_contents_root = test_root / "iso-contents"
+    synthesized_iso_root = tmp_path_factory.mktemp("isos")
+
+    for base_iso in base_contents_root.glob("*/"):
+        iso_name = base_iso.name
+        synthesized_iso = synthesized_iso_root / iso_name
+        shutil.copytree(base_iso, synthesized_iso)
+        zeroed_file = base_contents_root / (iso_name + ".zeroed")
+
+        for filename in zeroed_file.read_text().splitlines():
+            dest_filename = synthesized_iso / Path(filename)
+            dest_filename.parent.mkdir(parents=True, exist_ok=True)
+            dest_filename.touch()
+
+    yield synthesized_iso_root
 
 
 def test_which_finds_existing_program():
@@ -75,7 +98,7 @@ def test_get_target_bootid_new(tmp_path, monkeypatch):
     assert (conf_dir / "bootid.txt").read_text() == result
 
 
-def test_build_loopbackcfg(tmp_path):
+def test_build_grub_loopbackcfg(tmp_path):
     # Create some config files to be sourced
     grub_dir = tmp_path / "boot" / "grub"
     grub_dir.mkdir(parents=True)
@@ -83,7 +106,7 @@ def test_build_loopbackcfg(tmp_path):
     (grub_dir / "grml32_default.cfg").touch()
     (grub_dir / "grml64_options.cfg").touch()
 
-    grml2usb.build_loopbackcfg(str(tmp_path))
+    grml2usb.build_grub_loopbackcfg(str(tmp_path))
 
     loopback_cfg = grub_dir / "loopback.cfg"
     lines = loopback_cfg.read_text().splitlines()
@@ -114,6 +137,46 @@ def test_extract_device_name_invalid():
         assert grml2usb.extract_device_name("/dev")
     with pytest.raises(AttributeError):
         assert grml2usb.extract_device_name("foobar")
+    with pytest.raises(AttributeError):
+        assert grml2usb.extract_device_name("asdf/dev/sda")
+
+
+def test_search_file(tmp_path):
+    filename = "filename"
+    (tmp_path / filename).write_text("test")
+    assert grml2usb.search_file(filename, str(tmp_path)) == str(tmp_path / filename)
+
+
+def test_search_file_subdir(tmp_path):
+    filename = "filename"
+    subdir = tmp_path / "subdir"
+    subdir.mkdir()
+    (subdir / filename).write_text("test")
+    assert grml2usb.search_file(filename, str(tmp_path)) == str(subdir / filename)
+
+
+def test_search_file_not_found(tmp_path):
+    filename = "filename"
+    assert grml2usb.search_file(filename, str(tmp_path)) is None
+
+
+def test_search_dirs(tmp_path):
+    filename = "filename"
+    (tmp_path / filename).write_text("test")
+    assert grml2usb.search_dirs(filename, str(tmp_path)) == [str(tmp_path / filename)]
+
+
+def test_search_dirs_subdir(tmp_path):
+    filename = "filename"
+    subdir = tmp_path / "subdir"
+    subdir.mkdir()
+    (subdir / filename).write_text("test")
+    assert grml2usb.search_dirs(filename, str(tmp_path)) == [str(subdir / filename)]
+
+
+def test_search_dirs_not_found(tmp_path):
+    filename = "filename"
+    assert grml2usb.search_dirs(filename, str(tmp_path)) == []
 
 
 def _run_x(args, check: bool = True, **kwargs):
@@ -129,26 +192,145 @@ def _find_free_loopdev() -> str:
 
 
 def _sfdisk_partitiontable(path) -> dict:
-    data = json.loads(
-        _run_x(["/sbin/sfdisk", "--json", path], capture_output=True)
-        .stdout.decode()
-        .strip()
-    )
+    data = json.loads(_run_x(["/sbin/sfdisk", "--json", path], capture_output=True).stdout.decode().strip())
     return data["partitiontable"]
 
 
 def check_partition_table(path):
     partitiontable = _sfdisk_partitiontable(path)
     assert partitiontable["label"] == "dos"
+    assert len(partitiontable["partitions"]) == 1  # should still have exactly one partition
+    assert partitiontable["partitions"][0]["type"] == "ef"  # should still be an EFI partition
+    assert partitiontable["partitions"][0]["bootable"] is True  # should still be active/bootable
+
+
+def test_copy_and_configure_isolinux(tmp_path, monkeypatch, iso_contents: Path):
+    options = argparse.Namespace()
+    options.bootoptions = []
+    options.dryrun = False
+    options.removeoption = []
+    options.skipsyslinuxconfig = False
+    options.syslinuxlibs = []
+    monkeypatch.setattr(grml2usb, "options", options)
+
+    iso_name = "grml-full-2025.12-amd64"
+    iso_mount = iso_contents / iso_name
+
+    grml_flavours = grml2usb.identify_grml_flavour(str(iso_mount))
+    assert grml_flavours == ["grml-full-amd64"]
+
+    syslinux_target = tmp_path / "target" / "boot" / "syslinux"
+    grml2usb.copy_and_configure_isolinux(str(iso_mount), str(syslinux_target) + "/", grml_flavours[0], "bootid")
+
+    assert (syslinux_target / "syslinux.c32").exists()
+    assert (syslinux_target / "isolinux.bin").exists()
+    assert (syslinux_target / "f1").exists()
+    assert (syslinux_target / "option_grml_full_amd64.cfg").exists()
+    assert (syslinux_target / "defaults.cfg").read_text().strip() == "include grml_full_amd64_default.cfg"
+    assert (syslinux_target / "hidden.cfg").exists()
+
+
+@pytest.mark.parametrize(
+    "iso_name,request_bootloader,result_bootloader,flavour,flavour_safe,installs_syslinux,efiloader",
+    [
+        ("grml-full-2025.12-amd64", "syslinux", "syslinux", "grml-full-amd64", "grml_full_amd64", True, "bootx64.efi"),
+        ("grml-full-2025.12-amd64", "grub", "grub", "grml-full-amd64", "grml_full_amd64", True, "bootx64.efi"),
+        ("grml-full-2025.12-amd64", "efi", "efi", "grml-full-amd64", "grml_full_amd64", True, "bootx64.efi"),
+        # arm64 ISOs support only EFI boot with GRUB
+        ("grml-full-2025.12-arm64", "syslinux", "efi", "grml-full-arm64", "grml_full_arm64", False, "bootaa64.efi"),
+        ("grml-full-2025.12-arm64", "grub", "efi", "grml-full-arm64", "grml_full_arm64", False, "bootaa64.efi"),
+    ],
+)
+def test_copy_bootloader_files(
+    tmp_path,
+    monkeypatch,
+    iso_contents: Path,
+    iso_name: str,
+    request_bootloader: str,
+    result_bootloader: str,
+    flavour: str,
+    flavour_safe: str,
+    installs_syslinux: bool,
+    efiloader: str,
+) -> None:
+    options = argparse.Namespace()
+    options.bootloader = request_bootloader
+    options.bootoptions = []
+    options.dryrun = False
+    options.removeoption = []
+    options.skipsyslinuxconfig = False
+    options.skipgrubconfig = False
+    options.syslinuxlibs = []
+    tmpdir = tmp_path / "tmp"
+    tmpdir.mkdir()
+    options.tmpdir = str(tmpdir)
+    monkeypatch.setattr(grml2usb, "options", options)
+
+    iso_mount = iso_contents / iso_name
+
+    grml_flavours = grml2usb.identify_grml_flavour(str(iso_mount))
+    assert grml_flavours == [flavour]
+
+    # calls mount and requires a valid efi.img, cannot be tested at the moment
+    monkeypatch.setattr(grml2usb, "handle_secure_boot", lambda *args: None)
+
+    target = tmp_path / "target"
+    target.mkdir()
+    grml2usb.copy_bootloader_files(str(iso_mount), str(target), grml_flavours[0])
+    # copy_bootloader_files modifies options.bootloader
+    assert options.bootloader == result_bootloader
+
+    assert (target / "efi" / "boot" / efiloader).exists()
+
+    assert (target / "boot" / "grub" / "grub.cfg").exists()
+    assert (target / "boot" / "grub" / "loopback.cfg").exists()
     assert (
-        len(partitiontable["partitions"]) == 1
-    )  # should still have exactly one partition
-    assert (
-        partitiontable["partitions"][0]["type"] == "ef"
-    )  # should still be an EFI partition
-    assert (
-        partitiontable["partitions"][0]["bootable"] is True
-    )  # should still be active/bootable
+        f"live-media-path=/live/{flavour}/"
+        in (target / "boot" / "grub" / f"{flavour.replace('-', '')}_default.cfg").read_text()
+    )
+
+    if installs_syslinux:
+        assert (
+            target / "boot" / "syslinux" / "defaults.cfg"
+        ).read_text().strip() == f"include {flavour_safe}_default.cfg"
+        assert (target / "boot" / "syslinux" / "syslinux.cfg").exists()
+        assert (target / "boot" / "syslinux" / "syslinux.c32").exists()
+
+
+@pytest.mark.parametrize("only_activate", [True, False])
+def test_install_mbr(tmp_path, monkeypatch, only_activate: bool) -> None:
+    monkeypatch.setattr(grml2usb, "set_rw", lambda *args: None)
+    monkeypatch.setattr(grml2usb, "reread_partition_table", lambda *args: None)
+    fake_mbr_code = b"\x1a" * 440  # syslinux mbr.bin is exactly 440 bytes long
+    fake_mbr_code_file = tmp_path / "fake_mbr_code"
+    fake_mbr_code_file.write_bytes(fake_mbr_code)
+    mbr_signature = b"\x55\xaa"
+
+    # Master Partition Table, starts at 0x1BE, 64 bytes long
+    partition_table = bytes.fromhex("2a 7c 0f 91  00 00 00 00  02 00 0b 00  08 00 01 00  00 00 07 00") + (b"\0" * 44)
+    assert len(partition_table) == 64
+
+    fake_block_device_mbr = (b"\0" * 446) + partition_table + mbr_signature
+    assert len(fake_block_device_mbr) == 512
+    fake_block_device = tmp_path / "fake_block_device"
+    fake_block_device.write_bytes(fake_block_device_mbr + (b"\0" * 4096))
+    partition = 1
+    grml2usb.install_mbr(str(fake_mbr_code_file), str(fake_block_device), partition, only_activate)
+
+    partition_table_with_active = b"\0" + partition_table[1:16] + b"\x80" + partition_table[17:]
+    assert len(partition_table) == 64
+    assert len(partition_table_with_active) == 64
+
+    written_mbr = fake_block_device.read_bytes()
+    if only_activate:
+        assert written_mbr[0:440] == (b"\0" * 440)
+    else:
+        assert written_mbr[0:440] == fake_mbr_code
+
+    assert written_mbr[440:446] == b"\0" * 6
+    assert len(written_mbr[446:510]) == 64
+    assert written_mbr[446:510] == partition_table_with_active
+    assert written_mbr[510:512] == mbr_signature
 
 
 @pytest.fixture
@@ -228,9 +410,7 @@ def test_smoke(
 
     (loop_backing_file, loop_dev, partition) = loopdev_with_partition
 
-    grml2usb_options = grml2usb.parser.parse_args(
-        ["--format", "--force", iso_amd64, partition] + options
-    )
+    grml2usb_options = grml2usb.parser.parse_args(["--format", "--force", iso_amd64, partition] + options)
     print("Options:", grml2usb_options)
 
     grml2usb.main(grml2usb_options)
@@ -240,9 +420,7 @@ def test_smoke(
     print("Finalized MBR contents:", mbr.hex())
 
     if expect_x86_mbr:
-        assert not mbr.startswith(b"\x00\x00"), (
-            "MBR starts with zero-bytes, x86 BIOS will not boot"
-        )
+        assert not mbr.startswith(b"\x00\x00"), "MBR starts with zero-bytes, x86 BIOS will not boot"
 
     check_partition_table(loop_backing_file)
 
