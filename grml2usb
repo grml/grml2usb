@@ -1437,11 +1437,12 @@ def adjust_labels(src: str, replacement: str) -> None:
     """Adjust the specified labels in the syslinux config file src with
     specified replacement
     """
-    label_re = re.compile(r"^(\s*label\s*) ([a-zA-Z0-9_-]+)", re.I)
-    for line in fileinput.input(src, inplace=True):
-        line = label_re.sub(replacement, line)
-        sys.stdout.write(line)
-    fileinput.close()
+    label_re = re.compile(r"^(\s*label\s*) ([a-zA-Z0-9_-]+)", re.I | re.MULTILINE)
+    with open(src, "r+") as fh:
+        contents = fh.read()
+        fh.seek(0)
+        fh.truncate()
+        fh.write(label_re.sub(replacement, contents))
 
 
 def add_syslinux_entry(syslinux_target: str | Path, filename: str | Path, grml_flavour) -> None:
