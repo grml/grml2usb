@@ -268,7 +268,7 @@ label grml
   menu DEFAULT
   menu label grml-full-amd64 ^Standard (2025.12, amd64)
   kernel /boot/grmlfullamd64/vmlinuz
-  append initrd=/boot/grmlfullamd64/initrd.img{boot}  {opts} live-media-path=/live/flavour/ {boot}   bootid={bootid}{sp}
+  append initrd=/boot/grmlfullamd64/initrd.img{boot} live-media-path=/live/flavour/ bootid={bootid}{opts}{sp}
 
   text help
                                         Grml is a Debian based Linux live

@@ -1393,33 +1393,38 @@ def adjust_syslinux_bootoptions(
     @flavour: grml flavour
     @bootid: unique id of the target usb key
     """
-    append_re = re.compile(r"^(\s*append.*/boot/.*)$", re.I)
     # flavour_re = re.compile("(label.*)(grml\w+)")
     default_re = re.compile(r"(default.cfg)")
-    bootid_re = re.compile(r"bootid=[\w_-]+")
-    live_media_path_re = re.compile(r"live-media-path=[\w_/-]+")
 
-    regexe = []
-    option_re = None
-    if removeoptions:
-        option_re = re.compile(r"/boot/.*/(initrd.gz|initrd.img)")
-
-        for regex in removeoptions:
-            regexe.append(re.compile(r"%s" % regex))
+    remove_options_regexes = []
+    for regex in removeoptions:
+        remove_options_regexes.append(re.compile(regex))
 
     new_lines = []
     with open(src, "r+") as fh:
         for line in fh.read().split("\n"):
             # line = flavour_re.sub(r'\1 %s-\2' % flavour, line)
             line = default_re.sub(r"%s-\1" % grml_flavour, line)
-            line = bootid_re.sub("", line)
-            line = live_media_path_re.sub("", line)
-            line = append_re.sub(r"\1 live-media-path=/live/%s/ " % grml_flavour, line)
-            line = append_re.sub(r"\1 boot=live %s " % bootoptions, line)
-            line = append_re.sub(r"\1 bootid=%s " % bootid, line)
-            if option_re and option_re.search(line):
-                for regex in regexe:
-                    line = regex.sub(" ", line)
+
+            # Rebuild kernel parameter line ("append")
+            if line.lstrip().startswith("append "):
+                # we expect "  append initrd=/path.img opt1=bar opt2=baz"
+                prefix, opts = line.split("append ", 1)
+                opts = opts.split(" ")  # does not support quoting
+                new_options = []
+                for option in opts:
+                    if option.startswith("live-media-path="):
+                        option = f"live-media-path=/live/{grml_flavour}/"
+                    elif option.startswith("boot="):
+                        option = "boot=live"
+                    elif option.startswith("bootid="):
+                        option = f"bootid={bootid}"
+                    if any(regex.match(option) for regex in remove_options_regexes):
+                        continue
+                    new_options.append(option)
+                if bootoptions:
+                    new_options.append(bootoptions)
+                line = "".join([prefix, "append "]) + " ".join(new_options) + " "
 
             new_lines.append(line)
 
