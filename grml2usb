@@ -1407,19 +1407,25 @@ def adjust_syslinux_bootoptions(
         for regex in removeoptions:
             regexe.append(re.compile(r"%s" % regex))
 
-    for line in fileinput.input(src, inplace=True):
-        # line = flavour_re.sub(r'\1 %s-\2' % flavour, line)
-        line = default_re.sub(r"%s-\1" % grml_flavour, line)
-        line = bootid_re.sub("", line)
-        line = live_media_path_re.sub("", line)
-        line = append_re.sub(r"\1 live-media-path=/live/%s/ " % grml_flavour, line)
-        line = append_re.sub(r"\1 boot=live %s " % bootoptions, line)
-        line = append_re.sub(r"\1 bootid=%s " % bootid, line)
-        if option_re and option_re.search(line):
-            for regex in regexe:
-                line = regex.sub(" ", line)
-        sys.stdout.write(line)
-    fileinput.close()
+    new_lines = []
+    with open(src, "r+") as fh:
+        for line in fh.read().split("\n"):
+            # line = flavour_re.sub(r'\1 %s-\2' % flavour, line)
+            line = default_re.sub(r"%s-\1" % grml_flavour, line)
+            line = bootid_re.sub("", line)
+            line = live_media_path_re.sub("", line)
+            line = append_re.sub(r"\1 live-media-path=/live/%s/ " % grml_flavour, line)
+            line = append_re.sub(r"\1 boot=live %s " % bootoptions, line)
+            line = append_re.sub(r"\1 bootid=%s " % bootid, line)
+            if option_re and option_re.search(line):
+                for regex in regexe:
+                    line = regex.sub(" ", line)
+
+            new_lines.append(line)
+
+        fh.seek(0)
+        fh.truncate()
+        fh.write("\n".join(new_lines))
 
 
 def adjust_labels(src: str, replacement: str) -> None:
