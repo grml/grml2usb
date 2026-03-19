@@ -230,14 +230,21 @@ def test_copy_and_configure_isolinux(tmp_path, monkeypatch, iso_contents: Path):
     assert (syslinux_target / "hidden.cfg").exists()
 
 
-@pytest.mark.parametrize("removeoptions,bootoptions,expect_append", [
-    ([], "", "boot=live live-media-path=/live/flavour/ bootid=BOOTID opt=test opt2=/bar/ "),
-    (["opt=test"], "", "boot=live live-media-path=/live/flavour/ bootid=BOOTID opt2=/bar/ "),
-    (["opt.*"], "", "boot=live live-media-path=/live/flavour/ bootid=BOOTID "),
-    ([], "nomce", "boot=live live-media-path=/live/flavour/ bootid=BOOTID opt=test opt2=/bar/ nomce "),
-    (["opt2=.*"], "nomce", "boot=live live-media-path=/live/flavour/ bootid=BOOTID opt=test nomce "),
-    ([], "nomce noacpi", "boot=live live-media-path=/live/flavour/ bootid=BOOTID opt=test opt2=/bar/ nomce noacpi "),
-])
+@pytest.mark.parametrize(
+    "removeoptions,bootoptions,expect_append",
+    [
+        ([], "", "boot=live live-media-path=/live/flavour/ bootid=BOOTID opt=test opt2=/bar/ "),
+        (["opt=test"], "", "boot=live live-media-path=/live/flavour/ bootid=BOOTID opt2=/bar/ "),
+        (["opt.*"], "", "boot=live live-media-path=/live/flavour/ bootid=BOOTID "),
+        ([], "nomce", "boot=live live-media-path=/live/flavour/ bootid=BOOTID opt=test opt2=/bar/ nomce "),
+        (["opt2=.*"], "nomce", "boot=live live-media-path=/live/flavour/ bootid=BOOTID opt=test nomce "),
+        (
+            [],
+            "nomce noacpi",
+            "boot=live live-media-path=/live/flavour/ bootid=BOOTID opt=test opt2=/bar/ nomce noacpi ",
+        ),
+    ],
+)
 def test_adjust_syslinux_bootoptions(tmp_path, removeoptions, bootoptions, expect_append):
     bootid = "BOOTID"
     opts = "opt=test opt2=/bar/"
@@ -280,6 +287,36 @@ label grml
 
                                                          http://grml.org/
   endtext
+"""
+    )
+
+
+def test_adjust_labels(tmp_path):
+    grml_flavour = "my-new-flavour-2032.04"
+    filename = "default.cfg"
+    tmp_file = tmp_path / filename
+    tmp_file.write_text(
+        """
+label alternate
+  menu label grml-full-amd64 ^Standard (2025.12, amd64)
+  kernel /boot/grmlfullamd64/vmlinuz
+
+label alternate2
+  menu label grml-full-amd64 ^Standard (2025.12, amd64)
+  kernel /boot/grmlfullamd64/vmlinuz
+"""
+    )
+    grml2usb.adjust_labels(str(tmp_file), r"\1 %s-\2" % grml_flavour)
+    assert (
+        tmp_file.read_text()
+        == """
+label my-new-flavour-2032.04-alternate
+  menu label grml-full-amd64 ^Standard (2025.12, amd64)
+  kernel /boot/grmlfullamd64/vmlinuz
+
+label my-new-flavour-2032.04-alternate2
+  menu label grml-full-amd64 ^Standard (2025.12, amd64)
+  kernel /boot/grmlfullamd64/vmlinuz
 """
     )
 
