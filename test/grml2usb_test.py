@@ -230,6 +230,57 @@ def test_copy_and_configure_isolinux(tmp_path, monkeypatch, iso_contents: Path):
     assert (syslinux_target / "hidden.cfg").exists()
 
 
+def test_adjust_syslinux_bootoptions(tmp_path):
+    removeoptions = []
+    bootoptions = ""
+    bootid = str(uuid.uuid4())
+
+    opts = " opt=test opt2=/bar/"
+    boot = " boot=live"
+    sp = " "
+
+    grml_flavour = "flavour"
+
+    filename = "default.cfg"
+    tmp_file = tmp_path / filename
+    tmp_file.write_text(
+        f"""default grml
+label grml
+  menu DEFAULT
+  menu label grml-full-amd64 ^Standard (2025.12, amd64)
+  kernel /boot/grmlfullamd64/vmlinuz
+  append initrd=/boot/grmlfullamd64/initrd.img{boot} live-media-path=/live/grml-full-amd64/ bootid=id{opts}
+
+  text help
+                                        Grml is a Debian based Linux live
+                                        system for system administrators
+                                        and users of text tools.
+
+                                                         http://grml.org/
+  endtext
+"""
+    )
+    grml2usb.adjust_syslinux_bootoptions(str(tmp_file), grml_flavour, bootid, removeoptions, bootoptions)
+    assert (
+        tmp_file.read_text()
+        == f"""default grml
+label grml
+  menu DEFAULT
+  menu label grml-full-amd64 ^Standard (2025.12, amd64)
+  kernel /boot/grmlfullamd64/vmlinuz
+  append initrd=/boot/grmlfullamd64/initrd.img{boot}  {opts} live-media-path=/live/flavour/ {boot}   bootid={bootid}{sp}
+
+  text help
+                                        Grml is a Debian based Linux live
+                                        system for system administrators
+                                        and users of text tools.
+
+                                                         http://grml.org/
+  endtext
+"""
+    )
+
+
 @pytest.mark.parametrize(
     "iso_name,request_bootloader,result_bootloader,flavour,flavour_safe,installs_syslinux,efiloader",
     [
