@@ -230,14 +230,17 @@ def test_copy_and_configure_isolinux(tmp_path, monkeypatch, iso_contents: Path):
     assert (syslinux_target / "hidden.cfg").exists()
 
 
-def test_adjust_syslinux_bootoptions(tmp_path):
-    removeoptions = []
-    bootoptions = ""
-    bootid = str(uuid.uuid4())
-
-    opts = " opt=test opt2=/bar/"
-    boot = " boot=live"
-    sp = " "
+@pytest.mark.parametrize("removeoptions,bootoptions,expect_append", [
+    ([], "", "boot=live live-media-path=/live/flavour/ bootid=BOOTID opt=test opt2=/bar/ "),
+    (["opt=test"], "", "boot=live live-media-path=/live/flavour/ bootid=BOOTID opt2=/bar/ "),
+    (["opt.*"], "", "boot=live live-media-path=/live/flavour/ bootid=BOOTID "),
+    ([], "nomce", "boot=live live-media-path=/live/flavour/ bootid=BOOTID opt=test opt2=/bar/ nomce "),
+    (["opt2=.*"], "nomce", "boot=live live-media-path=/live/flavour/ bootid=BOOTID opt=test nomce "),
+    ([], "nomce noacpi", "boot=live live-media-path=/live/flavour/ bootid=BOOTID opt=test opt2=/bar/ nomce noacpi "),
+])
+def test_adjust_syslinux_bootoptions(tmp_path, removeoptions, bootoptions, expect_append):
+    bootid = "BOOTID"
+    opts = "opt=test opt2=/bar/"
 
     grml_flavour = "flavour"
 
@@ -249,7 +252,7 @@ label grml
   menu DEFAULT
   menu label grml-full-amd64 ^Standard (2025.12, amd64)
   kernel /boot/grmlfullamd64/vmlinuz
-  append initrd=/boot/grmlfullamd64/initrd.img{boot} live-media-path=/live/grml-full-amd64/ bootid=id{opts}
+  append initrd=/boot/grmlfullamd64/initrd.img boot=live live-media-path=/live/grml-full-amd64/ bootid=id {opts}
 
   text help
                                         Grml is a Debian based Linux live
@@ -268,7 +271,7 @@ label grml
   menu DEFAULT
   menu label grml-full-amd64 ^Standard (2025.12, amd64)
   kernel /boot/grmlfullamd64/vmlinuz
-  append initrd=/boot/grmlfullamd64/initrd.img{boot} live-media-path=/live/flavour/ bootid={bootid}{opts}{sp}
+  append initrd=/boot/grmlfullamd64/initrd.img {expect_append}
 
   text help
                                         Grml is a Debian based Linux live
