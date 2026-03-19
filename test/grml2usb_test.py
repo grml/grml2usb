@@ -321,6 +321,36 @@ label my-new-flavour-2032.04-alternate2
     )
 
 
+def test_remove_default_entry(tmp_path):
+    filename = "default.cfg"
+    tmp_file = tmp_path / filename
+    tmp_file.write_text(
+        """
+label grml
+  menu DEFAULT
+  menu label grml-full-amd64 ^Standard (2025.12, amd64)
+  kernel /boot/grmlfullamd64/vmlinuz
+
+label alternate
+  menu label grml-full-amd64 ^Standard (2025.12, amd64)
+  kernel /boot/grmlfullamd64/vmlinuz
+"""
+    )
+    grml2usb.remove_default_entry(str(tmp_file))
+    assert (
+        tmp_file.read_text()
+        == """
+label grml
+  menu label grml-full-amd64 ^Standard (2025.12, amd64)
+  kernel /boot/grmlfullamd64/vmlinuz
+
+label alternate
+  menu label grml-full-amd64 ^Standard (2025.12, amd64)
+  kernel /boot/grmlfullamd64/vmlinuz
+"""
+    )
+
+
 @pytest.mark.parametrize(
     "iso_name,request_bootloader,result_bootloader,flavour,flavour_safe,installs_syslinux,efiloader",
     [
