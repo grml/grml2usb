@@ -13,7 +13,6 @@ This script installs a Grml system (either a running system or ISO[s]) to a USB 
 """
 
 import argparse
-import fileinput
 import functools
 import glob
 import logging
@@ -1323,22 +1322,27 @@ def handle_grub_config(
 
     shortname = get_shortname(grml_flavour)
     for filename in glob.glob(grub_target + "*.cfg"):
-        for line in fileinput.input(filename, inplace=True):
-            line = line.rstrip("\r\n")
-            if option_re.search(line):
-                line = bootid_re.sub("", line)
-                if shortname in filename:
-                    line = live_media_path_re.sub("", line)
-                    line = line.rstrip() + f" live-media-path=/live/{grml_flavour}/ "
-                if bootoptions.strip():
-                    line = line.replace(f" {bootoptions.strip()} ", " ")
-                    if line.endswith(bootoptions):
-                        line = line[: -len(bootoptions)]
-                line = line.rstrip() + f" bootid={bootid} {bootoptions} "
-                for regex in remove_regexes:
-                    line = regex.sub(" ", line)
-            print(line)
-        fileinput.close()
+        new_lines = []
+        with open(filename, "r+") as fh:
+            for line in fh.read().split("\n"):
+                line = line.rstrip("\r\n")
+                if option_re.search(line):
+                    line = bootid_re.sub("", line)
+                    if shortname in filename:
+                        line = live_media_path_re.sub("", line)
+                        line = line.rstrip() + f" live-media-path=/live/{grml_flavour}/ "
+                    if bootoptions.strip():
+                        line = line.replace(f" {bootoptions.strip()} ", " ")
+                        if line.endswith(bootoptions):
+                            line = line[: -len(bootoptions)]
+                    line = line.rstrip() + f" bootid={bootid} {bootoptions} "
+                    for regex in remove_regexes:
+                        line = regex.sub(" ", line)
+                new_lines.append(line)
+
+            fh.seek(0)
+            fh.truncate()
+            fh.write("\n".join(new_lines))
 
 
 def initial_syslinux_config(target: str | Path) -> None:
