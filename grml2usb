@@ -134,6 +134,7 @@ parser.add_argument(
     "--remove-bootoption",
     dest="removeoption",
     action="append",
+    default=[],
     help="regex for removing existing bootoptions",
 )
 parser.add_argument(
