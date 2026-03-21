@@ -352,6 +352,64 @@ label alternate
 
 
 @pytest.mark.parametrize(
+    "removeoptions,bootoptions,expect_append",
+    [
+        (
+            [],
+            "",
+            'apm=power-off boot=live   "${loopback}" ${kernelopts} nomce '
+            "live-media-path=/live/grml-full-amd64/ bootid=BOOTID  ",
+        ),
+        (
+            ["nomce"],
+            "",
+            'apm=power-off boot=live   "${loopback}" ${kernelopts}   '
+            "live-media-path=/live/grml-full-amd64/ bootid=BOOTID  ",
+        ),
+        (
+            [],
+            "nomce",
+            'apm=power-off boot=live   "${loopback}" ${kernelopts} '
+            "live-media-path=/live/grml-full-amd64/ bootid=BOOTID nomce ",
+        ),
+        (
+            [],
+            "nomce noacpi",
+            'apm=power-off boot=live   "${loopback}" ${kernelopts} nomce '
+            "live-media-path=/live/grml-full-amd64/ bootid=BOOTID nomce noacpi ",
+        ),
+    ],
+)
+def test_handle_grub_config(tmp_path, iso_contents: Path, removeoptions, bootoptions, expect_append):
+    bootid = "BOOTID"
+    grml_flavour = "grml-full-amd64"
+
+    grub_target = tmp_path / "grub"
+    grub_target.mkdir()
+    grub_source = iso_contents / "grml-full-2025.12-amd64" / "boot" / "grub"
+
+    grml2usb.glob_and_copy(str(grub_source) + "/*", str(grub_target))
+
+    grml2usb.handle_grub_config(grml_flavour, str(grub_target) + "/", bootid, removeoptions, bootoptions)
+
+    assert (grub_target / "grub.cfg").read_text() == (grub_source / "grub.cfg").read_text()
+    assert (grub_target / "header.cfg").read_text() == (grub_source / "header.cfg").read_text()
+    assert (grub_target / "loopback.cfg").read_text() == (grub_source / "loopback.cfg").read_text()
+
+    assert (
+        (grub_target / "grmlfullamd64_default.cfg").read_text()
+        == f"""
+menuentry "grml-full-amd64 2025.12" {"{"}
+    set gfxpayload=keep
+    echo 'Loading kernel...'
+    linux   /boot/grmlfullamd64/vmlinuz {expect_append}
+    echo 'Loading initrd...'
+    initrd  /boot/grmlfullamd64/initrd.img
+{"}"}\n""".lstrip()
+    )
+
+
+@pytest.mark.parametrize(
     "iso_name,request_bootloader,result_bootloader,flavour,flavour_safe,installs_syslinux,efiloader",
     [
         ("grml-full-2025.12-amd64", "syslinux", "syslinux", "grml-full-amd64", "grml_full_amd64", True, "bootx64.efi"),
