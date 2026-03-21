@@ -1133,7 +1133,11 @@ def copy_bootloader_files(iso_mount: str, target: str, grml_flavour: str):
     glob_and_copy(iso_mount + "/boot/grub/*", grub_target)
     # finally (after all GRUB files have been installed) build static loopback.cfg
     build_grub_loopbackcfg(target)
-    handle_grub_config(grml_flavour, grub_target, bootid)
+    if options.skipgrubconfig:
+        logging.info("Skipping generation of grub configuration as requested.")
+    else:
+        bootoptions = get_bootoptions(grml_flavour)
+        handle_grub_config(grml_flavour, grub_target, bootid, options.removeoption, bootoptions)
 
 
 def copy_and_configure_isolinux(iso_mount: str, syslinux_target: str, grml_flavour: str, bootid: str) -> None:
@@ -1293,32 +1297,29 @@ def get_bootoptions(grml_flavour: str) -> str:
     return bootopt
 
 
-def handle_grub_config(grml_flavour: str, grub_target: str, bootid: str) -> None:
+def handle_grub_config(
+    grml_flavour: str,
+    grub_target: str,
+    bootid: str,
+    removeoptions: list[str],
+    bootoptions: str,
+) -> None:
     """Main handler for generating grub (v1 and v2) configuration
 
     @grml_flavour: name of grml flavour the configuration should be generated for
     @target: path of grub's configuration files
     @bootid: unique id of the target usb key
     """
-    assert options is not None
-
-    if options.skipgrubconfig:
-        logging.info("Skipping generation of grub configuration as requested.")
-        return
-
     logging.debug("Updating grub configuration")
 
     bootid_re = re.compile(r"bootid=[\w_-]+")
     live_media_path_re = re.compile(r"live-media-path=[\w_/-]+")
 
-    bootopt = get_bootoptions(grml_flavour)
-
     remove_regexes = []
     option_re = re.compile(r"(.*/boot/.*vmlinuz.*)")
 
-    if options.removeoption:
-        for regex in options.removeoption:
-            remove_regexes.append(re.compile(regex))
+    for regex in removeoptions:
+        remove_regexes.append(re.compile(regex))
 
     shortname = get_shortname(grml_flavour)
     for filename in glob.glob(grub_target + "*.cfg"):
@@ -1329,11 +1330,11 @@ def handle_grub_config(grml_flavour: str, grub_target: str, bootid: str) -> None
                 if shortname in filename:
                     line = live_media_path_re.sub("", line)
                     line = line.rstrip() + f" live-media-path=/live/{grml_flavour}/ "
-                if bootopt.strip():
-                    line = line.replace(f" {bootopt.strip()} ", " ")
-                    if line.endswith(bootopt):
-                        line = line[: -len(bootopt)]
-                line = line.rstrip() + f" bootid={bootid} {bootopt} "
+                if bootoptions.strip():
+                    line = line.replace(f" {bootoptions.strip()} ", " ")
+                    if line.endswith(bootoptions):
+                        line = line[: -len(bootoptions)]
+                line = line.rstrip() + f" bootid={bootid} {bootoptions} "
                 for regex in remove_regexes:
                     line = regex.sub(" ", line)
             print(line)
