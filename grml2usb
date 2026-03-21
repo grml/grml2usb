@@ -1327,15 +1327,14 @@ def handle_grub_config(
             for line in fh.read().split("\n"):
                 line = line.rstrip("\r\n")
                 if option_re.search(line):
-                    line = bootid_re.sub("", line)
+                    line = bootid_re.sub(f"bootid={bootid}", line)
                     if shortname in filename:
-                        line = live_media_path_re.sub("", line)
-                        line = line.rstrip() + f" live-media-path=/live/{grml_flavour}/ "
+                        line = live_media_path_re.sub(f"live-media-path=/live/{grml_flavour}/", line)
                     if bootoptions.strip():
                         line = line.replace(f" {bootoptions.strip()} ", " ")
                         if line.endswith(bootoptions):
                             line = line[: -len(bootoptions)]
-                    line = line.rstrip() + f" bootid={bootid} {bootoptions} "
+                    line = line.rstrip() + f" {bootoptions} "
                     for regex in remove_regexes:
                         line = regex.sub(" ", line)
                 new_lines.append(line)

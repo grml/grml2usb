@@ -357,26 +357,26 @@ label alternate
         (
             [],
             "",
-            'apm=power-off boot=live   "${loopback}" ${kernelopts} nomce '
-            "live-media-path=/live/grml-full-amd64/ bootid=BOOTID  ",
+            "apm=power-off boot=live live-media-path=/live/grml-full-amd64/ bootid=BOOTID "
+            '"${loopback}" ${kernelopts} nomce  ',
         ),
         (
             ["nomce"],
             "",
-            'apm=power-off boot=live   "${loopback}" ${kernelopts}   '
-            "live-media-path=/live/grml-full-amd64/ bootid=BOOTID  ",
+            "apm=power-off boot=live live-media-path=/live/grml-full-amd64/ bootid=BOOTID "
+            '"${loopback}" ${kernelopts}    ',
         ),
         (
             [],
             "nomce",
-            'apm=power-off boot=live   "${loopback}" ${kernelopts} '
-            "live-media-path=/live/grml-full-amd64/ bootid=BOOTID nomce ",
+            "apm=power-off boot=live live-media-path=/live/grml-full-amd64/ bootid=BOOTID "
+            '"${loopback}" ${kernelopts} nomce ',
         ),
         (
             [],
             "nomce noacpi",
-            'apm=power-off boot=live   "${loopback}" ${kernelopts} nomce '
-            "live-media-path=/live/grml-full-amd64/ bootid=BOOTID nomce noacpi ",
+            "apm=power-off boot=live live-media-path=/live/grml-full-amd64/ bootid=BOOTID "
+            '"${loopback}" ${kernelopts} nomce nomce noacpi ',
         ),
     ],
 )
