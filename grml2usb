@@ -13,7 +13,6 @@ This script installs a Grml system (either a running system or ISO[s]) to a USB 
 """
 
 import argparse
-import fileinput
 import functools
 import glob
 import logging
@@ -134,6 +133,7 @@ parser.add_argument(
     "--remove-bootoption",
     dest="removeoption",
     action="append",
+    default=[],
     help="regex for removing existing bootoptions",
 )
 parser.add_argument(
@@ -1132,7 +1132,11 @@ def copy_bootloader_files(iso_mount: str, target: str, grml_flavour: str):
     glob_and_copy(iso_mount + "/boot/grub/*", grub_target)
     # finally (after all GRUB files have been installed) build static loopback.cfg
     build_grub_loopbackcfg(target)
-    handle_grub_config(grml_flavour, grub_target, bootid)
+    if options.skipgrubconfig:
+        logging.info("Skipping generation of grub configuration as requested.")
+    else:
+        bootoptions = get_bootoptions(grml_flavour)
+        handle_grub_config(grml_flavour, grub_target, bootid, options.removeoption, bootoptions)
 
 
 def copy_and_configure_isolinux(iso_mount: str, syslinux_target: str, grml_flavour: str, bootid: str) -> None:
@@ -1292,51 +1296,52 @@ def get_bootoptions(grml_flavour: str) -> str:
     return bootopt
 
 
-def handle_grub_config(grml_flavour: str, grub_target: str, bootid: str) -> None:
+def handle_grub_config(
+    grml_flavour: str,
+    grub_target: str,
+    bootid: str,
+    removeoptions: list[str],
+    bootoptions: str,
+) -> None:
     """Main handler for generating grub (v1 and v2) configuration
 
     @grml_flavour: name of grml flavour the configuration should be generated for
     @target: path of grub's configuration files
     @bootid: unique id of the target usb key
     """
-    assert options is not None
-
-    if options.skipgrubconfig:
-        logging.info("Skipping generation of grub configuration as requested.")
-        return
-
     logging.debug("Updating grub configuration")
 
     bootid_re = re.compile(r"bootid=[\w_-]+")
     live_media_path_re = re.compile(r"live-media-path=[\w_/-]+")
 
-    bootopt = get_bootoptions(grml_flavour)
-
     remove_regexes = []
     option_re = re.compile(r"(.*/boot/.*vmlinuz.*)")
 
-    if options.removeoption:
-        for regex in options.removeoption:
-            remove_regexes.append(re.compile(regex))
+    for regex in removeoptions:
+        remove_regexes.append(re.compile(regex))
 
     shortname = get_shortname(grml_flavour)
     for filename in glob.glob(grub_target + "*.cfg"):
-        for line in fileinput.input(filename, inplace=True):
-            line = line.rstrip("\r\n")
-            if option_re.search(line):
-                line = bootid_re.sub("", line)
-                if shortname in filename:
-                    line = live_media_path_re.sub("", line)
-                    line = line.rstrip() + f" live-media-path=/live/{grml_flavour}/ "
-                if bootopt.strip():
-                    line = line.replace(f" {bootopt.strip()} ", " ")
-                    if line.endswith(bootopt):
-                        line = line[: -len(bootopt)]
-                line = line.rstrip() + f" bootid={bootid} {bootopt} "
-                for regex in remove_regexes:
-                    line = regex.sub(" ", line)
-            print(line)
-        fileinput.close()
+        new_lines = []
+        with open(filename, "r+") as fh:
+            for line in fh.read().split("\n"):
+                line = line.rstrip("\r\n")
+                if option_re.search(line):
+                    line = bootid_re.sub(f"bootid={bootid}", line)
+                    if shortname in filename:
+                        line = live_media_path_re.sub(f"live-media-path=/live/{grml_flavour}/", line)
+                    if bootoptions.strip():
+                        line = line.replace(f" {bootoptions.strip()} ", " ")
+                        if line.endswith(bootoptions):
+                            line = line[: -len(bootoptions)]
+                    line = line.rstrip() + f" {bootoptions} "
+                    for regex in remove_regexes:
+                        line = regex.sub(" ", line)
+                new_lines.append(line)
+
+            fh.seek(0)
+            fh.truncate()
+            fh.write("\n".join(new_lines))
 
 
 def initial_syslinux_config(target: str | Path) -> None:
@@ -1392,44 +1397,56 @@ def adjust_syslinux_bootoptions(
     @flavour: grml flavour
     @bootid: unique id of the target usb key
     """
-    append_re = re.compile(r"^(\s*append.*/boot/.*)$", re.I)
     # flavour_re = re.compile("(label.*)(grml\w+)")
     default_re = re.compile(r"(default.cfg)")
-    bootid_re = re.compile(r"bootid=[\w_-]+")
-    live_media_path_re = re.compile(r"live-media-path=[\w_/-]+")
 
-    regexe = []
-    option_re = None
-    if removeoptions:
-        option_re = re.compile(r"/boot/.*/(initrd.gz|initrd.img)")
+    remove_options_regexes = []
+    for regex in removeoptions:
+        remove_options_regexes.append(re.compile(regex))
 
-        for regex in removeoptions:
-            regexe.append(re.compile(r"%s" % regex))
+    new_lines = []
+    with open(src, "r+") as fh:
+        for line in fh.read().split("\n"):
+            # line = flavour_re.sub(r'\1 %s-\2' % flavour, line)
+            line = default_re.sub(r"%s-\1" % grml_flavour, line)
 
-    for line in fileinput.input(src, inplace=True):
-        # line = flavour_re.sub(r'\1 %s-\2' % flavour, line)
-        line = default_re.sub(r"%s-\1" % grml_flavour, line)
-        line = bootid_re.sub("", line)
-        line = live_media_path_re.sub("", line)
-        line = append_re.sub(r"\1 live-media-path=/live/%s/ " % grml_flavour, line)
-        line = append_re.sub(r"\1 boot=live %s " % bootoptions, line)
-        line = append_re.sub(r"\1 bootid=%s " % bootid, line)
-        if option_re and option_re.search(line):
-            for regex in regexe:
-                line = regex.sub(" ", line)
-        sys.stdout.write(line)
-    fileinput.close()
+            # Rebuild kernel parameter line ("append")
+            if line.lstrip().startswith("append "):
+                # we expect "  append initrd=/path.img opt1=bar opt2=baz"
+                prefix, opts = line.split("append ", 1)
+                opts = opts.split(" ")  # does not support quoting
+                new_options = []
+                for option in opts:
+                    if option.startswith("live-media-path="):
+                        option = f"live-media-path=/live/{grml_flavour}/"
+                    elif option.startswith("boot="):
+                        option = "boot=live"
+                    elif option.startswith("bootid="):
+                        option = f"bootid={bootid}"
+                    if any(regex.match(option) for regex in remove_options_regexes):
+                        continue
+                    new_options.append(option)
+                if bootoptions:
+                    new_options.append(bootoptions)
+                line = "".join([prefix, "append "]) + " ".join(new_options) + " "
+
+            new_lines.append(line)
+
+        fh.seek(0)
+        fh.truncate()
+        fh.write("\n".join(new_lines))
 
 
 def adjust_labels(src: str, replacement: str) -> None:
     """Adjust the specified labels in the syslinux config file src with
     specified replacement
     """
-    label_re = re.compile(r"^(\s*label\s*) ([a-zA-Z0-9_-]+)", re.I)
-    for line in fileinput.input(src, inplace=True):
-        line = label_re.sub(replacement, line)
-        sys.stdout.write(line)
-    fileinput.close()
+    label_re = re.compile(r"^(\s*label\s*) ([a-zA-Z0-9_-]+)", re.I | re.MULTILINE)
+    with open(src, "r+") as fh:
+        contents = fh.read()
+        fh.seek(0)
+        fh.truncate()
+        fh.write(label_re.sub(replacement, contents))
 
 
 def add_syslinux_entry(syslinux_target: str | Path, filename: str | Path, grml_flavour) -> None:
@@ -1465,12 +1482,16 @@ def remove_default_entry(filename: str) -> None:
 
     @filename: syslinux config file
     """
-    default_re = re.compile(r"^(\s*menu\s*default\s*)$", re.I)
-    for line in fileinput.input(filename, inplace=True):
-        if default_re.match(line):
-            continue
-        sys.stdout.write(line)
-    fileinput.close()
+    default_re = re.compile(r"^(\s*menu\s*default\s*)$", re.I | re.MULTILINE)
+    lines = []
+    with open(filename, "r+") as fh:
+        for line in fh.read().split("\n"):
+            if default_re.match(line):
+                continue
+            lines.append(line)
+        fh.seek(0)
+        fh.truncate()
+        fh.write("\n".join(lines))
 
 
 def handle_syslinux_config(

@@ -231,6 +231,185 @@ def test_copy_and_configure_isolinux(tmp_path, monkeypatch, iso_contents: Path):
 
 
 @pytest.mark.parametrize(
+    "removeoptions,bootoptions,expect_append",
+    [
+        ([], "", "boot=live live-media-path=/live/flavour/ bootid=BOOTID opt=test opt2=/bar/ "),
+        (["opt=test"], "", "boot=live live-media-path=/live/flavour/ bootid=BOOTID opt2=/bar/ "),
+        (["opt.*"], "", "boot=live live-media-path=/live/flavour/ bootid=BOOTID "),
+        ([], "nomce", "boot=live live-media-path=/live/flavour/ bootid=BOOTID opt=test opt2=/bar/ nomce "),
+        (["opt2=.*"], "nomce", "boot=live live-media-path=/live/flavour/ bootid=BOOTID opt=test nomce "),
+        (
+            [],
+            "nomce noacpi",
+            "boot=live live-media-path=/live/flavour/ bootid=BOOTID opt=test opt2=/bar/ nomce noacpi ",
+        ),
+    ],
+)
+def test_adjust_syslinux_bootoptions(tmp_path, removeoptions, bootoptions, expect_append):
+    bootid = "BOOTID"
+    opts = "opt=test opt2=/bar/"
+
+    grml_flavour = "flavour"
+
+    filename = "default.cfg"
+    tmp_file = tmp_path / filename
+    tmp_file.write_text(
+        f"""default grml
+label grml
+  menu DEFAULT
+  menu label grml-full-amd64 ^Standard (2025.12, amd64)
+  kernel /boot/grmlfullamd64/vmlinuz
+  append initrd=/boot/grmlfullamd64/initrd.img boot=live live-media-path=/live/grml-full-amd64/ bootid=id {opts}
+
+  text help
+                                        Grml is a Debian based Linux live
+                                        system for system administrators
+                                        and users of text tools.
+
+                                                         http://grml.org/
+  endtext
+"""
+    )
+    grml2usb.adjust_syslinux_bootoptions(str(tmp_file), grml_flavour, bootid, removeoptions, bootoptions)
+    assert (
+        tmp_file.read_text()
+        == f"""default grml
+label grml
+  menu DEFAULT
+  menu label grml-full-amd64 ^Standard (2025.12, amd64)
+  kernel /boot/grmlfullamd64/vmlinuz
+  append initrd=/boot/grmlfullamd64/initrd.img {expect_append}
+
+  text help
+                                        Grml is a Debian based Linux live
+                                        system for system administrators
+                                        and users of text tools.
+
+                                                         http://grml.org/
+  endtext
+"""
+    )
+
+
+def test_adjust_labels(tmp_path):
+    grml_flavour = "my-new-flavour-2032.04"
+    filename = "default.cfg"
+    tmp_file = tmp_path / filename
+    tmp_file.write_text(
+        """
+label alternate
+  menu label grml-full-amd64 ^Standard (2025.12, amd64)
+  kernel /boot/grmlfullamd64/vmlinuz
+
+label alternate2
+  menu label grml-full-amd64 ^Standard (2025.12, amd64)
+  kernel /boot/grmlfullamd64/vmlinuz
+"""
+    )
+    grml2usb.adjust_labels(str(tmp_file), r"\1 %s-\2" % grml_flavour)
+    assert (
+        tmp_file.read_text()
+        == """
+label my-new-flavour-2032.04-alternate
+  menu label grml-full-amd64 ^Standard (2025.12, amd64)
+  kernel /boot/grmlfullamd64/vmlinuz
+
+label my-new-flavour-2032.04-alternate2
+  menu label grml-full-amd64 ^Standard (2025.12, amd64)
+  kernel /boot/grmlfullamd64/vmlinuz
+"""
+    )
+
+
+def test_remove_default_entry(tmp_path):
+    filename = "default.cfg"
+    tmp_file = tmp_path / filename
+    tmp_file.write_text(
+        """
+label grml
+  menu DEFAULT
+  menu label grml-full-amd64 ^Standard (2025.12, amd64)
+  kernel /boot/grmlfullamd64/vmlinuz
+
+label alternate
+  menu label grml-full-amd64 ^Standard (2025.12, amd64)
+  kernel /boot/grmlfullamd64/vmlinuz
+"""
+    )
+    grml2usb.remove_default_entry(str(tmp_file))
+    assert (
+        tmp_file.read_text()
+        == """
+label grml
+  menu label grml-full-amd64 ^Standard (2025.12, amd64)
+  kernel /boot/grmlfullamd64/vmlinuz
+
+label alternate
+  menu label grml-full-amd64 ^Standard (2025.12, amd64)
+  kernel /boot/grmlfullamd64/vmlinuz
+"""
+    )
+
+
+@pytest.mark.parametrize(
+    "removeoptions,bootoptions,expect_append",
+    [
+        (
+            [],
+            "",
+            "apm=power-off boot=live live-media-path=/live/grml-full-amd64/ bootid=BOOTID "
+            '"${loopback}" ${kernelopts} nomce  ',
+        ),
+        (
+            ["nomce"],
+            "",
+            "apm=power-off boot=live live-media-path=/live/grml-full-amd64/ bootid=BOOTID "
+            '"${loopback}" ${kernelopts}    ',
+        ),
+        (
+            [],
+            "nomce",
+            "apm=power-off boot=live live-media-path=/live/grml-full-amd64/ bootid=BOOTID "
+            '"${loopback}" ${kernelopts} nomce ',
+        ),
+        (
+            [],
+            "nomce noacpi",
+            "apm=power-off boot=live live-media-path=/live/grml-full-amd64/ bootid=BOOTID "
+            '"${loopback}" ${kernelopts} nomce nomce noacpi ',
+        ),
+    ],
+)
+def test_handle_grub_config(tmp_path, iso_contents: Path, removeoptions, bootoptions, expect_append):
+    bootid = "BOOTID"
+    grml_flavour = "grml-full-amd64"
+
+    grub_target = tmp_path / "grub"
+    grub_target.mkdir()
+    grub_source = iso_contents / "grml-full-2025.12-amd64" / "boot" / "grub"
+
+    grml2usb.glob_and_copy(str(grub_source) + "/*", str(grub_target))
+
+    grml2usb.handle_grub_config(grml_flavour, str(grub_target) + "/", bootid, removeoptions, bootoptions)
+
+    assert (grub_target / "grub.cfg").read_text() == (grub_source / "grub.cfg").read_text()
+    assert (grub_target / "header.cfg").read_text() == (grub_source / "header.cfg").read_text()
+    assert (grub_target / "loopback.cfg").read_text() == (grub_source / "loopback.cfg").read_text()
+
+    assert (
+        (grub_target / "grmlfullamd64_default.cfg").read_text()
+        == f"""
+menuentry "grml-full-amd64 2025.12" {"{"}
+    set gfxpayload=keep
+    echo 'Loading kernel...'
+    linux   /boot/grmlfullamd64/vmlinuz {expect_append}
+    echo 'Loading initrd...'
+    initrd  /boot/grmlfullamd64/initrd.img
+{"}"}\n""".lstrip()
+    )
+
+
+@pytest.mark.parametrize(
     "iso_name,request_bootloader,result_bootloader,flavour,flavour_safe,installs_syslinux,efiloader",
     [
         ("grml-full-2025.12-amd64", "syslinux", "syslinux", "grml-full-amd64", "grml_full_amd64", True, "bootx64.efi"),
