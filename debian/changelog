@@ -1,3 +1,76 @@
+grml2usb (0.20.13) unstable; urgency=medium
+
+  * [7fe92dc] pyproject.toml: add ruff to "test" optional-dependencies
+  * [2803be4] pyproject.toml: add pyright to "test" optional-dependencies
+  * [87e7a00] Set line-length to 120
+  * [77048ad] get_flavour_filename: fix docstring
+  * [297d494] grml2usb: add type annotations to all functions
+  * [9f3a7cc] grml2usb: check_for_usbdevice: replace 0/1 return with bool
+  * [3442c86] tests: test extract_device_name with non-anchored string
+  * [2a3facf] grml2usb: check_for_usbdevice: use Path, avoid leaking FD
+  * [cb302bd] grml2usb: install_iso_files: unify return type
+  * [2a33f46] grml2usb: get_device_from_partition: remove unnecessary braces
+  * [12f9271] grml2usb: identify_grml_flavour: replace manual file read
+  * [117d87d] grml2usb: search_file: remove unnecessary init
+  * [02092f2] grml2usb: search_file: remove unused default param
+  * [775282b] grml2usb: search_file: remove unused param "required"
+  * [3678ad1] grml2usb: search_file: remove support for multiple search paths
+  * [5ad95f8] grml2usb: split search_file into search_file and search_dirs
+  * [c20767d] grml2usb: copy_bootloader_files: move logo.16 copying into `if
+    syslinux_target:` block
+  * [3bcf596] grml2usb: copy_bootloader_files: clarify syslinux detection
+  * [9844246] grml2usb: copy_bootloader_files: move all grub handling into one
+    place
+  * [6d23b62] grml2usb: copy_bootloader_files: split syslinux handling into
+    new function
+  * [e59a456] grml2usb: handle_syslinux_config: remove now obsolete exists
+    check
+  * [c4cffd4] grml2usb: handle_syslinux_config: move skip into caller
+  * [0c6bd89] grml2usb: handle_syslinux_config: remove global options
+    dependency
+  * [901ee16] grml2usb: copy_and_configure_isolinux: reformat copy line so
+    new_hidden.cfg can be grepped for
+  * [69a5f1a] test data: add (truncated) contents of
+    grml-full-2025.12-amd64.iso
+  * [6eed715] test data: add (truncated) contents of
+    grml-full-2025.12-arm64.iso
+  * [bc22515] tests: synthesize ISO contents
+  * [114ece9] tests: add a test for copy_and_configure_isolinux
+  * [6f3fff3] grml2usb: handle_secure_boot: remove redundant debug logging
+  * [fd5a3be] tests: add a test for test_copy_bootloader_files
+  * [6c3ea44] tests: expand test_copy_bootloader_files for different
+    bootloader options
+  * [62df226] grml2usb: skip mbr-code finding when handle_mbr gets skipped for
+    EFI
+  * [6f9ee53] grml2usb: handle_mbr: cleanup return type
+  * [2de90e0] grml2usb: handle_syslinux_config: make new_hidden.cfg absent a
+    caught fatal error
+  * [ee839a3] grml2usb: install_iso_files: remove unused param "device"
+  * [4504ba8] grml2usb: handle_mbr: simplify mbr locating
+  * [89c0cad] grml2usb: move toplevel main code into a function
+  * [839a88a] grml2usb: install_mbr: extract blockdev call
+  * [9d5258e] grml2usb: reread_partition_table: differentiate errors
+  * [62b54de] grml2usb: install_mbr: move bootloader check into caller
+  * [bcf0106] tests: add test for install_mbr
+  * [de6eafe] grml2usb: install_mbr: call dd less often
+  * [98d6782] grml2usb: set default value for removeoption
+  * [c2c0ff9] test: add test for adjust_syslinux_bootoptions
+  * [7f4505e] grml2usb: stop using fileinput in adjust_syslinux_bootoptions
+  * [a6fe884] grml2usb: rebuild syslinux append line
+  * [6ba6d07] test: test_adjust_syslinux_bootoptions: expand option coverage
+  * [8c51507] test: add test for adjust_labels
+  * [fa590cf] grml2usb: adjust_labels: avoid using fileinput
+  * [2af8c91] test: add test for remove_default_entry
+  * [040098b] grml2usb: remove_default_entry: avoid using fileinput
+  * [d126d40] grml2usb: handle_grub_config: move global options accesses into
+    caller
+  * [d5b5a65] test: add test for handle_grub_config
+  * [1536679] grml2usb: handle_grub_config: stop using fileinput
+  * [9726fcf] grml2usb: handle_grub_config: stop moving bootid,
+    live-media-path options
+
+ -- Chris Hofstaedtler <ch@grml.org>  Tue, 28 Apr 2026 16:37:06 +0200
+
 grml2usb (0.20.12) unstable; urgency=medium
 
   [ Michael Prokop ]
