@@ -567,6 +567,17 @@ def iso_amd64(tmp_path_factory):
     yield str(iso_name)
 
 
+@pytest.fixture(scope="session")
+def iso_arm64(tmp_path_factory):
+    iso_url = "https://daily.grml.org/grml-small-arm64-unstable/latest/grml-small-arm64-unstable_latest.iso"
+    iso_name = tmp_path_factory.mktemp("isos") / "grml-arm64.iso"
+    if iso_name.exists():
+        print(f"ISO {iso_name} already exists")
+    else:
+        _run_x(["curl", "-fSl#", "--output", iso_name, iso_url])
+    yield str(iso_name)
+
+
 @pytest.mark.require_root
 @pytest.mark.parametrize(
     "options, expect_x86_mbr, expect_bootloader_message",
@@ -605,3 +616,45 @@ def test_smoke(
 
     if expect_bootloader_message:
         assert expect_bootloader_message in caplog.text
+
+
+@pytest.mark.require_root
+def test_both_archs(
+    tmp_path,
+    iso_amd64,
+    iso_arm64,
+    loopdev_with_partition,
+    caplog,
+    monkeypatch,
+):
+    caplog.set_level(logging.DEBUG)
+    monkeypatch.setattr(grml2usb, "handle_logging", lambda: None)
+
+    (loop_backing_file, loop_dev, partition) = loopdev_with_partition
+
+    grml2usb_options = grml2usb.parser.parse_args(
+        ["--format", "--force", iso_amd64, iso_arm64, partition, "--bootloader=grub"]
+    )
+    print("Options:", grml2usb_options)
+    assert grml2usb_options.bootloader == "grub"
+    assert len(grml2usb_options.isos) == 2
+
+    grml2usb.main(grml2usb_options)
+
+    with loop_backing_file.open("rb") as fh:
+        mbr = fh.read(512)
+    print("Finalized MBR contents:", mbr.hex())
+
+    assert not mbr.startswith(b"\x00\x00"), (
+        "MBR starts with zero-bytes, x86 BIOS will not boot"
+    )
+
+    check_partition_table(loop_backing_file)
+
+    mount_dir = tmp_path / "mount"
+    _run_x(["mount", partition, mount_dir])
+    try:
+        _run_x(["find", mount_dir])
+        raise RuntimeError("yo")
+    finally:
+        _run_x(["umount", mount_dir])
