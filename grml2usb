@@ -30,6 +30,9 @@ from pathlib import Path
 # The line following this line is patched by debian/rules and tarball.sh.
 PROG_VERSION = "***UNKNOWN***"
 
+# grub-pc-bin ships this file, relevant for BIOS boot with --grub
+GRUB_I386_PC_MODINFO = "/usr/lib/grub/i386-pc/modinfo.sh"
+
 # when running from inside git, try to report version information via git-describe
 try:
     git_dir = os.path.abspath(os.path.dirname(sys.argv[0]))
@@ -1855,8 +1858,20 @@ def check_options(options: argparse.Namespace) -> None:
         raise CriticalException("Cannot use --copy-only and --grub at the same time.")
 
     if options.bootloader == "grub":
+        if host_architecture() == "aarch64":
+            logging.critical(
+                "Fatal: --grub (BIOS/MBR boot via grub-install --target=i386-pc) is not supported on arm64. "
+                "Use --bootloader=efi instead."
+            )
+            sys.exit(1)
         if GRUB_INSTALL:
             logging.info("Using %s as bootloader", options.bootloader)
+            if not os.path.exists(GRUB_I386_PC_MODINFO):
+                logging.critical(
+                    "Fatal: %s not found. Please install grub-pc-bin.",
+                    GRUB_I386_PC_MODINFO,
+                )
+                sys.exit(1)
         else:
             logging.critical(
                 "Fatal: grub-install not available (please install the grub package or drop the --grub option)"
