@@ -23,7 +23,6 @@ Package: grml2usb
 Architecture: all
 Depends:
  grub-efi-amd64-signed | grub-efi-amd64-bin | grub-common,
- grub-efi-arm64-signed | grub-efi-arm64-bin | grub-common,
  grub-pc-bin | grub-common,
  kmod,
  mtools,
