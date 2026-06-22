@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: pip install ruff, vulture
         run: pip3 install ruff vulture
@@ -30,7 +30,7 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install pytest and deps
         run: sudo apt install python3-pytest python3-parted syslinux grub-efi-amd64-signed grub2-common parted curl nasm make
