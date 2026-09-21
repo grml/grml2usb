@@ -525,6 +525,14 @@ ISO on device /dev/sdX1 for multibooting.
 Install specified ISO on device /dev/sdX1 and format partition /dev/sdX1 with
 FAT filesystem.
 
+  # parted /dev/sdX --script mklabel gpt mkpart P1 fat32 0 100% set 1 boot on set 1 esp on
+  # grml2usb --format /home/grml/grml-full-2025.08-amd64.iso /dev/sdX1
+
+Manually partition the `/dev/sdX` drive before installing the ISO,
+which grml2usb currently expects to be done separately, but might
+eventually do on its own. Note that this will destroy data on
+`/dev/sdX`!
+
   # grml2usb --grub --grub-mbr /home/grml/grml-full-2025.08-amd64.iso /dev/sdX1
 
 Install specified ISO on device /dev/sdX1 and use grub as bootloader (instead of
