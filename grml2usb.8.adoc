@@ -526,7 +526,7 @@ Install specified ISO on device /dev/sdX1 and format partition /dev/sdX1 with
 FAT filesystem.
 
   # wipefs -a /dev/sdX
-  # parted /dev/sdX --script mklabel gpt mkpart P1 fat32 0 100% set 1 boot on set 1 esp on
+  # parted /dev/sdX --script mklabel gpt mkpart GRML fat32 0 100% set 1 boot on set 1 esp on
   # grml2usb --format /home/grml/grml-full-2025.08-amd64.iso /dev/sdX1
 
 Manually partition the `/dev/sdX` drive before installing the ISO,
